@@ -1,0 +1,18 @@
+{
+    "name": "gigfinder-scraper",
+    "version": "1.0.0",
+    "description": "Web scraper for Edinburgh/Glasgow venue events",
+    "main": "leith-depot-scraper.js",
+    "scripts": {
+        "scrape": "node leith-depot-scraper.js",
+        "scrape:simple": "node leith-depot-simple.js",
+        "test": "node leith-depot-simple.js"
+    },
+    "dependencies": {
+        "axios": "^1.13.2",
+        "cheerio": "^1.1.2",
+        "puppeteer": "^21.6.0"
+    },
+    "author": "",
+    "license": "MIT"
+}

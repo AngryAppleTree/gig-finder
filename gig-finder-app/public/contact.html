@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - GigFinder</title>
+    <meta name="description" content="Get in touch with the GigFinder team">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --color-bg: #0a0a0f;
+            --color-bg-dark: #050508;
+            --color-text-primary: #ff3366;
+            --color-text-secondary: #e0e0e0;
+            --color-primary: #ff3366;
+            --color-secondary: #00d4ff;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --font-primary: 'Inter', sans-serif;
+            --font-heading: 'Outfit', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--color-bg);
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            padding: var(--spacing-xl) var(--spacing-md);
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .card {
+            background: var(--color-bg-dark);
+            border: 2px solid var(--color-text-primary);
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        label {
+            display: block;
+            color: var(--color-secondary);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            font-size: 1rem;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: var(--spacing-sm);
+            background: var(--color-bg);
+            border: 2px solid var(--color-primary);
+            border-radius: 8px;
+            color: var(--color-text-secondary);
+            font-family: var(--font-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--color-primary), #ff6b9d);
+            color: white;
+            border: none;
+            padding: var(--spacing-md) var(--spacing-xl);
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: var(--spacing-md);
+            font-family: var(--font-heading);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 51, 102, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .contact-info {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--color-bg);
+            border-radius: 8px;
+            border: 1px solid var(--color-primary);
+        }
+
+        .contact-info h3 {
+            color: var(--color-secondary);
+            margin-bottom: var(--spacing-md);
+            font-family: var(--font-heading);
+        }
+
+        .contact-info p {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .contact-info a {
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-info a:hover {
+            color: var(--color-secondary);
+        }
+
+        .footer {
+            background: var(--color-bg-dark);
+            border-top: 2px solid var(--color-primary);
+            padding: var(--spacing-lg) var(--spacing-md);
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .footer a {
+            color: var(--color-primary);
+            text-decoration: none;
+            margin: 0 var(--spacing-sm);
+        }
+
+        .footer a:hover {
+            color: var(--color-secondary);
+        }
+
+        .success-message {
+            display: none;
+            background: linear-gradient(135deg, #00d4ff, #00ffaa);
+            color: var(--color-bg-dark);
+            padding: var(--spacing-md);
+            border-radius: 8px;
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: var(--spacing-md);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1 class="hero-title">📧 Contact Us</h1>
+
+        <div class="card">
+            <div id="successMessage" class="success-message">
+                ✅ Thank you! Your message has been sent successfully. We'll get back to you soon!
+            </div>
+
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">Your Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Subject *</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a subject...</option>
+                        <option value="general">General Inquiry</option>
+                        <option value="support">Technical Support</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="partnership">Partnership Opportunity</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message *</label>
+                    <textarea id="message" name="message" required
+                        placeholder="Tell us what's on your mind..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Send Message 🚀</button>
+            </form>
+
+            <div class="contact-info">
+                <h3>Other Ways to Reach Us</h3>
+                <p><strong>Email:</strong> <a
+                        href="mailto:alex.bunch@angryappletree.com">alex.bunch@angryappletree.com</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. |
+            <a href="/privacy.html">Privacy Policy</a> |
+            <a href="/terms.html">Terms of Service</a> |
+            <a href="/gigfinder.html">Back to GigFinder</a>
+        </p>
+    </footer>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            // In a real implementation, you would send this to a backend API
+            // For now, we'll just show a success message
+            console.log('Form submitted:', formData);
+
+            // Show success message
+            document.getElementById('successMessage').classList.add('show');
+
+            // Reset form
+            this.reset();
+
+            // Scroll to top to show success message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                document.getElementById('successMessage').classList.remove('show');
+            }, 5000);
+        });
+    </script>
+</body>
+
+</html>
