@@ -104,23 +104,23 @@ const gigFinderHTML = `
             <div class="options-grid" role="group" aria-label="Venue size options">
                 <button class="option-btn" data-value="small">
                     <span class="option-icon">🕯️</span>
-                    <span class="option-text">Small & Cosy<br><span style="font-size: 0.8rem">(Max 150)</span></span>
+                    <span class="option-text">Small & Cosy<br><span style="font-size: 0.8rem">(Less than 100)</span></span>
                 </button>
                 <button class="option-btn" data-value="medium">
                     <span class="option-icon">🏢</span>
-                    <span class="option-text">Quite Big<br><span style="font-size: 0.8rem">(151 - 1000)</span></span>
+                    <span class="option-text">Quite Big<br><span style="font-size: 0.8rem">(100 - 500)</span></span>
                 </button>
                 <button class="option-btn" data-value="large">
                     <span class="option-icon">🏟️</span>
-                    <span class="option-text">Big<br><span style="font-size: 0.8rem">(1001 - 5000)</span></span>
+                    <span class="option-text">Big<br><span style="font-size: 0.8rem">(501 - 2,000)</span></span>
                 </button>
                 <button class="option-btn" data-value="massive">
                     <span class="option-icon">🏰</span>
-                    <span class="option-text">Massive<br><span style="font-size: 0.8rem">(5001 - 25000)</span></span>
+                    <span class="option-text">Massive<br><span style="font-size: 0.8rem">(2,001 - 5,000)</span></span>
                 </button>
                 <button class="option-btn" data-value="huge">
                     <span class="option-icon">👑</span>
-                    <span class="option-text">Proper Huge<br><span style="font-size: 0.8rem">(25000+)</span></span>
+                    <span class="option-text">Proper Huge<br><span style="font-size: 0.8rem">(Over 5,000)</span></span>
                 </button>
                 <button class="option-btn" data-value="any">
                     <span class="option-icon">🎪</span>

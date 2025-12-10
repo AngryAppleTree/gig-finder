@@ -109,8 +109,14 @@ function setupEventListeners() {
     document.querySelectorAll('#step3 .option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (isNavigating) return;
-            userChoices.venueSize = btn.dataset.value;
-            nextStep();
+            const size = btn.dataset.value;
+            userChoices.venueSize = size;
+
+            if (size === 'huge') {
+                showRejectionScreen();
+            } else {
+                nextStep();
+            }
         });
     });
 
@@ -244,11 +250,11 @@ function generateSummary() {
 
     // Venue Size
     let sizeText = userChoices.venueSize;
-    if (sizeText === 'small') sizeText = 'Small & Cosy (Max 150)';
-    if (sizeText === 'medium') sizeText = 'Quite Big (151-1000)';
-    if (sizeText === 'large') sizeText = 'Big (1001-5000)';
-    if (sizeText === 'massive') sizeText = 'Massive (5001-25000)';
-    if (sizeText === 'huge') sizeText = 'Proper Huge (25000+)';
+    if (sizeText === 'small') sizeText = 'Small & Cosy (Less than 100)';
+    if (sizeText === 'medium') sizeText = 'Quite Big (100-500)';
+    if (sizeText === 'large') sizeText = 'Big (501-2,000)';
+    if (sizeText === 'massive') sizeText = 'Massive (2,001-5,000)';
+    if (sizeText === 'huge') sizeText = 'Proper Huge (Over 5,000)';
     if (sizeText === 'any') sizeText = 'Any Size';
     html += `<p><strong>Venue Size:</strong> ${sizeText}</p>`;
 
@@ -292,13 +298,13 @@ const postcodeCoordinates = {
 // Venue Coordinates & Capacities
 const venueLocations = {
     'Sneaky Pete\'s': { lat: 55.9490, lon: -3.1890, postcode: 'EH1', capacity: 100 }, // Small
-    'The Hug and Pint': { lat: 55.8700, lon: -4.2700, postcode: 'G3', capacity: 120 }, // Small
+    'The Hug and Pint': { lat: 55.8700, lon: -4.2700, postcode: 'G3', capacity: 120 }, // Medium (now > 100)
     'King Tut\'s': { lat: 55.8627, lon: -4.2667, postcode: 'G2', capacity: 300 }, // Medium
     'The Caves': { lat: 55.9486, lon: -3.1875, postcode: 'EH1', capacity: 450 }, // Medium
-    'The Liquid Room': { lat: 55.9472, lon: -3.1914, postcode: 'EH1', capacity: 800 }, // Medium
+    'The Liquid Room': { lat: 55.9472, lon: -3.1914, postcode: 'EH1', capacity: 800 }, // Large (now > 500)
     'Barrowland': { lat: 55.8544, lon: -4.2386, postcode: 'G40', capacity: 1900 }, // Large
-    'O2 Academy': { lat: 55.9350, lon: -3.2300, postcode: 'EH11', capacity: 3000 }, // Large
-    'OVO Hydro': { lat: 55.8600, lon: -4.2850, postcode: 'G3', capacity: 14000 }, // Massive
+    'O2 Academy': { lat: 55.9350, lon: -3.2300, postcode: 'EH11', capacity: 3000 }, // Massive
+    'OVO Hydro': { lat: 55.8600, lon: -4.2850, postcode: 'G3', capacity: 14000 }, // Proper Huge (now > 5000)
     'Murrayfield Stadium': { lat: 55.9422, lon: -3.2408, postcode: 'EH12', capacity: 67000 } // Proper Huge
 };
 
@@ -521,11 +527,11 @@ async function filterGigs(choices) {
         const beforeSize = filtered.length;
         filtered = filtered.filter(gig => {
             const cap = gig.capacity;
-            if (choices.venueSize === 'small') return cap <= 150;
-            if (choices.venueSize === 'medium') return cap > 150 && cap <= 1000;
-            if (choices.venueSize === 'large') return cap > 1000 && cap <= 5000;
-            if (choices.venueSize === 'massive') return cap > 5000 && cap <= 25000;
-            if (choices.venueSize === 'huge') return cap > 25000;
+            if (choices.venueSize === 'small') return cap <= 100;
+            if (choices.venueSize === 'medium') return cap > 100 && cap <= 500;
+            if (choices.venueSize === 'large') return cap > 500 && cap <= 2000;
+            if (choices.venueSize === 'massive') return cap > 2000 && cap <= 5000;
+            if (choices.venueSize === 'huge') return cap > 5000;
             return true;
         });
         console.log(`🏟️ After venue size filter (${choices.venueSize}):`, filtered.length, 'gigs (removed', beforeSize - filtered.length, ')');
@@ -864,5 +870,29 @@ function resetQuiz() {
     document.getElementById('flexibleDate').checked = false;
     document.getElementById('postcode').value = '';
 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showRejectionScreen() {
+    const mainContent = document.getElementById('main-content');
+
+    // Clear existing content
+    mainContent.innerHTML = `
+        <div style="text-align: center; padding: 4rem 2rem; animation: fadeIn 0.5s ease;">
+            <div style="font-size: 5rem; margin-bottom: 2rem;">🚫</div>
+            <h1 style="font-family: 'Permanent Marker', cursive; font-size: 3rem; color: var(--color-primary); margin-bottom: 2rem; line-height: 1.2;">
+                Get tae fuck
+            </h1>
+            <p style="font-size: 1.5rem; color: var(--color-text-primary); margin-bottom: 3rem;">
+                We don't advertise those gigs.
+            </p>
+             <p style="font-size: 1.2rem; color: var(--color-text-dim); margin-bottom: 3rem;">
+                (We prefer the sweaty basements, thanks.)
+            </p>
+            <button class="btn-primary" onclick="window.location.reload()">Start Over</button>
+        </div>
+    `;
+
+    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
