@@ -98,7 +98,7 @@ if (require.main === module) {
             // Save to JSON file
             const fs = require('fs');
             fs.writeFileSync(
-                './leith-depot-events.json',
+                '../public/leith-depot-events.json',
                 JSON.stringify(events, null, 2)
             );
             console.log('💾 Saved to leith-depot-events.json');
