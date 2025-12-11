@@ -47,9 +47,8 @@ export async function GET(request: NextRequest) {
     let manualEvents: any[] = [];
     try {
         const client = await pool.connect();
-        // Basic filtering for manual gigs could be added here (WHERE date > ...)
-        // For now, fetch all and filter in memory if needed, or rely on client side
-        const res = await client.query('SELECT * FROM events ORDER BY date ASC');
+        // Basic filtering for manual gigs: Only future events
+        const res = await client.query('SELECT * FROM events WHERE date >= CURRENT_DATE ORDER BY date ASC');
         manualEvents = res.rows;
         client.release();
     } catch (e) {
@@ -81,7 +80,7 @@ export async function GET(request: NextRequest) {
             priceVal: parseFloat(e.price) || 0,
             price: e.price,
             vibe: e.genre || 'all',
-            ticketUrl: '#', // Manual gigs might not have ticket links yet
+            ticketUrl: e.ticket_url || '#', // Use DB ticket_url
             description: e.description,
             imageUrl: '', // Placeholder or upload
             source: 'manual',
