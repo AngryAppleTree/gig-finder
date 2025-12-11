@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
         if (isJson) {
             return NextResponse.json({ success: true, id: result.rows[0].id });
         } else {
-            // For form submission, redirect to the server-rendered static success page
-            return NextResponse.redirect(new URL('/gigfinder/success-static', request.url));
+            // For form submission, redirect with 303 to force GET method (Post/Redirect/Get pattern)
+            return NextResponse.redirect(new URL('/gigfinder/success-static', request.url), 303);
         }
 
     } catch (error: any) {
