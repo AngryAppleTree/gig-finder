@@ -371,7 +371,8 @@ function generateFallbackGigs() {
         time: "20:00",
         priceVal: 15,
         price: "£15.00",
-        vibe: "rock_blues_punk"
+        vibe: "rock_blues_punk",
+        ticketUrl: "https://www.skiddle.com"
     });
 
     // Gig 2: Tomorrow (Electronic at Liquid Room)
@@ -388,7 +389,8 @@ function generateFallbackGigs() {
         time: "22:00",
         priceVal: 25,
         price: "£25.00",
-        vibe: "electronic"
+        vibe: "electronic",
+        ticketUrl: "https://www.skiddle.com"
     });
 
     // Gig 3: This Weekend (Indie at King Tut's)
@@ -405,7 +407,8 @@ function generateFallbackGigs() {
         time: "20:30",
         priceVal: 18,
         price: "£18.00",
-        vibe: "indie_alt"
+        vibe: "indie_alt",
+        ticketUrl: "https://www.skiddle.com"
     });
 
     // Gig 4: Future (3 Months out - Metal at Barrowland)
@@ -422,7 +425,8 @@ function generateFallbackGigs() {
         time: "19:00",
         priceVal: 35,
         price: "£35.00",
-        vibe: "metal"
+        vibe: "metal",
+        ticketUrl: "https://www.skiddle.com"
     });
 
     // Gig 5: Future (4 Months out - Jazz at The Caves)
@@ -439,7 +443,8 @@ function generateFallbackGigs() {
         time: "21:00",
         priceVal: 20,
         price: "£20.00",
-        vibe: "acoustic"
+        vibe: "acoustic",
+        ticketUrl: "https://www.skiddle.com"
     });
 
     // --- 2. Random Generation for the rest ---
@@ -664,7 +669,10 @@ function renderGigs(gigs, showAll = false) {
                         <p class="gig-date">📅 ${gig.date} at ${gig.time}</p>
                         <p class="gig-price">🎟️ ${gig.price}</p>
                     </div>
-                    <button class="btn-buy" onclick="showGigDetails(${gig.id})">Get Tickets</button>
+                    ${gig.ticketUrl && gig.ticketUrl !== '#'
+                ? `<button class="btn-buy" onclick="showGigDetails(${gig.id})">Get Tickets</button>`
+                : `<button class="btn-buy" style="background-color: var(--color-surface); border: 1px solid var(--color-primary); color: var(--color-text-primary);" onclick="showGigDetails(${gig.id})">More Info</button>`
+            }
                 </div>
             </div>
         `;
