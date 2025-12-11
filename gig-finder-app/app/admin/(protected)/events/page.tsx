@@ -7,6 +7,7 @@ interface Event {
     name: string;
     venue: string;
     user_id: string;
+    is_internal_ticketing?: boolean;
 }
 
 export default function AdminEvents() {
@@ -42,6 +43,19 @@ export default function AdminEvents() {
         }
     };
 
+    const toggleTicketing = async (id: number, current: boolean) => {
+        const res = await fetch('/api/admin/events', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, isInternalTicketing: !current })
+        });
+        if (res.ok) {
+            fetchEvents();
+        } else {
+            alert('Update failed');
+        }
+    };
+
     return (
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
             <div className="flex justify-between items-center mb-6">
@@ -64,7 +78,7 @@ export default function AdminEvents() {
                                 <th className="px-4 py-3 text-left">Date</th>
                                 <th className="px-4 py-3 text-left">Event</th>
                                 <th className="px-4 py-3 text-left">Venue</th>
-                                <th className="px-4 py-3 text-left">Source</th>
+                                <th className="px-4 py-3 text-center">Ticketing</th>
                                 <th className="px-4 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -76,7 +90,14 @@ export default function AdminEvents() {
                                     </td>
                                     <td className="px-4 py-3 text-sm font-medium">{evt.name}</td>
                                     <td className="px-4 py-3 text-sm text-gray-400">{evt.venue}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-400">{evt.user_id}</td>
+                                    <td className="px-4 py-3 text-center">
+                                        <button
+                                            onClick={() => toggleTicketing(evt.id, !!evt.is_internal_ticketing)}
+                                            className={`px-2 py-1 text-xs rounded border ${evt.is_internal_ticketing ? 'bg-green-600 border-green-500 text-white' : 'bg-transparent border-gray-600 text-gray-400'}`}
+                                        >
+                                            {evt.is_internal_ticketing ? 'Active' : 'Enable'}
+                                        </button>
+                                    </td>
                                     <td className="px-4 py-3 text-right text-sm">
                                         <button
                                             onClick={() => deleteEvent(evt.id)}

@@ -669,9 +669,11 @@ function renderGigs(gigs, showAll = false) {
                         <p class="gig-date">📅 ${gig.date} at ${gig.time}</p>
                         <p class="gig-price">🎟️ ${gig.price}</p>
                     </div>
-                    ${gig.ticketUrl && gig.ticketUrl !== '#'
-                ? `<button class="btn-buy" onclick="showGigDetails(${gig.id})">Get Tickets</button>`
-                : `<button class="btn-buy" style="background-color: var(--color-surface); border: 1px solid var(--color-primary); color: var(--color-text-primary);" onclick="showGigDetails(${gig.id})">More Info</button>`
+                    ${gig.isInternalTicketing
+                ? `<button class="btn-buy" style="background:var(--color-secondary); border-color:var(--color-secondary);" onclick="showGigDetails('${gig.id}')">Book Now</button>`
+                : (gig.ticketUrl && gig.ticketUrl !== '#'
+                    ? `<button class="btn-buy" onclick="showGigDetails('${gig.id}')">Get Tickets</button>`
+                    : `<button class="btn-buy" style="background-color: var(--color-surface); border: 1px solid var(--color-primary); color: var(--color-text-primary);" onclick="showGigDetails('${gig.id}')">More Info</button>`)
             }
                 </div>
             </div>
@@ -837,12 +839,14 @@ function showGigDetails(gigId) {
             </p>
 
             <div class="detail-actions">
-                ${gig.ticketUrl
-            ? `<a href="${gig.ticketUrl}" target="_blank" rel="noopener noreferrer" class="btn-buy-large">Buy Tickets Now →</a>`
-            : `<div style="text-align: center; padding: 2rem; background: var(--color-surface); border: 2px dashed var(--color-text-dim); border-radius: 8px;">
+                ${gig.isInternalTicketing
+            ? `<button onclick="openBookingModal('${gig.id}')" class="btn-buy-large" style="background:var(--color-secondary);">Join Guest List (Free)</button>`
+            : (gig.ticketUrl
+                ? `<a href="${gig.ticketUrl}" target="_blank" rel="noopener noreferrer" class="btn-buy-large">Buy Tickets Now →</a>`
+                : `<div style="text-align: center; padding: 2rem; background: var(--color-surface); border: 2px dashed var(--color-text-dim); border-radius: 8px;">
                         <p style="font-size: 1.2rem; margin-bottom: 1rem;">😕 Tickets Not Available Online</p>
                         <p style="color: var(--color-text-dim);">Please contact the venue directly for ticket information.</p>
-                       </div>`
+                       </div>`)
         }
             </div>
             <div style="margin-top: 1rem; text-align: center;">
@@ -901,4 +905,72 @@ function showRejectionScreen() {
 
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- Booking Modal Logic ---
+
+function openBookingModal(gigId) {
+    const gig = currentGigs.find(g => g.id == gigId); // loose equality
+    if (!gig) return;
+
+    document.getElementById('booking-event-id').value = gig.id;
+    document.getElementById('booking-event-name').textContent = gig.name + ' @ ' + gig.location;
+
+    const modal = document.getElementById('booking-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeBookingModal() {
+    const modal = document.getElementById('booking-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+}
+
+async function handleBookingSubmit(e) {
+    e.preventDefault();
+
+    let rawId = document.getElementById('booking-event-id').value;
+    let eventId = rawId;
+
+    if (String(rawId).startsWith('manual-')) {
+        eventId = rawId.replace('manual-', '');
+    }
+
+    const name = document.getElementById('booking-name').value;
+    const email = document.getElementById('booking-email').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+
+    btn.textContent = 'Processing...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventId, name, email })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            btn.textContent = 'Success!';
+            alert(data.message);
+            closeBookingModal();
+            e.target.reset();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Something went wrong. Please try again.');
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
 }

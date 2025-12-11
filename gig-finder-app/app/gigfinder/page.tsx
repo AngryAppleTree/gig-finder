@@ -264,4 +264,27 @@ const gigFinderHTML = `
             <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. | <a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a> | <a href="/contact.html">Contact</a> | <a href="/admin">Admin</a></p>
         </div>
     </footer>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal-overlay hidden" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center;">
+        <div class="modal-content" style="background:#1a1a1a; padding:2rem; border-radius:12px; max-width:400px; width:90%; position:relative; border: 1px solid var(--color-primary); box-shadow: 0 0 20px rgba(255,51,102,0.3);">
+            <button onclick="closeBookingModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
+            <h2 style="color:var(--color-primary); margin-bottom:0.5rem; text-align:center; font-family: var(--font-display);">Get on the List</h2>
+            <p id="booking-event-name" style="text-align:center; margin-bottom:1.5rem; color: #ccc; font-size: 0.9rem;"></p>
+            
+            <form onsubmit="handleBookingSubmit(event)">
+                <input type="hidden" id="booking-event-id">
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.9rem;">Your Full Name</label>
+                    <input type="text" id="booking-name" required style="width:100%; padding:0.8rem; border-radius:4px; border:1px solid #333; background:#000; color:white; font-family:inherit;">
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.9rem;">Email Address</label>
+                    <input type="email" id="booking-email" required style="width:100%; padding:0.8rem; border-radius:4px; border:1px solid #333; background:#000; color:white; font-family:inherit;">
+                    <p style="font-size:0.7rem; color:#666; margin-top:0.3rem;">We'll email your ticket instantly.</p>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%;">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
 `;

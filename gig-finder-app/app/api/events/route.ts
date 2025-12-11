@@ -84,7 +84,11 @@ export async function GET(request: NextRequest) {
             description: e.description,
             imageUrl: '', // Placeholder or upload
             source: 'manual',
-            priority: 1
+            priority: 1,
+            // Ticketing Fields
+            isInternalTicketing: e.is_internal_ticketing || false,
+            ticketsSold: e.tickets_sold || 0,
+            maxCapacity: e.max_capacity || 100
         };
     });
 
