@@ -14,7 +14,12 @@ This directory contains scripts to ingest events from local Edinburgh venues.
 - **Technique:** RSS XML Parsing
 - **Status:** ✅ Active
 
-### 3. Stramash (`ingest-stramash.js`)
+### 3. The Banshee Labyrinth (`ingest-banshee.js`)
+- **Source:** `thebansheelabyrinth.com/cinema` (Calendar page)
+- **Technique:** `fetch` + `cheerio` (Custom HTML scraping)
+- **Status:** ✅ Active
+
+### 4. Stramash (`ingest-stramash.js`)
 - **Source:** `stramashedinburgh.com/events/feed` (RSS + Crawler)
 - **Technique:** Hybrid. Gets links from RSS, checks Schema.org JSON-LD data on page for dates.
 - **Status:** ✅ Active

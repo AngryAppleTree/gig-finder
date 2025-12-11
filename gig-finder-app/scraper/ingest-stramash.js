@@ -1,131 +1,155 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 require('dotenv').config({ path: '.env.local' });
 const cheerio = require('cheerio');
 const { Pool } = require('pg');
+const { execSync } = require('child_process');
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
     ssl: { rejectUnauthorized: false }
 });
 
+const VENUE_NAME = 'Stramash';
+const USER_ID = 'scraper_stramash';
+
+function fetchWithCurl(url) {
+    try {
+        // Use -L for redirects, -s for silent
+        // Basic user agent
+        const cmd = `curl -s -L -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "${url}"`;
+        const output = execSync(cmd, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 }); // 10MB buffer
+        return output;
+    } catch (e) {
+        // console.error(`Curl failed for ${url}:`, e.message);
+        return null;
+    }
+}
+
 async function scrapeStramash() {
-    console.log('🎸 Initiating Stramash Ingestion (RSS + Crawler)...');
-    let client;
+    console.log('🚀 Starting Stramash RSS Scraper (Curl Mode)...');
+    const feedUrl = 'https://stramashedinburgh.com/events/feed/';
 
     try {
-        console.log('📡 Fetching Stramash RSS Feed...');
-        const res = await fetch('https://stramashedinburgh.com/events/feed/');
-        if (!res.ok) throw new Error(`Feed fetch failed: ${res.status}`);
-        const xml = await res.text();
+        const text = fetchWithCurl(feedUrl);
+        if (!text) throw new Error('Failed to fetch RSS feed');
+        console.log('RSS Preview:', text.substring(0, 200));
+        const $ = cheerio.load(text, { xmlMode: true });
 
-        const $rss = cheerio.load(xml, { xmlMode: true });
-        const links = [];
+        const items = $('item').toArray();
+        console.log(`Found ${items.length} items in RSS feed.`);
 
-        $rss('item').each((i, el) => {
-            const link = $rss(el).find('link').text().trim();
-            const title = $rss(el).find('title').text().trim();
-            if (link && title) {
-                links.push({ link, title });
-            }
-        });
+        const client = await pool.connect();
 
-        console.log(`🔍 Found ${links.length} items in feed. Crawling pages...`);
+        try {
+            let addedCount = 0;
 
-        client = await pool.connect();
-        let addedCount = 0;
-        let skippedCount = 0;
+            for (const item of items) {
+                const link = $(item).find('link').text();
+                const rssTitle = $(item).find('title').text();
 
-        // Process sequentially to be polite
-        for (const item of links) {
-            try {
-                // Fetch Page
-                const pRes = await fetch(item.link);
-                if (!pRes.ok) continue;
-                const pHtml = await pRes.text();
-                const $p = cheerio.load(pHtml);
+                if (!link) continue;
 
-                // Find JSON-LD
+                console.log(`Processing: ${rssTitle}`);
+
+                // Fetch individual page using Curl
+                const pageHtml = fetchWithCurl(link);
+                if (!pageHtml) {
+                    console.log('  - Failed to fetch page (Curl returned null/error).');
+                    continue;
+                }
+
+                const $p = cheerio.load(pageHtml);
                 let eventData = null;
+
+                // Extract JSON-LD
                 $p('script[type="application/ld+json"]').each((i, el) => {
+                    if (eventData) return; // Found one
                     try {
                         const json = JSON.parse($p(el).html());
-                        // Sometimes it's an array or graph
                         const nodes = Array.isArray(json) ? json : (json['@graph'] || [json]);
                         const evt = nodes.find(n => n['@type'] === 'Event' || n['@type'] === 'MusicEvent');
                         if (evt) eventData = evt;
-                    } catch (e) { /* ignore parse errors */ }
+                    } catch (e) { /* ignore */ }
                 });
 
                 if (eventData && eventData.startDate) {
-                    // Manual Regex for "2026-1-4T23:55+0:00"
+                    // Parse Date - Stramash JSON-LD often has non-standard formats like "2026-1-4T23:55+0:00"
+                    // We use regex to be safe
                     const match = eventData.startDate.match(/(\d{4})-(\d{1,2})-(\d{1,2})T(\d{1,2}:\d{2})/);
-                    if (!match) {
-                        // console.log('Date parse failed:', eventData.startDate);
+
+                    let dateObj = null;
+                    if (match) {
+                        const [_, y, m, d, time] = match;
+                        // Construct ISO string with padding
+                        const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${time}:00Z`;
+                        dateObj = new Date(iso);
+                    } else {
+                        // Try standard constructor
+                        dateObj = new Date(eventData.startDate);
+                    }
+
+                    if (!dateObj || isNaN(dateObj.getTime())) {
+                        console.log(`  - Invalid Date: ${eventData.startDate}`);
                         continue;
                     }
 
-                    const [_, y, m, d, time] = match;
-                    // Pad month/day
-                    const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${time}:00Z`;
-
-                    const dateObj = new Date(iso);
-
-                    // Filter Past
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    if (dateObj < yesterday) continue;
-
-                    // Format
                     const dateStr = dateObj.toISOString().split('T')[0];
-                    const timeStr = dateObj.toTimeString().substring(0, 5); // HH:MM
+                    const timeStr = dateObj.toISOString().split('T')[1].substring(0, 5); // Use correct time from dateObj (UTC)
+                    // Actually, if input was "23:55+0:00", it is UTC.
 
-                    const timestamp = `${dateStr} ${timeStr}:00`;
-                    const fingerprint = `${dateStr}|stramash|${item.title.toLowerCase().trim()}`;
+                    // Filter Past Events
+                    if (dateObj < new Date(new Date().setDate(new Date().getDate() - 1))) {
+                        // console.log(`  - Past event skipped: ${dateStr}`);
+                        continue;
+                    }
 
-                    // DB Check
-                    const checkRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);
+                    const title = eventData.name || rssTitle;
+                    const description = eventData.description || '';
+                    const fingerprint = `${dateStr}|${VENUE_NAME.toLowerCase()}|${title.toLowerCase().trim()}`;
+                    const genre = 'Live Music';
 
-                    if (checkRes.rows.length === 0) {
-                        await client.query(`
-                            INSERT INTO events (
-                                name, venue, date, genre, price, description, 
-                                user_id, created_at, fingerprint, ticket_url, approved
-                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10)
-                        `, [
-                            item.title,
-                            'Stramash',
-                            timestamp,
-                            'Live Music/Cover', // Stramash is mostly covers/folk/indie
-                            '0.00', // Usually Free/Door
-                            eventData.description || item.title,
-                            'scraper_stramash',
-                            fingerprint,
-                            item.link,
-                            true
-                        ]);
-                        console.log(`   + Added: ${item.title} @ ${dateStr}`);
+                    // Check DB
+                    const existRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);
+                    if (existRes.rows.length === 0) {
+                        await client.query(
+                            `INSERT INTO events (
+                                name, venue, date, time, price, ticket_url, description, 
+                                fingerprint, user_id, approved, created_at, genre, image_url
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), $11, $12)`,
+                            [
+                                title,
+                                VENUE_NAME,
+                                dateObj, // Postgres takes Date object
+                                timeStr,
+                                'Free', // Often free
+                                link,
+                                description,
+                                fingerprint,
+                                USER_ID,
+                                true,
+                                genre,
+                                eventData.image || ''
+                            ]
+                        );
                         addedCount++;
+                        console.log(`  + Upserted: ${dateStr} - ${title}`);
                     } else {
-                        skippedCount++;
+                        // console.log(`  . Duplicate: ${dateStr}`);
                     }
 
                 } else {
-                    // console.log(`   ? No JSON-LD event data for: ${item.title}`);
+                    console.log('  - No JSON-LD Event data found.');
                 }
-
-                // Polite delay
-                await new Promise(r => setTimeout(r, 100));
-
-            } catch (err) {
-                console.error(`   ! Failed to process ${item.link}:`, err.message);
             }
+            console.log(`🎉 Finished. Added ${addedCount} new events.`);
+
+        } finally {
+            client.release();
         }
 
-        console.log(`🎉 Added ${addedCount} new events.`);
-
-    } catch (err) {
-        console.error('❌ Error:', err);
+    } catch (error) {
+        console.error('❌ Stramash Scraper Failed:', error);
     } finally {
-        if (client) client.release();
         await pool.end();
     }
 }
