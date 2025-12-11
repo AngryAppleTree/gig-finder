@@ -2,13 +2,14 @@ require('dotenv').config({ path: '.env.local' });
 const cheerio = require('cheerio');
 const { Pool } = require('pg');
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
-
 async function scrapeSneaky() {
     console.log('🎸 Initiating Sneaky Pete\'s Ingestion (RSS Mode)...');
+
+    const pool = new Pool({
+        connectionString: process.env.POSTGRES_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+
     let client;
 
     try {
@@ -112,4 +113,10 @@ async function scrapeSneaky() {
     }
 }
 
-scrapeSneaky();
+// Export for Admin API
+module.exports = { scrapeSneaky };
+
+// Run if executed directly
+if (require.main === module) {
+    scrapeSneaky();
+}

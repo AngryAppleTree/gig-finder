@@ -2,16 +2,18 @@ require('dotenv').config({ path: '.env.local' });
 const cheerio = require('cheerio');
 const { Pool } = require('pg');
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
-
-async function scrapeAndIngest() {
+async function scrapeLeith() {
     console.log('🎸 Initiating Leith Depot Ingestion (Cheerio Selectors)...');
+
+    const pool = new Pool({
+        connectionString: process.env.POSTGRES_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+
     let client;
 
     try {
+
         console.log('📡 Fetching Leith Depot Events HTML...');
         const res = await fetch('https://leithdepot.com/events.html');
         if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
@@ -162,4 +164,10 @@ function convertTime12to24(time12h) {
     return `${hours}:${minutes} `;
 }
 
-scrapeAndIngest();
+// Export for Admin API
+module.exports = { scrapeLeith };
+
+// Run if executed directly
+if (require.main === module) {
+    scrapeLeith();
+}

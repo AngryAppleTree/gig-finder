@@ -1,0 +1,99 @@
+"use client";
+import React, { useEffect, useState } from 'react';
+
+interface Event {
+    id: number;
+    date: string;
+    name: string;
+    venue: string;
+    user_id: string;
+}
+
+export default function AdminEvents() {
+    const [events, setEvents] = useState<Event[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchEvents = async () => {
+        setLoading(true);
+        const res = await fetch('/api/admin/events');
+        if (res.ok) {
+            const data = await res.json();
+            setEvents(data.events);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const deleteEvent = async (id: number) => {
+        if (!confirm('Are you sure?')) return;
+
+        const res = await fetch('/api/admin/events', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+        if (res.ok) {
+            fetchEvents(); // Refresh
+        } else {
+            alert('Delete failed');
+        }
+    };
+
+    return (
+        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Event Management</h2>
+                <div className="flex gap-2">
+                    <a href="/admin/events/new" className="text-sm bg-purple-600 px-3 py-1 rounded hover:bg-purple-500 text-white flex items-center">
+                        + New Event
+                    </a>
+                    <button onClick={fetchEvents} className="text-sm bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">Refresh</button>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="text-center p-8">Loading events...</div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                        <thead>
+                            <tr>
+                                <th className="px-4 py-3 text-left">Date</th>
+                                <th className="px-4 py-3 text-left">Event</th>
+                                <th className="px-4 py-3 text-left">Venue</th>
+                                <th className="px-4 py-3 text-left">Source</th>
+                                <th className="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-700">
+                            {events.map((evt) => (
+                                <tr key={evt.id} className="hover:bg-gray-700/50">
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                        {new Date(evt.date).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm font-medium">{evt.name}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-400">{evt.venue}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-400">{evt.user_id}</td>
+                                    <td className="px-4 py-3 text-right text-sm">
+                                        <button
+                                            onClick={() => deleteEvent(evt.id)}
+                                            className="text-red-400 hover:text-red-300"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {events.length === 0 && (
+                                <tr><td colSpan={5} className="text-center py-4">No events found.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+}

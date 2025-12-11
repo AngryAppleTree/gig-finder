@@ -4,29 +4,26 @@ const cheerio = require('cheerio');
 const { Pool } = require('pg');
 const { execSync } = require('child_process');
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
-
 const VENUE_NAME = 'Stramash';
 const USER_ID = 'scraper_stramash';
 
 function fetchWithCurl(url) {
     try {
-        // Use -L for redirects, -s for silent
-        // Basic user agent
-        const cmd = `curl -s -L -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "${url}"`;
-        const output = execSync(cmd, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 }); // 10MB buffer
-        return output;
+        const cmd = `curl -s -L -A "Mozilla/5.0" "${url}"`;
+        return execSync(cmd, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
     } catch (e) {
-        // console.error(`Curl failed for ${url}:`, e.message);
         return null;
     }
 }
 
 async function scrapeStramash() {
     console.log('🚀 Starting Stramash RSS Scraper (Curl Mode)...');
+
+    const pool = new Pool({
+        connectionString: process.env.POSTGRES_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+
     const feedUrl = 'https://stramashedinburgh.com/events/feed/';
 
     try {
@@ -113,22 +110,20 @@ async function scrapeStramash() {
                     if (existRes.rows.length === 0) {
                         await client.query(
                             `INSERT INTO events (
-                                name, venue, date, time, price, ticket_url, description, 
-                                fingerprint, user_id, approved, created_at, genre, image_url
-                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), $11, $12)`,
+                                name, venue, date, price, ticket_url, description, 
+                                fingerprint, user_id, approved, created_at, genre
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)`,
                             [
                                 title,
                                 VENUE_NAME,
                                 dateObj, // Postgres takes Date object
-                                timeStr,
                                 'Free', // Often free
                                 link,
                                 description,
                                 fingerprint,
                                 USER_ID,
                                 true,
-                                genre,
-                                eventData.image || ''
+                                genre
                             ]
                         );
                         addedCount++;
@@ -154,4 +149,10 @@ async function scrapeStramash() {
     }
 }
 
-scrapeStramash();
+// Export for Admin API
+module.exports = { scrapeStramash };
+
+// Run if executed directly
+if (require.main === module) {
+    scrapeStramash();
+}

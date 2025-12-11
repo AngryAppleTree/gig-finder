@@ -3,17 +3,19 @@ require('dotenv').config({ path: '.env.local' });
 const cheerio = require('cheerio');
 const { Pool } = require('pg');
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
-
 const VENUE_NAME = 'The Banshee Labyrinth';
 const USER_ID = 'scraper_banshee';
+
+
 
 async function scrapeBanshee() {
     console.log('🚀 Starting Banshee Labyrinth Scraper...');
     const url = 'https://www.thebansheelabyrinth.com/cinema/';
+
+    const pool = new Pool({
+        connectionString: process.env.POSTGRES_URL,
+        ssl: { rejectUnauthorized: false }
+    });
 
     try {
         const resp = await fetch(url);
@@ -126,4 +128,12 @@ async function scrapeBanshee() {
     }
 }
 
-scrapeBanshee();
+
+
+// Export for Admin API
+module.exports = { scrapeBanshee };
+
+// Run if executed directly
+if (require.main === module) {
+    scrapeBanshee();
+}
