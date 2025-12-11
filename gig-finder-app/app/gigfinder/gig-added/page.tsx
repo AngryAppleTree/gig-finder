@@ -1,26 +1,22 @@
-'use client';
-
 import Link from 'next/link';
 
 export default function GigAddedPage() {
-    console.log('Rendering GigAddedPage - Check Vercel Logs');
     return (
-        <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Styles loaded in layout.tsx */}
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
 
-            <header style={{ padding: '1rem', textAlign: 'center', width: '100%' }}>
+            <header style={{ padding: '1rem', textAlign: 'center', width: '100%', position: 'absolute', top: 0, left: 0 }}>
                 <h1 className="main-title" style={{ position: 'relative', margin: '0', fontSize: '3rem', top: 'auto', left: 'auto' }}>GIG<br />FINDER</h1>
             </header>
 
-            <main className="container" style={{ maxWidth: '600px', margin: '2rem auto', padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <main className="container" style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem', zIndex: 10 }}>
                 <div style={{
                     background: 'var(--color-surface)',
                     padding: '3rem 2rem',
                     border: '3px solid var(--color-border)',
-                    boxShadow: '8px 8px 0 var(--color-secondary)', // Green/Secondary shadow for success
+                    boxShadow: '8px 8px 0 var(--color-secondary)',
                     textAlign: 'center'
                 }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🤘</div>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }} role="img" aria-label="Rock On">🤘</div>
                     <h2 style={{ fontFamily: 'var(--font-primary)', fontSize: '2.5rem', marginBottom: '1rem', textTransform: 'uppercase', color: 'var(--color-text)' }}>
                         NICE ONE!
                     </h2>
