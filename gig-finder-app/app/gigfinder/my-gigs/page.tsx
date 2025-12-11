@@ -137,10 +137,9 @@ export default function MyGigsPage() {
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                                    {/* Edit Button (Future Feature) */}
-                                    {/* <Link href={`/gigfinder/edit/${gig.id}`} className="btn-back" style={{ border: '2px solid var(--color-text)', padding: '0.5rem 1rem' }}>
+                                    <Link href={`/gigfinder/edit/${gig.id}`} className="btn-back" style={{ border: '2px solid var(--color-text)', padding: '0.5rem 1rem', textDecoration: 'none' }}>
                                         EDIT
-                                    </Link> */}
+                                    </Link>
 
                                     <button
                                         onClick={() => handleDelete(gig.id)}
