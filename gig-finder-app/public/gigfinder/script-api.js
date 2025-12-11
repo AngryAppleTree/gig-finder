@@ -336,19 +336,9 @@ async function fetchAllGigs() {
             dateObj: new Date(event.dateObj)
         }));
 
-        // Add manual gigs (Leith Depot, etc.)
-        const manualGigsData = typeof manualGigs !== 'undefined' ? manualGigs : [];
-        const manualGigsFormatted = manualGigsData.map(event => ({
-            ...event,
-            dateObj: new Date(event.dateObj)
-        }));
+        console.log(`📊 Loaded ${skiddleGigs.length} gigs from API`);
 
-        // Merge Skiddle + Manual data
-        const allGigs = [...skiddleGigs, ...manualGigsFormatted];
-
-        console.log(`📊 Loaded ${skiddleGigs.length} Skiddle gigs + ${manualGigsFormatted.length} manual gigs`);
-
-        return allGigs.sort((a, b) => a.dateObj - b.dateObj);
+        return skiddleGigs.sort((a, b) => a.dateObj - b.dateObj);
 
     } catch (error) {
         console.error('Failed to fetch gigs:', error);
