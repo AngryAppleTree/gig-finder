@@ -96,13 +96,14 @@ export async function POST(req: Request) {
         // We do this after commit so if email fails, booking is still valid (or we could catch and log error)
         try {
             if (process.env.RESEND_API_KEY) {
-                const qrDataUrl = await QRCode.toDataURL(`BOOKING:${bookingId}-EVENT:${eventId}`, { width: 300, margin: 2 });
+                // Generate Buffer (no data: prefix)
+                const qrBuffer = await QRCode.toBuffer(`BOOKING:${bookingId}-EVENT:${eventId}`, { width: 300, margin: 2 });
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
                 const dateStr = new Date(event.date).toLocaleDateString();
 
                 await resend.emails.send({
                     from: fromAddress,
-                    to: email, // Note: Test mode restricts this to verified email only
+                    to: email,
                     subject: `Ticket Confirmed: ${event.name}`,
                     html: `
                         <div style="font-family: sans-serif; color: #333;">
@@ -112,14 +113,22 @@ export async function POST(req: Request) {
                             <p><strong>Venue:</strong> ${event.venue}<br><strong>Date:</strong> ${dateStr}</p>
                             
                             <div style="text-align: center; margin: 20px 0;">
-                                <img src="${qrDataUrl}" alt="Your Entry QR Code" style="border: 4px solid #000;" />
+                                <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
                             </div>
                             
                             <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
                             <hr>
                             <p style="font-size: 12px; color: #888;">Sent via GigFinder</p>
                         </div>
-                    `
+                    `,
+                    attachments: [
+                        {
+                            filename: `ticket-${bookingId}.png`,
+                            content: qrBuffer,
+                            // @ts-ignore - content_id is valid in API but missing in some SDK types
+                            content_id: 'ticket-qr'
+                        }
+                    ]
                 });
             } else {
                 console.log(`[MOCK EMAIL] To: ${email} (Booking #${bookingId}). Set RESEND_API_KEY to see QR code email.`);
