@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 export default function GigAddedPage() {
+    console.log('Rendering GigAddedPage - Check Vercel Logs');
     return (
         <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Styles loaded in layout.tsx */}
