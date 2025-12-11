@@ -261,7 +261,7 @@ const gigFinderHTML = `
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. | <a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a> | <a href="/contact.html">Contact</a></p>
+            <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. | <a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a> | <a href="/contact.html">Contact</a> | <a href="/admin">Admin</a></p>
         </div>
     </footer>
 `;
