@@ -58,7 +58,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { id, name, venue, date, time, genre, description, price } = body;
+        const { id, name, venue, date, time, genre, description, price, isInternalTicketing } = body;
 
         if (!id || !name || !venue || !date) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -68,15 +68,8 @@ export async function PUT(request: NextRequest) {
         // We will update fingerprint to match new data to avoid stale deduplication.
         const fingerprint = `${date}|${venue.toLowerCase().trim()}|${name.toLowerCase().trim()}`;
 
-        // Combine date + time for DB if needed, or just store separate if schema used timestamp? 
-        // Schema is 'date' column as DATE type? Or string?
-        // Step 651: `date` column is `DATE` (or text?). Step 1082 API uses `timestamp` string: `${date} ${time}:00`.
-        // Let's assume we store it as text or timestamp in DB logic.
-        // Wait, original insert logic (Step 873) used:
-        // const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
-        // INSERT INTO events(..., date, ...) VALUES(..., timestamp, ...).
-
-        const timestamp = time ? `${date} ${time}` : `${date} 00:00:00`; // Time formatting might need :00 depending on input
+        // Combine date + time
+        const timestamp = time ? `${date} ${time}` : `${date} 00:00:00`;
 
         const client = await pool.connect();
 
@@ -88,10 +81,11 @@ export async function PUT(request: NextRequest) {
                 genre = $4, 
                 description = $5, 
                 price = $6,
-                fingerprint = $7
-             WHERE id = $8 AND user_id = $9
+                fingerprint = $7,
+                is_internal_ticketing = $8
+             WHERE id = $9 AND user_id = $10
              RETURNING id`,
-            [name, venue, timestamp, genre, description, price, fingerprint, id, userId]
+            [name, venue, timestamp, genre, description, price, fingerprint, isInternalTicketing || false, id, userId]
         );
 
         client.release();

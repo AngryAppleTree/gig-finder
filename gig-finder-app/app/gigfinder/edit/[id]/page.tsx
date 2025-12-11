@@ -15,6 +15,7 @@ interface EventFormState {
     description: string;
     price: string;
     ticketUrl: string;
+    isInternalTicketing: boolean;
 }
 
 export default function EditGigPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,7 +39,8 @@ export default function EditGigPage({ params }: { params: Promise<{ id: string }
         genre: '',
         description: '',
         price: '',
-        ticketUrl: ''
+        ticketUrl: '',
+        isInternalTicketing: false
     });
 
     useEffect(() => {
@@ -72,7 +74,8 @@ export default function EditGigPage({ params }: { params: Promise<{ id: string }
                     genre: data.event.genre || '',
                     description: data.event.description || '',
                     price: data.event.price || '',
-                    ticketUrl: data.event.ticket_url || '' // Mapped from DB column ticket_url
+                    ticketUrl: data.event.ticket_url || '',
+                    isInternalTicketing: data.event.is_internal_ticketing || false
                 });
             }
         } catch (err) {
@@ -84,8 +87,9 @@ export default function EditGigPage({ params }: { params: Promise<{ id: string }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type } = e.target;
+        const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+        setFormData(prev => ({ ...prev, [name]: val }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -180,8 +184,23 @@ export default function EditGigPage({ params }: { params: Promise<{ id: string }
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Price (£)</label>
                         <input type="text" name="price" className="text-input" value={formData.price} onChange={handleChange} placeholder="e.g. 10.00 or Free" />
+                    </div>
+
+                    <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', borderRadius: '4px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                name="isInternalTicketing"
+                                checked={formData.isInternalTicketing}
+                                onChange={handleChange}
+                                style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }}
+                            />
+                            <div style={{ textAlign: 'left' }}>
+                                <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>GigFinder Guest List</span>
+                                <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Enable free bookings directly on the app.</span>
+                            </div>
+                        </label>
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
