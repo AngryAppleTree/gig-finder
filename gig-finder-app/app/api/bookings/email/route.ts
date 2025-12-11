@@ -53,8 +53,8 @@ export async function POST(req: Request) {
 
             // Send via Resend
             // Note: 'from' domain must be verified in Resend dashboard.
-            // Using a generic noreply address or one user configures.
-            const fromAddress = process.env.EMAIL_FROM || 'GigFinder <noreply@resend.dev>';
+            // Using onboarding@resend.dev allows sending to YOURSELF for testing.
+            const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
             await resend.emails.send({
                 from: fromAddress,
