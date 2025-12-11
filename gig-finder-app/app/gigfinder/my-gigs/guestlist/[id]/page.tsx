@@ -27,6 +27,12 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
     const [newName, setNewName] = useState('');
     const [newEmail, setNewEmail] = useState('');
 
+    // Email Modal State
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [emailSubject, setEmailSubject] = useState('');
+    const [emailMessage, setEmailMessage] = useState('');
+    const [sendingEmail, setSendingEmail] = useState(false);
+
     useEffect(() => {
         if (isLoaded && !isSignedIn) router.push('/sign-in');
         if (isLoaded && isSignedIn && eventId) fetchBookings();
@@ -72,13 +78,45 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
         }
     };
 
+    const handleSendEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSendingEmail(true);
+        try {
+            const res = await fetch('/api/bookings/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId, subject: emailSubject, message: emailMessage })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message);
+                setShowEmailModal(false);
+                setEmailSubject('');
+                setEmailMessage('');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (err) {
+            alert('Failed to send email');
+        } finally {
+            setSendingEmail(false);
+        }
+    };
+
     if (loading) return <div className="p-10 text-center text-white" style={{ paddingTop: '100px' }}>Loading guest list...</div>;
 
     return (
         <div style={{ minHeight: '100vh', paddingBottom: '3rem', background: '#0a0a0a', color: '#fff' }}>
             <header style={{ padding: '2rem', textAlign: 'center' }}>
                 <h1 className="main-title" style={{ fontSize: '2.5rem', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>GUEST LIST</h1>
-                <Link href="/gigfinder/my-gigs" className="btn-back" style={{ textDecoration: 'none' }}>← Back to My Gigs</Link>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <Link href="/gigfinder/my-gigs" className="btn-back" style={{ textDecoration: 'none' }}>← Back to My Gigs</Link>
+                    {bookings.length > 0 && (
+                        <button onClick={() => setShowEmailModal(true)} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
+                            ✉️ Email Guests
+                        </button>
+                    )}
+                </div>
             </header>
 
             <main className="container" style={{ maxWidth: '800px', margin: '0 auto', paddingLeft: '1rem', paddingRight: '1rem' }}>
@@ -152,6 +190,44 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                         </div>
                     )}
                 </div>
+
+                {/* Email Modal */}
+                {showEmailModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                        background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        zIndex: 1000
+                    }}>
+                        <div style={{ background: '#222', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', border: '1px solid var(--color-primary)' }}>
+                            <h2 style={{ marginBottom: '1.5rem', color: 'var(--color-primary)' }}>Email All Guests</h2>
+                            <form onSubmit={handleSendEmail} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Subject"
+                                    value={emailSubject}
+                                    onChange={e => setEmailSubject(e.target.value)}
+                                    required
+                                    className="text-input"
+                                    style={{ width: '100%' }}
+                                />
+                                <textarea
+                                    placeholder="Message..."
+                                    value={emailMessage}
+                                    onChange={e => setEmailMessage(e.target.value)}
+                                    required
+                                    className="text-input"
+                                    style={{ width: '100%', minHeight: '150px' }}
+                                ></textarea>
+                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                                    <button type="button" onClick={() => setShowEmailModal(false)} className="btn-back" style={{ border: 'none', background: 'none', textDecoration: 'underline' }}>Cancel</button>
+                                    <button type="submit" disabled={sendingEmail} className="btn-primary">
+                                        {sendingEmail ? 'Sending...' : 'Send Broadcast'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
