@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
         if (isJson) {
             return NextResponse.json({ success: true, id: result.rows[0].id });
         } else {
-            // For form submission, redirect back to a success page or the form
-            return NextResponse.redirect(new URL('/gigfinder/add-event?success=true', request.url));
+            // For form submission, redirect to the dedicated success page
+            return NextResponse.redirect(new URL('/gigfinder/gig-added', request.url));
         }
 
     } catch (error: any) {
