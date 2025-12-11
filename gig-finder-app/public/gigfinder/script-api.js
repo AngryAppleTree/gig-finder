@@ -15,7 +15,9 @@ const userChoices = {
 };
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+function initGigFinder() {
+    console.log('🚀 Initializing GigFinder...');
+
     // Remove problematic attribute that causes hydration errors
     if (document.documentElement.hasAttribute('data-jetski-tab-id')) {
         document.documentElement.removeAttribute('data-jetski-tab-id');
@@ -32,9 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setupEventListeners();
 
-        console.log('GigFinder initialized successfully');
+        console.log('✅ GigFinder initialized successfully');
     }, 100);
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGigFinder);
+} else {
+    initGigFinder();
+}
 
 function setupEventListeners() {
     // Step 1: When buttons
@@ -657,7 +665,7 @@ function renderGigs(gigs, showAll = false) {
         html += `
             <div class="gig-card">
                 <div class="gig-image">
-                    <img src="gigfinder/Cal drummin.png" alt="${gig.name}">
+                    <img src="/gigfinder/Cal drummin.png" alt="${gig.name}">
                 </div>
                 <div class="gig-details">
                     <h3 class="gig-name">${gig.name}</h3>
@@ -800,7 +808,7 @@ function showGigDetails(gigId) {
 
     container.innerHTML = `
         <div class="detail-hero">
-            <img src="gigfinder/Cal drummin.png" alt="${gig.name}">
+            <img src="/gigfinder/Cal drummin.png" alt="${gig.name}">
         </div>
         <div class="detail-body">
             <h2 class="detail-title">${gig.name}</h2>

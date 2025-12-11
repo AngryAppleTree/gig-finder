@@ -7,12 +7,12 @@ export default function GigFinderPage() {
             <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
             <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
-            <link rel="stylesheet" href="/gigfinder/style.css" />
+            <link rel="stylesheet" href="/gigfinder/gigfinder.css?v=6" />
 
             <div dangerouslySetInnerHTML={{ __html: gigFinderHTML }} />
 
-            <Script src="/gigfinder/manual-gigs.js" strategy="afterInteractive" />
-            <Script src="/gigfinder/script-api.js" strategy="afterInteractive" />
+            <Script src="/gigfinder/manual-gigs.js?v=5" strategy="afterInteractive" />
+            <Script src="/gigfinder/script-api.js?v=5" strategy="afterInteractive" />
         </>
     );
 }
@@ -72,7 +72,7 @@ const gigFinderHTML = `
         <!-- Step 2: Where? -->
         <section class="step" id="step2" aria-labelledby="step2-title">
             <h2 class="step-title" id="step2-title">How far will you travel?</h2>
-            <div class="options-grid" role="group" aria-label="Location options">
+            <div class="options-grid" role="group" aria-label="Distance options" style="margin-bottom: var(--spacing-md);">
                 <button class="option-btn" data-value="local">
                     <span class="option-icon">🎯</span>
                     <span class="option-text">Locally</span>
@@ -81,16 +81,19 @@ const gigFinderHTML = `
                     <span class="option-icon">🛣️</span>
                     <span class="option-text">Within 100 Miles</span>
                 </button>
-                <button class="option-btn" data-value="uk">
-                    <span class="option-icon">🗺️</span>
-                    <span class="option-text">UK-Wide</span>
-                </button>
             </div>
 
             <div class="postcode-input hidden" id="postcodeInput">
                 <label for="postcode">Enter your postcode (first half):</label>
                 <input type="text" id="postcode" placeholder="e.g. EH1" class="text-input">
                 <button class="btn-primary" id="postcodeNext" style="margin-top: 1rem;">Next →</button>
+            </div>
+
+            <div class="options-grid" role="group" aria-label="Wide area option">
+                <button class="option-btn" data-value="uk">
+                    <span class="option-icon">🗺️</span>
+                    <span class="option-text">UK-Wide</span>
+                </button>
             </div>
 
             <div class="nav-buttons">
@@ -236,7 +239,7 @@ const gigFinderHTML = `
         <div class="footer-content">
             <!-- Logo -->
             <div class="logo-container">
-                <img src="gigfinder/gigfinder-logo.png" alt="GigFinder Logo" class="main-logo">
+                <img src="/gigfinder/gigfinder-logo.png" alt="GigFinder Logo" class="main-logo">
                 <div class="powered-by">
                     <span class="powered-text">Powered by</span>
                     <span class="angry-apple-text">Angry Apple Tree</span>
