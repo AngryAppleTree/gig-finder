@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
 import { scrapeBanshee } from '@/scraper/ingest-banshee';
 import { scrapeSneaky } from '@/scraper/ingest-sneaky';
 import { scrapeStramash } from '@/scraper/ingest-stramash';
 import { scrapeLeith } from '@/scraper/ingest-leith';
+import { cookies } from 'next/headers';
 
 async function checkAdmin() {
-    const user = await currentUser();
-    if (!user) return false;
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const userEmail = user.emailAddresses[0]?.emailAddress;
-    return adminEmail && userEmail === adminEmail;
+    const cookieStore = await cookies();
+    const adminSession = cookieStore.get('gigfinder_admin');
+    return adminSession?.value === 'true';
 }
 
 export async function POST(req: Request) {
@@ -23,24 +21,23 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { scraper } = body;
 
-        let result;
+        let stats;
         if (scraper === 'banshee') {
-            await scrapeBanshee();
-            result = 'Banshee Labyrinth Scraper Completed';
+            stats = await scrapeBanshee();
         } else if (scraper === 'sneaky') {
-            await scrapeSneaky();
-            result = 'Sneaky Pete\'s Scraper Completed';
+            stats = await scrapeSneaky();
         } else if (scraper === 'stramash') {
-            await scrapeStramash();
-            result = 'Stramash Scraper Completed';
+            stats = await scrapeStramash();
         } else if (scraper === 'leith') {
-            await scrapeLeith();
-            result = 'Leith Depot Scraper Completed';
+            stats = await scrapeLeith();
         } else {
             return NextResponse.json({ error: 'Invalid scraper name' }, { status: 400 });
         }
 
-        return NextResponse.json({ message: result });
+        return NextResponse.json({
+            message: `${scraper} Scraper Completed`,
+            stats: stats
+        });
     } catch (error) {
         console.error('Scraper API Error:', error);
         return NextResponse.json({ error: 'Scraper Execution Failed' }, { status: 500 });

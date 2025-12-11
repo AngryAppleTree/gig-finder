@@ -1,9 +1,14 @@
-require('dotenv').config({ path: '.env.local' });
-const cheerio = require('cheerio');
-const { Pool } = require('pg');
+import cheerio from 'cheerio';
+import { Pool } from 'pg';
+import { fileURLToPath } from 'url';
 
-async function scrapeSneaky() {
+export async function scrapeSneaky() {
     console.log('🎸 Initiating Sneaky Pete\'s Ingestion (RSS Mode)...');
+
+    // Check for Env Var
+    if (!process.env.POSTGRES_URL) {
+        throw new Error('POSTGRES_URL is not defined');
+    }
 
     const pool = new Pool({
         connectionString: process.env.POSTGRES_URL,
@@ -11,6 +16,8 @@ async function scrapeSneaky() {
     });
 
     let client;
+    let addedCount = 0;
+    let skippedCount = 0;
 
     try {
         console.log('📡 Fetching RSS Feed...');
@@ -29,10 +36,6 @@ async function scrapeSneaky() {
             const description = $(el).find('description').text().trim();
             const category = $(el).find('category').text().trim();
 
-            // Only process 'Gigs' or 'Clubs' categories?
-            // Checking the category might filter out blog posts.
-            // Step 1458 output showed <category><![CDATA[Gigs]]></category>.
-
             if (title && pubDate) {
                 items.push({
                     name: title,
@@ -47,12 +50,9 @@ async function scrapeSneaky() {
         console.log(`✅ Extracted ${items.length} items from RSS.`);
 
         client = await pool.connect();
-        let addedCount = 0;
-        let skippedCount = 0;
 
         for (const item of items) {
             // Parse Date
-            // RSS pubDate: "Fri, 06 Nov 2026 00:00:00 +0000"
             const dateObj = new Date(item.pubDate);
 
             // Check valid date
@@ -66,7 +66,6 @@ async function scrapeSneaky() {
             const dateStr = dateObj.toISOString().split('T')[0];
 
             // Time: Sneaky's usually 7pm for Gigs, 11pm for Clubs.
-            // Can we detect 'Club' vs 'Gig' from category?
             let timeStr = '19:00';
             if (item.category && item.category.toLowerCase().includes('club')) {
                 timeStr = '23:00';
@@ -104,19 +103,23 @@ async function scrapeSneaky() {
         }
 
         console.log(`🎉 Added ${addedCount} new events. Skipped ${skippedCount}.`);
+        return { success: true, count: addedCount, skipped: skippedCount };
 
     } catch (err) {
-        console.error('❌ Error:', err);
+        console.error('❌ Sneaky Scraper Failed:', err);
+        throw err;
     } finally {
         if (client) client.release();
         await pool.end();
     }
 }
 
-// Export for Admin API
-module.exports = { scrapeSneaky };
-
-// Run if executed directly
-if (require.main === module) {
-    scrapeSneaky();
+// Allow standalone execution via `node scraper/ingest-sneaky.js`
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    import('dotenv').then(dotenv => {
+        dotenv.config({ path: '.env.local' });
+        scrapeSneaky()
+            .then(() => process.exit(0))
+            .catch(() => process.exit(1));
+    });
 }

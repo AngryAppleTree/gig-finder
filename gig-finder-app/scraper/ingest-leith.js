@@ -1,9 +1,13 @@
-require('dotenv').config({ path: '.env.local' });
-const cheerio = require('cheerio');
-const { Pool } = require('pg');
+import cheerio from 'cheerio';
+import { Pool } from 'pg';
+import { fileURLToPath } from 'url';
 
-async function scrapeLeith() {
+export async function scrapeLeith() {
     console.log('🎸 Initiating Leith Depot Ingestion (Cheerio Selectors)...');
+
+    if (!process.env.POSTGRES_URL) {
+        throw new Error('POSTGRES_URL is not defined');
+    }
 
     const pool = new Pool({
         connectionString: process.env.POSTGRES_URL,
@@ -11,6 +15,8 @@ async function scrapeLeith() {
     });
 
     let client;
+    let addedCount = 0;
+    let skippedCount = 0;
 
     try {
 
@@ -21,11 +27,6 @@ async function scrapeLeith() {
 
         const $ = cheerio.load(html);
         const events = [];
-
-        // Check the grep output: events seem to be wrapped in "menu-item" or similar.
-        // Or we can iterate over h5 (Date) and find next h4?
-        // Let's try iterating over `.menu-item` if that works?
-        // Grep output: <div class="live ... menu-item">
 
         $('.menu-item').each((i, el) => {
             const dateStr = $(el).find('h5').text().trim(); // "Monday 1 December, 6:30pm"
@@ -47,7 +48,6 @@ async function scrapeLeith() {
 
         // Connect DB
         client = await pool.connect();
-        let addedCount = 0;
 
         const currentYear = new Date().getFullYear();
         const currentMonthIndex = new Date().getMonth();
@@ -113,14 +113,16 @@ async function scrapeLeith() {
                 console.log(`   + Added: ${evt.name} @ ${dateStr}`);
                 addedCount++;
             } else {
-                // console.log('Skipped duplicate');
+                skippedCount++;
             }
         }
 
         console.log(`🎉 Added ${addedCount} new events.`);
+        return { success: true, count: addedCount, skipped: skippedCount };
 
     } catch (err) {
         console.error('❌ Error:', err);
+        throw err;
     } finally {
         if (client) client.release();
         await pool.end();
@@ -161,13 +163,15 @@ function convertTime12to24(time12h) {
     if (modifier && modifier.toLowerCase() === 'pm') {
         hours = parseInt(hours, 10) + 12;
     }
-    return `${hours}:${minutes} `;
+    return `${hours}:${minutes}`;
 }
 
-// Export for Admin API
-module.exports = { scrapeLeith };
-
-// Run if executed directly
-if (require.main === module) {
-    scrapeLeith();
+// Allow standalone execution
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    import('dotenv').then(dotenv => {
+        dotenv.config({ path: '.env.local' });
+        scrapeLeith()
+            .then(() => process.exit(0))
+            .catch(() => process.exit(1));
+    });
 }
