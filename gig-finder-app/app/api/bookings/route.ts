@@ -44,6 +44,11 @@ export async function GET(req: Request) {
     }
 }
 
+import QRCode from 'qrcode';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 export async function POST(req: Request) {
     const { eventId, name, email } = await req.json();
 
@@ -58,7 +63,7 @@ export async function POST(req: Request) {
         await client.query('BEGIN');
 
         // Check Capacity & Locking to prevent race conditions
-        const eventRes = await client.query('SELECT max_capacity, tickets_sold, is_internal_ticketing FROM events WHERE id = $1 FOR UPDATE', [eventId]);
+        const eventRes = await client.query('SELECT name, venue, date, max_capacity, tickets_sold, is_internal_ticketing FROM events WHERE id = $1 FOR UPDATE', [eventId]);
 
         if (eventRes.rowCount === 0) {
             throw new Error('Event not found');
@@ -69,26 +74,62 @@ export async function POST(req: Request) {
         // Ensure internal ticketing is enabled
         // Note: For MVP testing, if is_internal_ticketing is null/false, we might want to block or default allow for testing? 
         // Let's block to be strict, user must enable it.
-        if (!event.is_internal_ticketing) {
-            // throw new Error('This event has not enabled GigFinder Ticketing.');
-        }
+        // if (!event.is_internal_ticketing) { ... }
 
         if ((event.tickets_sold || 0) >= (event.max_capacity || 100)) {
             throw new Error('Sorry, this event is Sold Out!');
         }
 
-        // Create Booking
-        await client.query(
-            'INSERT INTO bookings (event_id, customer_name, customer_email) VALUES ($1, $2, $3)',
+        // Create Booking and return ID
+        const bookingRes = await client.query(
+            'INSERT INTO bookings (event_id, customer_name, customer_email) VALUES ($1, $2, $3) RETURNING id',
             [eventId, name, email]
         );
+        const bookingId = bookingRes.rows[0].id;
 
         // Update Sold Count
         await client.query('UPDATE events SET tickets_sold = COALESCE(tickets_sold, 0) + 1 WHERE id = $1', [eventId]);
 
         await client.query('COMMIT');
 
-        return NextResponse.json({ success: true, message: 'Ticket reserved! You are on the list.' });
+        // --- EMAIL LOGIC ---
+        // We do this after commit so if email fails, booking is still valid (or we could catch and log error)
+        try {
+            if (process.env.RESEND_API_KEY) {
+                const qrDataUrl = await QRCode.toDataURL(`BOOKING:${bookingId}-EVENT:${eventId}`, { width: 300, margin: 2 });
+                const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+                const dateStr = new Date(event.date).toLocaleDateString();
+
+                await resend.emails.send({
+                    from: fromAddress,
+                    to: email, // Note: Test mode restricts this to verified email only
+                    subject: `Ticket Confirmed: ${event.name}`,
+                    html: `
+                        <div style="font-family: sans-serif; color: #333;">
+                            <h1 style="color: #000;">You're on the list!</h1>
+                            <p>Hi ${name},</p>
+                            <p>Your spot for <strong>${event.name}</strong> is confirmed.</p>
+                            <p><strong>Venue:</strong> ${event.venue}<br><strong>Date:</strong> ${dateStr}</p>
+                            
+                            <div style="text-align: center; margin: 20px 0;">
+                                <img src="${qrDataUrl}" alt="Your Entry QR Code" style="border: 4px solid #000;" />
+                            </div>
+                            
+                            <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
+                            <hr>
+                            <p style="font-size: 12px; color: #888;">Sent via GigFinder</p>
+                        </div>
+                    `
+                });
+            } else {
+                console.log(`[MOCK EMAIL] To: ${email} (Booking #${bookingId}). Set RESEND_API_KEY to see QR code email.`);
+            }
+        } catch (emailErr) {
+            console.error('Failed to send confirmation email:', emailErr);
+            // Don't fail the request, just log it. The booking is safe.
+        }
+
+        return NextResponse.json({ success: true, message: 'Ticket reserved! Check your email.' });
 
     } catch (e: any) {
         await client.query('ROLLBACK');
