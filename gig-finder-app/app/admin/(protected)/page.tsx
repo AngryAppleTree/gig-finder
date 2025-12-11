@@ -16,7 +16,14 @@ export default function AdminDashboard() {
             });
             const data = await res.json();
             if (res.ok) {
-                setMessage(`Success: ${data.message}`);
+                let msg = `Success: ${data.message}`;
+                if (data.stats) {
+                    const { count, skipped } = data.stats;
+                    msg += ` (Added: ${count || 0}`;
+                    if (skipped !== undefined) msg += `, Skipped: ${skipped}`;
+                    msg += `)`;
+                }
+                setMessage(msg);
             } else {
                 setMessage(`Error: ${data.error}`);
             }
