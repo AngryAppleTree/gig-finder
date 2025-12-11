@@ -112,9 +112,14 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                     <Link href="/gigfinder/my-gigs" className="btn-back" style={{ textDecoration: 'none' }}>← Back to My Gigs</Link>
                     {bookings.length > 0 && (
-                        <button onClick={() => setShowEmailModal(true)} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
-                            ✉️ Email Guests
-                        </button>
+                        <>
+                            <button onClick={() => setShowEmailModal(true)} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
+                                ✉️ Email Guests
+                            </button>
+                            <Link href={`/gigfinder/my-gigs/scan/${eventId}`} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem', textDecoration: 'none', background: '#333', border: '1px solid #555' }}>
+                                📷 Scan Tickets
+                            </Link>
+                        </>
                     )}
                 </div>
             </header>
