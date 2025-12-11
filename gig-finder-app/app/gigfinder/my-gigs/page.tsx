@@ -14,6 +14,7 @@ interface Gig {
     genre: string;
     price: string;
     created_at: string;
+    is_internal_ticketing?: boolean;
 }
 
 export default function MyGigsPage() {
@@ -140,6 +141,12 @@ export default function MyGigsPage() {
                                     <Link href={`/gigfinder/edit/${gig.id}`} className="btn-back" style={{ border: '2px solid var(--color-text)', padding: '0.5rem 1rem', textDecoration: 'none' }}>
                                         EDIT
                                     </Link>
+
+                                    {gig.is_internal_ticketing && (
+                                        <Link href={`/gigfinder/my-gigs/guestlist/${gig.id}`} className="btn-back" style={{ border: '2px solid var(--color-primary)', color: 'var(--color-primary)', padding: '0.5rem 1rem', textDecoration: 'none' }}>
+                                            GUEST LIST
+                                        </Link>
+                                    )}
 
                                     <button
                                         onClick={() => handleDelete(gig.id)}

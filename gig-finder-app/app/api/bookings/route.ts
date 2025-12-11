@@ -6,6 +6,44 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+import { auth } from '@clerk/nextjs/server';
+
+export async function GET(req: Request) {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const eventId = searchParams.get('eventId');
+
+    if (!eventId) return NextResponse.json({ error: 'Missing eventId' }, { status: 400 });
+
+    const client = await pool.connect();
+    try {
+        // Verify ownership (or if event is public? No, bookings are private PII)
+        const eventRes = await client.query('SELECT user_id FROM events WHERE id = $1', [eventId]);
+
+        if (eventRes.rowCount === 0) {
+            return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        }
+
+        // Check ownership
+        // If event.user_id !== userId, block access.
+        // (Note: If Admin needs access, they should use specific Admin API or we assume Admin ID handling elsewhere)
+        if (eventRes.rows[0].user_id !== userId) {
+            return NextResponse.json({ error: 'Forbidden: You do not own this event' }, { status: 403 });
+        }
+
+        const bookings = await client.query('SELECT * FROM bookings WHERE event_id = $1 ORDER BY created_at DESC', [eventId]);
+
+        return NextResponse.json({ bookings: bookings.rows });
+    } catch (e: any) {
+        console.error('Fetch Bookings Error:', e);
+        return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
+    } finally {
+        client.release();
+    }
+}
+
 export async function POST(req: Request) {
     const { eventId, name, email } = await req.json();
 
