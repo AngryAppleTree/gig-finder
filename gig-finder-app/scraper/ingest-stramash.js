@@ -54,19 +54,21 @@ export async function scrapeStramash() {
 
         client = await pool.connect();
 
-        for (const item of items) {
+        const BATCH_SIZE = 5; // Limit to avoid timeout on Vercel
+        const itemsToProcess = items.slice(0, BATCH_SIZE);
+        console.log(`Processing newest ${itemsToProcess.length} items (Batch Limit)...`);
+
+        const processItem = async (item) => {
             const link = $(item).find('link').text();
             const rssTitle = $(item).find('title').text();
 
-            if (!link) continue;
-
-            // console.log(`Processing: ${rssTitle}`);
+            if (!link) return 0;
 
             // Fetch individual page
             const pageHtml = await fetchText(link);
             if (!pageHtml) {
                 console.log('  - Failed to fetch page content.');
-                continue;
+                return 0;
             }
 
             const $p = cheerio.load(pageHtml);
@@ -74,7 +76,7 @@ export async function scrapeStramash() {
 
             // Extract JSON-LD
             $p('script[type="application/ld+json"]').each((i, el) => {
-                if (eventData) return; // Found one
+                if (eventData) return;
                 try {
                     const json = JSON.parse($p(el).html());
                     const nodes = Array.isArray(json) ? json : (json['@graph'] || [json]);
@@ -84,34 +86,24 @@ export async function scrapeStramash() {
             });
 
             if (eventData && eventData.startDate) {
-                // Parse Date - Stramash JSON-LD often has non-standard formats like "2026-1-4T23:55+0:00"
-                // We use regex to be safe
                 const match = eventData.startDate.match(/(\d{4})-(\d{1,2})-(\d{1,2})T(\d{1,2}:\d{2})/);
-
                 let dateObj = null;
                 if (match) {
                     const [_, y, m, d, time] = match;
-                    // Construct ISO string with padding
                     const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${time}:00Z`;
                     dateObj = new Date(iso);
                 } else {
-                    // Try standard constructor
                     dateObj = new Date(eventData.startDate);
                 }
 
-                if (!dateObj || isNaN(dateObj.getTime())) {
-                    console.log(`  - Invalid Date: ${eventData.startDate}`);
-                    continue;
-                }
+                if (!dateObj || isNaN(dateObj.getTime())) return 0;
 
                 const dateStr = dateObj.toISOString().split('T')[0];
 
                 // Filter Past Events
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
-                if (dateObj < yesterday) {
-                    continue;
-                }
+                if (dateObj < yesterday) return 0;
 
                 const title = eventData.name || rssTitle;
                 const description = eventData.description || '';
@@ -129,8 +121,8 @@ export async function scrapeStramash() {
                         [
                             title,
                             VENUE_NAME,
-                            dateObj, // Postgres takes Date object
-                            'Free', // Often free
+                            dateObj,
+                            'Free',
                             link,
                             description,
                             fingerprint,
@@ -139,17 +131,21 @@ export async function scrapeStramash() {
                             genre
                         ]
                     );
-                    addedCount++;
                     console.log(`  + Upserted: ${dateStr} - ${title}`);
-                } else {
-                    skippedCount++;
+                    return 1; // Added 1
                 }
-
-            } else {
-                // console.log('  - No JSON-LD Event data found.');
+                // Skip duplicate
+                skippedCount++; // Note: modifying outer var in async function is race-condition prone if exact count matters, but ok for rough stats
+                return 0;
             }
-        }
-        console.log(`🎉 Finished. Added ${addedCount} new events.`);
+            return 0;
+        };
+
+        // Run in parallel
+        const results = await Promise.all(itemsToProcess.map(processItem));
+        addedCount = results.reduce((a, b) => a + b, 0);
+
+        console.log(`🎉 Finished batch. Added ${addedCount} new events.`);
         return { success: true, count: addedCount, skipped: skippedCount };
 
     } catch (error) {
