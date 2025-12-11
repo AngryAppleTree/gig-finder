@@ -86,6 +86,17 @@ function AddEventForm() {
                 <input type="text" id="price" name="price" className="text-input" style={{ width: '100%' }} placeholder="e.g. £10 or Free" />
             </div>
 
+            {/* Guest List Option */}
+            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginTop: '0.5rem', borderRadius: '4px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
+                    <input type="checkbox" name="is_internal_ticketing" value="true" style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }} />
+                    <div style={{ textAlign: 'left' }}>
+                        <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Guest List?</span>
+                        <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book a free spot directly on GigFinder.</span>
+                    </div>
+                </label>
+            </div>
+
             {/* Submit Button */}
             <button type="submit" className="btn-primary" style={{ marginTop: '1rem', fontSize: '1.2rem' }}>
                 SUBMIT GIG
