@@ -10,6 +10,7 @@ const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
 interface SkiddleEvent {

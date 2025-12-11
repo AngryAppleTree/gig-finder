@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
+    ssl: { rejectUnauthorized: false } // Required for Supabase/Vercel connection
 });
 
 export async function GET() {
