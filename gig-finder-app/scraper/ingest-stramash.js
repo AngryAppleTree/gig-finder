@@ -1,4 +1,4 @@
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
 
