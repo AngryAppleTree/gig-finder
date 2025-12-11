@@ -109,17 +109,19 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
         <div style={{ minHeight: '100vh', paddingBottom: '3rem', background: '#0a0a0a', color: '#fff' }}>
             <header style={{ padding: '2rem', textAlign: 'center' }}>
                 <h1 className="main-title" style={{ fontSize: '2.5rem', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>GUEST LIST</h1>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <Link href="/gigfinder/my-gigs" className="btn-back" style={{ textDecoration: 'none' }}>← Back to My Gigs</Link>
+
                     {bookings.length > 0 && (
-                        <>
-                            <button onClick={() => setShowEmailModal(true)} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
-                                ✉️ Email Guests
-                            </button>
-                            <Link href={`/gigfinder/my-gigs/scan/${eventId}`} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem', textDecoration: 'none', background: '#333', border: '1px solid #555' }}>
-                                📷 Scan Tickets
-                            </Link>
-                        </>
+                        <button onClick={() => setShowEmailModal(true)} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
+                            ✉️ Email Guests
+                        </button>
+                    )}
+
+                    {bookings.length > 0 && (
+                        <Link href={`/gigfinder/my-gigs/scan/${eventId}`} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem', textDecoration: 'none', background: '#333', border: '1px solid #555' }}>
+                            📷 Scan Tickets
+                        </Link>
                     )}
                 </div>
             </header>
