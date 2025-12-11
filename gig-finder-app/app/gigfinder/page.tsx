@@ -76,7 +76,10 @@ const gigFinderHTML = `
 
             <div style="margin-top: 3rem; text-align: center; border-top: 2px dashed #333; padding-top: 1.5rem;">
                 <p style="font-family: var(--font-primary); font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-text);">PROMISING A GOOD NIGHT?</p>
-                <a href="/gigfinder/add-event" class="btn-primary" style="display: inline-block; text-decoration: none; font-size: 1rem; padding: 0.8rem 1.5rem;">ADD YOUR GIG +</a>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="/gigfinder/add-event" class="btn-primary" style="display: inline-block; text-decoration: none; font-size: 1rem; padding: 0.8rem 1.5rem;">ADD YOUR GIG +</a>
+                    <a href="/gigfinder/my-gigs" class="btn-back" style="display: inline-block; text-decoration: none; font-size: 1rem; padding: 0.8rem 1.5rem;">MY GIGS</a>
+                </div>
             </div>
         </section>
 
