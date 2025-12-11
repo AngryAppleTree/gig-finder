@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gig Added - GigFinder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/gigfinder/style.css?v=99">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .main-title {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 3rem;
+            margin: 0;
+        }
+
+        .success-box {
+            background: var(--color-surface, #1a1a1a);
+            padding: 3rem 2rem;
+            border: 3px solid var(--color-border, #333);
+            box-shadow: 8px 8px 0 var(--color-secondary, #00ff88);
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 1rem 2rem;
+            background: #ff3366;
+            color: #000;
+            font-family: 'Permanent Marker', cursive;
+            border: 2px solid #fff;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back {
+            color: #fff;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            display: block;
+            margin-top: 1rem;
+        }
+
+        @media(max-width: 600px) {
+            .main-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="main-title">GIG<br>FINDER</h1>
+
+    <div class="success-box">
+        <div class="icon">🤘</div>
+        <h2>NICE ONE!</h2>
+        <p>Your gig has been added to the database.<br>It's now live for everyone to find.</p>
+
+        <a href="/gigfinder/add-event" class="btn-primary">ADD ANOTHER GIG +</a>
+        <a href="/gigfinder" class="btn-back">← Back to Finder</a>
+    </div>
+</body>
+
+</html>
