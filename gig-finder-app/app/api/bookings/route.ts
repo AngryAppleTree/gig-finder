@@ -97,7 +97,8 @@ export async function POST(req: Request) {
         try {
             if (process.env.RESEND_API_KEY) {
                 // Generate Buffer (no data: prefix)
-                const qrBuffer = await QRCode.toBuffer(`BOOKING:${bookingId}-EVENT:${eventId}`, { width: 300, margin: 2 });
+                // Use GF-TICKET prefix to avoid triggering Booking.com app deep links
+                const qrBuffer = await QRCode.toBuffer(`GF-TICKET:${bookingId}-${eventId}`, { width: 300, margin: 2 });
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
                 const dateStr = new Date(event.date).toLocaleDateString();
 
