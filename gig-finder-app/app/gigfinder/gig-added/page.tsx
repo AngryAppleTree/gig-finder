@@ -5,9 +5,7 @@ import Link from 'next/link';
 export default function GigAddedPage() {
     return (
         <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-            <link rel="stylesheet" href="/gigfinder/style.css?v=99" />
+            {/* Styles loaded in layout.tsx */}
 
             <header style={{ padding: '1rem', textAlign: 'center', width: '100%' }}>
                 <h1 className="main-title" style={{ position: 'relative', margin: '0', fontSize: '3rem', top: 'auto', left: 'auto' }}>GIG<br />FINDER</h1>
