@@ -1037,7 +1037,7 @@ async function handleBookingSubmit(e) {
 
 async function performQuickSearch() {
     const keyword = document.getElementById('searchInput').value.trim();
-    const city = document.getElementById('searchCity').value.trim() || 'Edinburgh';
+    const city = document.getElementById('searchCity').value.trim();
     const date = document.getElementById('searchDate').value;
 
     console.log('🚀 Performing Quick Search:', { keyword, city, date });

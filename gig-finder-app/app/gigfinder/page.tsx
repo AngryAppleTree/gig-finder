@@ -17,7 +17,7 @@ export default function GigFinderPage() {
 
             <div dangerouslySetInnerHTML={{ __html: gigFinderHTML }} />
 
-            <Script src="/gigfinder/script-api.js?v=9" strategy="afterInteractive" />
+            <Script src="/gigfinder/script-api.js?v=10" strategy="afterInteractive" />
         </>
     );
 }
@@ -47,7 +47,7 @@ const gigFinderHTML = `
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                     <input type="text" id="searchInput" placeholder="Artist or Venue" class="text-input" style="width:100%; padding: 0.8rem;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <input type="text" id="searchCity" placeholder="City" class="text-input" style="width:100%; padding: 0.8rem;" value="Edinburgh">
+                        <input type="text" id="searchCity" placeholder="City (e.g. Edinburgh)" class="text-input" style="width:100%; padding: 0.8rem;">
                         <input type="date" id="searchDate" class="text-input" style="width:100%; padding: 0.8rem;">
                     </div>
                 </div>
