@@ -193,21 +193,8 @@ function nextStep() {
 function goBack() {
     if (isNavigating) return;
 
-    if (currentStep > 1) {
-        // Hide current step
-        document.getElementById(`step${currentStep}`).classList.remove('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
-
-        // Show previous step
-        currentStep--;
-        document.getElementById(`step${currentStep}`).classList.add('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (currentStep === 5) {
-        // Special case: Go back from Step 5 (Budget) to Step 3 (Size), skipping Step 4
+    if (currentStep === 5) {
+        // Special case: Go back from Step 5 (Budget) to Step 3 (Size), skipping Step 4 (Sound)
         document.getElementById(`step${currentStep}`).classList.remove('active');
         document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
 
@@ -219,6 +206,19 @@ function goBack() {
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    } else if (currentStep > 1) {
+        // Generic: Hide current step
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+
+        // Show previous step
+        currentStep--;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 'results') {
         // Go back from results to step 5 (Budget)
         document.getElementById('results').classList.remove('active');
