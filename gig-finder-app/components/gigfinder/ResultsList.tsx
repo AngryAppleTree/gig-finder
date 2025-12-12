@@ -131,7 +131,7 @@ export function ResultsList() {
                         gap: '16px',
                         padding: '0 5vw', // Side padding creates center look
                         scrollbarWidth: 'none',
-                        MsOverflowStyle: 'none',
+                        msOverflowStyle: 'none',
                         WebkitOverflowScrolling: 'touch'
                     }}
                 >
