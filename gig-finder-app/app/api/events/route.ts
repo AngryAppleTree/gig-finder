@@ -40,15 +40,26 @@ export async function GET(request: NextRequest) {
     const genre = searchParams.get('genre');
     const minDate = searchParams.get('minDate');
     const maxDate = searchParams.get('maxDate');
+    const keyword = searchParams.get('keyword');
 
-    const apiKey = process.env.SKIDDLE_API_KEY;
+    const apiKey = process.env.SKIDDLE_API_KEY || '';
 
     // 1. Fetch Manual Gigs (Level 1 Data)
     let manualEvents: any[] = [];
     try {
         const client = await pool.connect();
         // Basic filtering for manual gigs: Only future events
-        const res = await client.query('SELECT * FROM events WHERE date >= CURRENT_DATE ORDER BY date ASC');
+        let query = 'SELECT * FROM events WHERE date >= CURRENT_DATE';
+        const params: any[] = [];
+
+        if (keyword) {
+            query += ` AND (name ILIKE $1 OR venue ILIKE $1)`;
+            params.push(`%${keyword}%`);
+        }
+
+        query += ' ORDER BY date ASC';
+
+        const res = await client.query(query, params);
         manualEvents = res.rows;
         client.release();
     } catch (e) {
@@ -115,6 +126,7 @@ export async function GET(request: NextRequest) {
         if (minDate) params.append('minDate', minDate);
         if (maxDate) params.append('maxDate', maxDate);
         if (genre) params.append('g', genre);
+        if (keyword) params.append('keyword', keyword);
 
         const skiddleUrl = `${SKIDDLE_API_BASE}/events/search/?${params.toString()}`;
         console.log('Fetching from Skiddle:', skiddleUrl.replace(apiKey, 'API_KEY_HIDDEN'));

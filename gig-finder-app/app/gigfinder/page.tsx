@@ -41,6 +41,25 @@ const gigFinderHTML = `
 
         <!-- Step 1: When? -->
         <section class="step active" id="step1" aria-labelledby="step1-title">
+            
+            <!-- Quick Search -->
+            <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--color-border);">
+                <h3 style="margin-top:0; font-family: var(--font-primary); text-transform:uppercase; color: var(--color-text); font-size: 1.2rem; margin-bottom: 1rem;">Quick Search</h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <input type="text" id="searchInput" placeholder="Artist or Venue" class="text-input" style="width:100%; padding: 0.8rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <input type="text" id="searchCity" placeholder="City" class="text-input" style="width:100%; padding: 0.8rem;" value="Edinburgh">
+                        <input type="date" id="searchDate" class="text-input" style="width:100%; padding: 0.8rem;">
+                    </div>
+                </div>
+                <button onclick="performQuickSearch()" class="btn-primary" style="width:100%; margin-top: 1rem;">SEARCH GIGS</button>
+            </div>
+
+            <div style="text-align:center; position:relative; margin-bottom:2rem;">
+                <hr style="border:0; border-top:1px solid #333;">
+                <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:var(--color-bg); padding:0 10px; color:#666; font-size:0.9rem; font-family: var(--font-primary);">OR TAKE THE JOURNEY</span>
+            </div>
+
             <h2 class="step-title" id="step1-title">When do you want to go?</h2>
             <div class="options-grid" role="group" aria-label="Date options">
                 <button class="option-btn" data-value="tonight">

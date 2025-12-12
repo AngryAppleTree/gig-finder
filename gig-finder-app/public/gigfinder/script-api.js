@@ -974,3 +974,73 @@ async function handleBookingSubmit(e) {
         btn.disabled = false;
     }
 }
+
+// --- Quick Search Functionality ---
+
+async function performQuickSearch() {
+    const keyword = document.getElementById('searchInput').value.trim();
+    const city = document.getElementById('searchCity').value.trim() || 'Edinburgh';
+    const date = document.getElementById('searchDate').value;
+
+    console.log('🚀 Performing Quick Search:', { keyword, city, date });
+
+    // Show Results View immediately
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.progress-step').forEach(el => el.classList.remove('active', 'completed'));
+    
+    document.getElementById('results').classList.add('active');
+    currentStep = 'results';
+
+    const resultsContainer = document.querySelector('.results-summary');
+    resultsContainer.innerHTML = '<div style="text-align:center; padding:2rem;"><p>Searching gigs...</p></div>';
+
+    try {
+        // Build API URL
+        const params = new URLSearchParams();
+        params.append('location', city);
+        if (keyword) params.append('keyword', keyword);
+        if (date) params.append('minDate', date);
+
+        const response = await fetch(`/api/events?${params.toString()}`);
+        const data = await response.json();
+
+        if (data.events) {
+            // Transform
+            const gigs = data.events.map(event => ({
+                ...event,
+                dateObj: new Date(event.dateObj)
+            })).sort((a, b) => a.dateObj - b.dateObj);
+
+            // Render
+            const html = renderGigs(gigs, true); // Show all results for search
+            
+            let summary = '<h2 style="margin-bottom: 1rem; color: var(--color-primary);">Search Results</h2>';
+            if (keyword) summary += `<p>Keyword: <strong>${keyword}</strong></p>`;
+            if (city) summary += `<p>Location: <strong>${city}</strong></p>`;
+            if (date) summary += `<p>From: <strong>${date}</strong></p>`;
+            
+            resultsContainer.innerHTML = summary + html;
+            
+            // Re-init swipe if needed (though renderGigs does it timeout)
+        } else {
+             resultsContainer.innerHTML = '<p>No results found.</p>';
+        }
+
+    } catch (error) {
+        console.error('Search failed:', error);
+        resultsContainer.innerHTML = '<p>Error searching gigs. Please try again.</p>';
+    }
+}
+
+// Expose to window
+window.performQuickSearch = performQuickSearch;
+
+// Add Enter key support for quick search
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performQuickSearch();
+        });
+    }
+});
