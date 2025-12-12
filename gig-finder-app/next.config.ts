@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/gigfinder.html',
+        destination: '/gigfinder',
         permanent: true,
       },
     ];
