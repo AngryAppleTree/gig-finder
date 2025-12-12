@@ -14,14 +14,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        let name, venue, date, time, genre, description, priceBody, isInternalTicketing;
+        let name, venue, date, time, genre, description, priceBody, isInternalTicketing, imageUrl;
 
         const contentType = request.headers.get('content-type') || '';
         const isJson = contentType.includes('application/json');
 
         if (isJson) {
             const body = await request.json();
-            ({ name, venue, date, time, genre, description, price: priceBody } = body);
+            ({ name, venue, date, time, genre, description, price: priceBody, imageUrl } = body);
             isInternalTicketing = body.is_internal_ticketing;
         } else {
             // Handle standard form submission
@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
             description = formData.get('description')?.toString();
             priceBody = formData.get('price')?.toString();
             isInternalTicketing = formData.get('is_internal_ticketing') === 'true';
+            // Optional image upload via form data (raw file needs handling, or string if client did stuff)
+            // For now assuming string if present
+            imageUrl = formData.get('imageUrl')?.toString();
         }
 
         // Basic validation
@@ -46,8 +49,6 @@ export async function POST(request: NextRequest) {
 
         const client = await pool.connect();
 
-
-
         // Check optional price
         const price = priceBody || 'TBA';
 
@@ -56,10 +57,10 @@ export async function POST(request: NextRequest) {
         const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
 
         const result = await client.query(
-            `INSERT INTO events (name, venue, date, genre, description, price, user_id, fingerprint, is_internal_ticketing)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `INSERT INTO events (name, venue, date, genre, description, price, user_id, fingerprint, is_internal_ticketing, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id`,
-            [name, venue, timestamp, genre, description, price, userId, fingerprint, isInternalTicketing || false]
+            [name, venue, timestamp, genre, description, price, userId, fingerprint, isInternalTicketing || false, imageUrl]
         );
 
         client.release();

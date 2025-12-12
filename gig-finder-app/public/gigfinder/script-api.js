@@ -660,7 +660,7 @@ function renderGigs(gigs, showAll = false) {
         html += `
             <div class="gig-card">
                 <div class="gig-image">
-                    <img src="${gig.imageUrl || '/gigfinder/Cal drummin.png'}" alt="${gig.name}" onerror="this.src='/gigfinder/Cal drummin.png'">
+                    <img src="${gig.imageUrl || '/no-photo.png'}" alt="${gig.name}" onerror="this.src='/no-photo.png'">
                 </div>
                 <div class="gig-details">
                     <h3 class="gig-name">${gig.name}</h3>

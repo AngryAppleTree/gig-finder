@@ -1,13 +1,18 @@
 'use client';
 import { useUser } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useState } from 'react';
 
 function AddEventForm() {
     const { isLoaded, isSignedIn } = useUser();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const success = searchParams.get('success');
+    const successParam = searchParams.get('success');
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [posterPreview, setPosterPreview] = useState<string>('');
+    const [posterBase64, setPosterBase64] = useState<string>('');
+    const [statusMessage, setStatusMessage] = useState(successParam === 'true' ? '✅ Success! Gig added.' : '');
 
     useEffect(() => {
         if (isLoaded && !isSignedIn) {
@@ -15,23 +20,118 @@ function AddEventForm() {
         }
     }, [isLoaded, isSignedIn, router]);
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                // Initial Preview
+                const tempUrl = URL.createObjectURL(file);
+                setPosterPreview(tempUrl);
+
+                // Resize and Compress
+                const resized = await resizeImage(file);
+                setPosterBase64(resized);
+            } catch (err) {
+                console.error("Image processing failed", err);
+                alert("Could not process image.");
+            }
+        }
+    };
+
+    const resizeImage = (file: File): Promise<string> => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    // Resize to max 600px width
+                    const MAX_WIDTH = 600;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height = height * (MAX_WIDTH / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG 70% quality
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+            };
+        });
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setStatusMessage('');
+
+        const formData = new FormData(e.currentTarget);
+
+        const payload = {
+            name: formData.get('name') as string,
+            venue: formData.get('venue') as string,
+            date: formData.get('date') as string,
+            time: formData.get('time') as string,
+            genre: formData.get('genre') as string,
+            description: formData.get('description') as string,
+            price: formData.get('price') as string,
+            is_internal_ticketing: !!formData.get('is_internal_ticketing'),
+            imageUrl: posterBase64 // Send logic string
+        };
+
+        try {
+            const res = await fetch('/api/events/manual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                // Redirect logic
+                router.push('/gigfinder/add-event?success=true');
+                // Or just reset form
+                setStatusMessage('✅ Event Added Successfully!');
+                setPosterPreview('');
+                setPosterBase64('');
+                (e.target as HTMLFormElement).reset();
+            } else {
+                const data = await res.json();
+                setStatusMessage(`❌ Error: ${data.error || 'Failed to add event'}`);
+            }
+        } catch (err) {
+            setStatusMessage('❌ Network Error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     if (!isLoaded || !isSignedIn) {
         return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
     }
 
     return (
-        <form action="/api/events/manual" method="POST" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
             {/* Status Message */}
-            {success === 'true' && (
+            {statusMessage && (
                 <div style={{
                     padding: '1rem',
-                    background: 'var(--color-secondary)',
-                    color: 'var(--color-bg)',
+                    background: statusMessage.startsWith('✅') ? 'var(--color-secondary)' : '#511',
+                    color: 'white',
                     fontFamily: 'var(--font-primary)',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    borderRadius: '4px'
                 }}>
-                    ✅ Success! Gig added.
+                    {statusMessage}
                 </div>
             )}
 
@@ -86,6 +186,26 @@ function AddEventForm() {
                 <input type="text" id="price" name="price" className="text-input" style={{ width: '100%' }} placeholder="e.g. £10 or Free" />
             </div>
 
+            {/* Image Upload */}
+            <div>
+                <label htmlFor="poster" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                    Gig Poster / Image
+                </label>
+                <input
+                    type="file"
+                    id="poster"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="text-input"
+                    style={{ width: '100%', padding: '0.5rem' }}
+                />
+                {posterPreview && (
+                    <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                        <img src={posterPreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px', border: '2px solid #555' }} />
+                    </div>
+                )}
+            </div>
+
             {/* Guest List Option */}
             <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginTop: '0.5rem', borderRadius: '4px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
@@ -98,8 +218,8 @@ function AddEventForm() {
             </div>
 
             {/* Submit Button */}
-            <button type="submit" className="btn-primary" style={{ marginTop: '1rem', fontSize: '1.2rem' }}>
-                SUBMIT GIG
+            <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ marginTop: '1rem', fontSize: '1.2rem' }}>
+                {isSubmitting ? 'Uploading...' : 'SUBMIT GIG'}
             </button>
         </form>
     );
@@ -108,8 +228,6 @@ function AddEventForm() {
 export default function AddEventPage() {
     return (
         <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff' }}>
-            {/* Styles loaded in layout.tsx */}
-
             <header style={{ padding: '1rem', textAlign: 'left' }}>
                 <h1 className="main-title" style={{ position: 'relative', margin: '0', fontSize: '3rem' }}>GIG<br />FINDER</h1>
             </header>
