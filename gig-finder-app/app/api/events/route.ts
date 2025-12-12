@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
             vibe: e.genre || 'all',
             ticketUrl: e.ticket_url || '#', // Use DB ticket_url
             description: e.description,
-            imageUrl: '', // Placeholder or upload
+            imageUrl: e.image_url || '', // Use stored image or empty
             source: 'manual',
             priority: 1,
             // Ticketing Fields

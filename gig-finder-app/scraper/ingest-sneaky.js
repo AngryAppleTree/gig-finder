@@ -36,13 +36,19 @@ export async function scrapeSneaky() {
             const description = $(el).find('description').text().trim();
             const category = $(el).find('category').text().trim();
 
+            let imageUrl = null;
+            // Attempt to find image in description
+            const srcMatch = description.match(/src="([^"]+)"/);
+            if (srcMatch) imageUrl = srcMatch[1];
+
             if (title && pubDate) {
                 items.push({
                     name: title,
                     link: link,
                     pubDate: pubDate,
-                    description: description.replace(/<[^>]*>/g, '').trim(), // Strip HTML from desc
-                    category: category
+                    description: description.replace(/<[^>]*>/g, '').trim(), // Strip HTML from desc for text
+                    category: category,
+                    imageUrl: imageUrl
                 });
             }
         });
@@ -81,19 +87,20 @@ export async function scrapeSneaky() {
                 await client.query(`
                     INSERT INTO events (
                         name, venue, date, genre, price, description, 
-                        user_id, created_at, fingerprint, ticket_url, approved
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10)
+                        user_id, created_at, fingerprint, ticket_url, approved, image_url
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10, $11)
                  `, [
                     item.name,
                     'Sneaky Pete\'s',
                     timestamp,
                     item.category || 'Indie', // Default Vibe
-                    '0.00', // Unknown price from RSS? (We might need to fetch the page to get price, but let's leave 0 or TBC for now)
+                    '0.00',
                     item.description || 'Live at Sneaky Pete\'s',
                     'scraper_sneaky',
                     fingerprint,
                     item.link,
-                    true
+                    true,
+                    item.imageUrl
                 ]);
                 console.log(`   + Added: ${item.name} @ ${dateStr}`);
                 addedCount++;

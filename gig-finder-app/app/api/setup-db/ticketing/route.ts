@@ -34,6 +34,9 @@ export async function GET() {
         // 3. Add Check-In Column (New)
         await client.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP DEFAULT NULL;`);
 
+        // 4. Add Image URL Column (New)
+        await client.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS image_url TEXT;`);
+
         client.release();
         console.log('✅ Ticketing schema updated.');
         return NextResponse.json({ message: "Ticketing tables and columns configured successfully." });

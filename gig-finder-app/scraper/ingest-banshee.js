@@ -62,15 +62,17 @@ export async function scrapeBanshee() {
 
                 // If it has an image, get alt text
                 const img = $(ev).find('img');
+                let imageUrl = null;
                 if (img.length > 0) {
                     const alt = img.attr('alt');
                     if (alt) title = alt;
+                    imageUrl = img.attr('src');
                 }
 
                 // Ensure we have a link (default to calendar)
                 if (!link) link = url;
 
-                if (title) events.push({ title, link });
+                if (title) events.push({ title, link, imageUrl });
             });
 
             for (const evt of events) {
@@ -97,8 +99,8 @@ export async function scrapeBanshee() {
                     await client.query(
                         `INSERT INTO events (
                               name, venue, date, price, ticket_url, description, 
-                              fingerprint, user_id, approved, created_at, genre
-                          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)`,
+                              fingerprint, user_id, approved, created_at, genre, image_url
+                          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10, $11)`,
                         [
                             evt.title,
                             VENUE_NAME,
@@ -109,7 +111,8 @@ export async function scrapeBanshee() {
                             fingerprint,
                             USER_ID,
                             true,
-                            'Cinema/Varies'
+                            'Cinema/Varies',
+                            evt.imageUrl
                         ]
                     );
                     addedCount++;
