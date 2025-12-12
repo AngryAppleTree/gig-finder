@@ -2,13 +2,17 @@ export interface Gig {
     id: string | number;
     name: string;
     venue: string;
-    date: string;       // ISO String
+    location?: string; // Sometimes location, sometimes venue
+    date: string;       // Formatted String (e.g. "Fri 12 Dec")
+    time?: string;
+    dateObj?: string;   // ISO String (YYYY-MM-DD)
     description?: string;
-    image?: string;
+    imageUrl?: string;  // Correct field from API
+    image?: string;     // Fallback?
     ticketUrl?: string | null;
     isInternalTicketing?: boolean;
     town?: string;
     postcode?: string;
-    genre?: string;
     price?: string;
+    distance?: number;
 }

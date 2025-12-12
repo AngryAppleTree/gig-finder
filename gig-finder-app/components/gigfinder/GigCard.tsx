@@ -8,10 +8,13 @@ interface GigCardProps {
 }
 
 export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
-    const dateObj = new Date(gig.date);
-    const day = dateObj.getDate();
-    const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
-    const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Legacy Script Logic for Location
+    const locationText = gig.town ? `${gig.location}, ${gig.town}` : gig.location;
+
+    const distanceHtml = gig.distance !== undefined
+        ? <span style={{ fontSize: '0.9rem', color: 'var(--color-primary)' }}>({gig.distance.toFixed(1)} miles away)</span>
+        : null;
 
     const handleMoreInfo = () => {
         if (typeof window !== 'undefined' && (window as any).showGigDetails) {
@@ -21,39 +24,49 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
 
     return (
         <div className="gig-card" style={{ animation: 'fadeIn 0.5s ease-out' }}>
-            <div className="gig-date">
-                <span className="day">{day}</span>
-                <span className="month">{month}</span>
+            <div className="gig-image">
+                <img
+                    src={gig.imageUrl || '/no-photo.png'}
+                    alt={gig.name}
+                    onError={(e) => e.currentTarget.src = '/no-photo.png'}
+                    style={{ height: '200px', width: '100%', objectFit: 'cover' }}
+                />
             </div>
-            <img
-                src={gig.image || '/gigfinder/images/default-gig.jpg'}
-                alt={gig.name}
-                className="gig-image"
-                onError={(e) => e.currentTarget.src = '/gigfinder/images/default-gig.jpg'}
-            />
             <div className="gig-details">
-                <h3 className="gig-title">{gig.name}</h3>
-                <p className="gig-venue">📍 {gig.venue}</p>
-                <p className="gig-time" style={{ color: '#aaa', marginBottom: '1rem' }}>⏰ {time}</p>
-                <div className="gig-actions">
-                    {gig.ticketUrl ? (
+                <h3 className="gig-name">{gig.name}</h3>
+                <div className="gig-info">
+                    <p className="gig-location">📍 {locationText} {distanceHtml}</p>
+                    <p className="gig-date">📅 {gig.date} at {gig.time}</p>
+                    <p className="gig-price">🎟️ {gig.price}</p>
+                </div>
+                <div style={{ marginTop: '1rem' }}>
+                    {gig.isInternalTicketing ? (
+                        <button
+                            className="btn-buy"
+                            style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%' }}
+                            onClick={handleMoreInfo}
+                        >
+                            Book Now
+                        </button>
+                    ) : (gig.ticketUrl && gig.ticketUrl !== '#' ? (
                         <a
                             href={gig.ticketUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn-buy"
+                            style={{ width: '100%', display: 'block', textAlign: 'center' }}
                         >
                             Get Tickets
                         </a>
                     ) : (
                         <button
                             className="btn-buy"
-                            style={{ backgroundColor: '#888', color: 'white', border: 'none', cursor: 'pointer' }}
+                            style={{ backgroundColor: '#888', color: 'white', border: 'none', cursor: 'pointer', width: '100%' }}
                             onClick={handleMoreInfo}
                         >
                             More Info
                         </button>
-                    )}
+                    ))}
                 </div>
             </div>
         </div>
