@@ -17,7 +17,7 @@ export default function GigFinderPage() {
 
             <div dangerouslySetInnerHTML={{ __html: gigFinderHTML }} />
 
-            <Script src="/gigfinder/script-api.js?v=7" strategy="afterInteractive" />
+            <Script src="/gigfinder/script-api.js?v=8" strategy="afterInteractive" />
         </>
     );
 }
@@ -28,15 +28,14 @@ const gigFinderHTML = `
 
         <!-- Progress Bar -->
         <nav aria-label="Progress" class="progress-bar" role="navigation">
-            <div class="progress-step active" data-step="1" aria-current="step" aria-label="Step 1 of 5">1</div>
+            <div class="progress-step active" data-step="1" aria-current="step" aria-label="Step 1 of 4">1</div>
             <div class="progress-line" aria-hidden="true"></div>
-            <div class="progress-step" data-step="2" aria-label="Step 2 of 5">2</div>
+            <div class="progress-step" data-step="2" aria-label="Step 2 of 4">2</div>
             <div class="progress-line" aria-hidden="true"></div>
-            <div class="progress-step" data-step="3" aria-label="Step 3 of 5">3</div>
+            <div class="progress-step" data-step="3" aria-label="Step 3 of 4">3</div>
             <div class="progress-line" aria-hidden="true"></div>
-            <div class="progress-step" data-step="4" aria-label="Step 4 of 5">4</div>
-            <div class="progress-line" aria-hidden="true"></div>
-            <div class="progress-step" data-step="5" aria-label="Step 5 of 5">5</div>
+            <!-- Step 4 (Style) is hidden/skipped, so Budget (Step 5) becomes visible Step 4 -->
+            <div class="progress-step" data-step="5" aria-label="Step 4 of 4">4</div>
         </nav>
 
         <!-- Step 1: When? -->

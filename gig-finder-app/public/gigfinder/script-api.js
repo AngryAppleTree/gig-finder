@@ -137,7 +137,9 @@ function setupEventListeners() {
             if (size === 'huge') {
                 showRejectionScreen();
             } else {
-                nextStep();
+                // Skip Step 4 (Style/Vibe) -> Default to 'surprise'
+                userChoices.vibe = 'surprise';
+                skipToStep5();
             }
         });
     });
@@ -204,11 +206,28 @@ function goBack() {
 
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (currentStep === 5) {
+        // Special case: Go back from Step 5 (Budget) to Step 3 (Size), skipping Step 4
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+
+        currentStep = 3;
+
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
     } else if (currentStep === 'results') {
-        // Go back from results to step 5
+        // Go back from results to step 5 (Budget)
         document.getElementById('results').classList.remove('active');
         currentStep = 5;
         document.getElementById(`step${currentStep}`).classList.add('active');
+        // Ensuring progress bar reflects being on Step 5 (which is visually the 4th circle)
+        document.querySelector('.progress-step[data-step="5"]').classList.remove('completed'); // if it was marked complete
+        document.querySelector('.progress-step[data-step="5"]').classList.add('active');
+
     } else if (currentStep === 'details') {
         // Go back from details to results
         document.getElementById('gig-details').classList.remove('active');
@@ -298,6 +317,33 @@ function generateSummary() {
 
     html += '</div>';
     return html;
+}
+
+function skipToStep5() {
+    if (isNavigating) return;
+    isNavigating = true;
+
+    // Transition from Step 3 to Step 5
+    // Hide Step 3
+    document.getElementById('step3').classList.remove('active');
+
+    // Mark Progress 3 as complete
+    document.querySelector('.progress-step[data-step="3"]').classList.add('completed');
+    document.querySelector('.progress-step[data-step="3"]').classList.remove('active');
+
+    // Show Step 5
+    currentStep = 5;
+    document.getElementById('step5').classList.add('active');
+
+    // Mark Progress 5 (Budget) as active
+    document.querySelector('.progress-step[data-step="5"]').classList.add('active');
+
+    // Scroll
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    setTimeout(() => {
+        isNavigating = false;
+    }, 500);
 }
 
 // --- Mock Data & Logic ---
