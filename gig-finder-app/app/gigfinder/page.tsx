@@ -12,6 +12,7 @@ export const viewport: Viewport = {
 
 import { currentUser } from '@clerk/nextjs/server';
 import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SearchMounter } from '../../components/gigfinder/SearchMounter';
 
 export default async function GigFinderPage() {
     const user = await currentUser();
@@ -44,6 +45,7 @@ export default async function GigFinderPage() {
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
 
             <Script src="/gigfinder/script-api.js?v=13" strategy="afterInteractive" />
+            <SearchMounter />
         </>
     );
 }
@@ -68,17 +70,8 @@ const gigFinderHTML = `
         <section class="step active" id="step1" aria-labelledby="step1-title">
             
             <!-- Quick Search -->
-            <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--color-border);">
-                <h3 style="margin-top:0; font-family: var(--font-primary); text-transform:uppercase; color: var(--color-text); font-size: 1.2rem; margin-bottom: 1rem;">Quick Search</h3>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <input type="text" id="searchInput" placeholder="Artist or Venue" class="text-input" style="width:100%; padding: 0.8rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <input type="text" id="searchCity" placeholder="City (e.g. Edinburgh)" class="text-input" style="width:100%; padding: 0.8rem;">
-                        <input type="date" id="searchDate" class="text-input" style="width:100%; padding: 0.8rem;">
-                    </div>
-                </div>
-                <button onclick="performQuickSearch()" class="btn-primary" style="width:100%; margin-top: 1rem;">SEARCH GIGS</button>
-            </div>
+            <!-- Quick Search (React Mounted) -->
+            <div id="quick-search-mount" style="min-height: 200px;"></div>
 
             <div style="text-align:center; position:relative; margin-bottom:2rem;">
                 <hr style="border:0; border-top:1px solid #333;">
