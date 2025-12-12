@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
             priceVal: parseFloat(e.price) || 0,
             price: e.price,
             vibe: e.genre || 'all',
-            ticketUrl: e.ticket_url || '#', // Use DB ticket_url
+            ticketUrl: e.ticket_url || null, // Use DB ticket_url or null
             description: e.description,
             imageUrl: e.image_url || '', // Use stored image or empty
             source: 'manual',
