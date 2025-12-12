@@ -17,7 +17,7 @@ export default function GigFinderPage() {
 
             <div dangerouslySetInnerHTML={{ __html: gigFinderHTML }} />
 
-            <Script src="/gigfinder/script-api.js?v=6" strategy="afterInteractive" />
+            <Script src="/gigfinder/script-api.js?v=7" strategy="afterInteractive" />
         </>
     );
 }
@@ -122,7 +122,7 @@ const gigFinderHTML = `
             </div>
 
             <div style="text-align: center; margin-top: 2rem; color: #888; font-family: var(--font-primary);">
-                <p>We only advertise gigs in Scotland for now.</p>
+                <h3 style="font-size: 1.2rem; text-transform: uppercase; color: var(--color-primary); margin: 0;">We only advertise gigs in Scotland for now</h3>
             </div>
 
             <div class="nav-buttons">
