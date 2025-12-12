@@ -121,11 +121,8 @@ const gigFinderHTML = `
                 <button class="btn-primary" id="postcodeNext" style="margin-top: 1rem;">Next →</button>
             </div>
 
-            <div class="options-grid" role="group" aria-label="Wide area option">
-                <button class="option-btn" data-value="uk">
-                    <span class="option-icon">🗺️</span>
-                    <span class="option-text">UK-Wide</span>
-                </button>
+            <div style="text-align: center; margin-top: 2rem; color: #888; font-family: var(--font-primary);">
+                <p>We only advertise gigs in Scotland for now.</p>
             </div>
 
             <div class="nav-buttons">
