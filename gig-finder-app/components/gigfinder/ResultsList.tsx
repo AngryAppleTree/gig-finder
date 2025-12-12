@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { GigCard } from './GigCard';
 import { Gig } from './types';
 
@@ -8,13 +8,16 @@ export function ResultsList() {
     const [gigs, setGigs] = useState<Gig[]>([]);
     const [hasSearched, setHasSearched] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Scroll Snap Support
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [snapIndex, setSnapIndex] = useState(0);
 
     useEffect(() => {
         const checkMobile = () => {
+            // Use 768px breakpoint
             setIsMobile(window.innerWidth <= 768);
         };
-
         checkMobile();
         window.addEventListener('resize', checkMobile);
 
@@ -22,7 +25,8 @@ export function ResultsList() {
             console.log("React received gigs:", event.detail);
             setGigs(event.detail);
             setHasSearched(true);
-            setCurrentIndex(0);
+            setSnapIndex(0);
+            if (scrollRef.current) scrollRef.current.scrollLeft = 0;
         };
 
         const handleClear = () => {
@@ -40,12 +44,40 @@ export function ResultsList() {
         };
     }, []);
 
-    const nextSlide = () => {
-        setCurrentIndex(prev => (prev === gigs.length - 1 ? 0 : prev + 1));
+    // Handle Scroll Spy for Dots
+    const handleScroll = () => {
+        if (!scrollRef.current) return;
+        const container = scrollRef.current;
+        const scrollCenter = container.scrollLeft + container.clientWidth / 2;
+
+        // Find center-most slide
+        // Assuming simple item width logic:
+        // Or simpler: index = Math.round(scrollLeft / itemWidth).
+        // Since we use logic: 80vw width + gap.
+        // Let's rely on scroll event throttling if performance bad, but React 18 is usually fine.
+
+        const cardWidth = container.querySelector('div')?.clientWidth || 0;
+        if (cardWidth === 0) return;
+
+        const newIndex = Math.round(container.scrollLeft / (cardWidth + 16)); // 16px gap
+        if (newIndex !== snapIndex && newIndex >= 0 && newIndex < gigs.length) {
+            setSnapIndex(newIndex);
+        }
     };
 
-    const prevSlide = () => {
-        setCurrentIndex(prev => (prev === 0 ? gigs.length - 1 : prev - 1));
+    const scrollToSlide = (index: number) => {
+        if (!scrollRef.current) return;
+        const container = scrollRef.current;
+        const card = container.children[index] as HTMLElement;
+        if (card) {
+            // Scroll center align
+            const containerCenter = container.clientWidth / 2;
+            const cardCenter = card.offsetLeft + card.clientWidth / 2;
+            container.scrollTo({
+                left: cardCenter - containerCenter,
+                behavior: 'smooth'
+            });
+        }
     };
 
     if (!hasSearched && gigs.length === 0) return null;
@@ -85,59 +117,40 @@ export function ResultsList() {
         return (
             <div className="mobile-results-container" style={{ maxWidth: '100%', overflow: 'hidden', paddingBottom: '20px' }}>
                 <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                    <p><strong>Showing {currentIndex + 1} of {gigs.length} gigs</strong></p>
+                    <p><strong>Showing {snapIndex + 1} of {gigs.length} gigs</strong></p>
                 </div>
 
-                <div className="carousel-container" style={{ position: 'relative' }}>
-                    <div style={{
+                <div
+                    ref={scrollRef}
+                    onScroll={handleScroll}
+                    className="scroller-snap"
+                    style={{
                         display: 'flex',
-                        transition: 'transform 0.3s ease-out',
-                        transform: `translateX(-${currentIndex * 100}%)`
-                    }}>
-                        {gigs.map(gig => (
-                            <div key={gig.id} style={{
-                                minWidth: '100%',
-                                padding: '0 15%', // Increased padding to effectively shrink the card width (2/3 look)
-                                boxSizing: 'border-box',
-                                display: 'flex',
-                                justifyContent: 'center'
-                            }}>
-                                <div style={{ width: '100%', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
-                                    {/* Wrapper to contain card visuals */}
-                                    <GigCard gig={gig} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Controls */}
-                    {gigs.length > 1 && (
-                        <>
-                            <button
-                                onClick={prevSlide}
-                                style={{
-                                    position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)',
-                                    background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none',
-                                    borderRadius: '50%', width: '40px', height: '40px', fontSize: '20px', cursor: 'pointer',
-                                    zIndex: 10
-                                }}
-                            >
-                                ←
-                            </button>
-                            <button
-                                onClick={nextSlide}
-                                style={{
-                                    position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)',
-                                    background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none',
-                                    borderRadius: '50%', width: '40px', height: '40px', fontSize: '20px', cursor: 'pointer',
-                                    zIndex: 10
-                                }}
-                            >
-                                →
-                            </button>
-                        </>
-                    )}
+                        overflowX: 'auto',
+                        scrollSnapType: 'x mandatory',
+                        gap: '16px',
+                        padding: '0 5vw', // Side padding creates center look
+                        scrollbarWidth: 'none',
+                        MsOverflowStyle: 'none',
+                        WebkitOverflowScrolling: 'touch'
+                    }}
+                >
+                    {gigs.map(gig => (
+                        <div key={gig.id} style={{
+                            minWidth: '85vw',  // 85% width creates Peeking effect ("2/3" feel)
+                            scrollSnapAlign: 'center',
+                            flexShrink: 0
+                        }}>
+                            <GigCard gig={gig} />
+                        </div>
+                    ))}
                 </div>
+                {/* Hide Scrollbars CSS Hack */}
+                <style jsx>{`
+                    .scroller-snap::-webkit-scrollbar {
+                        display: none;
+                    }
+                `}</style>
 
                 {/* Dots */}
                 {gigs.length > 1 && (
@@ -145,10 +158,10 @@ export function ResultsList() {
                         {gigs.map((_, i) => (
                             <div
                                 key={i}
-                                onClick={() => setCurrentIndex(i)}
+                                onClick={() => scrollToSlide(i)}
                                 style={{
                                     width: '10px', height: '10px', borderRadius: '50%',
-                                    background: i === currentIndex ? 'var(--color-primary)' : '#555',
+                                    background: i === snapIndex ? 'var(--color-primary)' : '#555',
                                     cursor: 'pointer', transition: 'background 0.3s'
                                 }}
                             />
