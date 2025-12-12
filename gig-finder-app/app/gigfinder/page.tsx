@@ -45,7 +45,7 @@ export default async function GigFinderPage() {
 
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
 
-            <Script src="/gigfinder/script-api.js?v=13" strategy="afterInteractive" />
+            <Script src="/gigfinder/script-api.js?v=14" strategy="afterInteractive" />
             <SearchMounter />
             <ResultsMounter />
         </>
