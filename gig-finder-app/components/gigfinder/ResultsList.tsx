@@ -64,7 +64,7 @@ export function ResultsList() {
 
     // Standard Vertical Scroll List (Desktop & Mobile)
     return (
-        <div className="gigs-list">
+        <div className="gigs-list" style={{ display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
             <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                 <p><strong>Showing {gigs.length} gigs</strong></p>
             </div>
