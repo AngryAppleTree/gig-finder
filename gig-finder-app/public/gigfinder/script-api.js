@@ -731,7 +731,7 @@ function renderGigs(gigs, showAll = false) {
                 ? `<button class="btn-buy" style="background:var(--color-secondary); border-color:var(--color-secondary);" onclick="showGigDetails('${gig.id}')">Book Now</button>`
                 : (gig.ticketUrl && gig.ticketUrl !== '#'
                     ? `<button class="btn-buy" onclick="showGigDetails('${gig.id}')">Get Tickets</button>`
-                    : `<button class="btn-buy" style="background-color: var(--color-surface); border: 1px solid var(--color-primary); color: var(--color-text-primary);" onclick="showGigDetails('${gig.id}')">More Info</button>`)
+                    : `<button class="btn-buy" style="background-color: #888; color: white; border: none;" onclick="showGigDetails('${gig.id}')">More Info</button>`)
             }
                 </div>
             </div>

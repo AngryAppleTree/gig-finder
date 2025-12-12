@@ -17,7 +17,7 @@ export default function GigFinderPage() {
 
             <div dangerouslySetInnerHTML={{ __html: gigFinderHTML }} />
 
-            <Script src="/gigfinder/script-api.js?v=12" strategy="afterInteractive" />
+            <Script src="/gigfinder/script-api.js?v=13" strategy="afterInteractive" />
         </>
     );
 }
