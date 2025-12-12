@@ -51,6 +51,11 @@ async function scrapeLeithDepot() {
                     const descElement = event.querySelector('.eventlist-description');
                     const description = descElement ? descElement.innerText.trim() : null;
 
+                    // Extract Image
+                    const imgElement = event.querySelector('img');
+                    // Squarespace often uses data-src for lazy loading
+                    const imageUrl = imgElement ? (imgElement.dataset.src || imgElement.src) : null;
+
                     if (title && dateText) {
                         results.push({
                             name: title,
@@ -58,6 +63,7 @@ async function scrapeLeithDepot() {
                             time: timeText || 'TBA',
                             ticketUrl: ticketUrl,
                             description: description,
+                            imageUrl: imageUrl, // Add image
                             venue: 'Leith Depot',
                             location: 'Edinburgh',
                             source: 'https://www.leithdepot.com/events'

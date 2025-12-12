@@ -33,13 +33,20 @@ export async function scrapeLeith() {
             const title = $(el).find('h4').text().trim(); // "Band Name"
             const priceText = $(el).find('.text-left').text().trim(); // "Free - ..." or price
             const ticketLink = $(el).find('h4 a').attr('href') || $(el).find('.text-left a').attr('href');
+            // Extract Image
+            let imageUrl = $(el).find('img').attr('src');
+            // Handle relative URLs if necessary (unlikely given it's usually CDN, but good practice)
+            if (imageUrl && !imageUrl.startsWith('http')) {
+                imageUrl = `https://leithdepot.com${imageUrl}`;
+            }
 
             if (dateStr && title) {
                 events.push({
                     name: title,
                     dateInfo: parseDate(dateStr), // Custom parser
                     priceText: priceText,
-                    ticketUrl: ticketLink
+                    ticketUrl: ticketLink,
+                    imageUrl: imageUrl
                 });
             }
         });
@@ -96,8 +103,8 @@ export async function scrapeLeith() {
                 await client.query(`
                     INSERT INTO events (
                         name, venue, date, genre, price, description, 
-                        user_id, created_at, fingerprint, ticket_url, approved
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10)
+                        user_id, created_at, fingerprint, ticket_url, approved, image_url
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10, $11)
                  `, [
                     evt.name,
                     'Leith Depot',
@@ -108,7 +115,8 @@ export async function scrapeLeith() {
                     'scraper_v1',
                     fingerprint,
                     evt.ticketUrl || null,
-                    true
+                    true,
+                    evt.imageUrl || null
                 ]);
                 console.log(`   + Added: ${evt.name} @ ${dateStr}`);
                 addedCount++;
