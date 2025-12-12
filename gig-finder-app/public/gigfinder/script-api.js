@@ -290,11 +290,10 @@ function generateSummary() {
     html += `<p><strong>Where:</strong> ${whereText}</p>`;
 
     // Venue Size
+    // Venue Size
     let sizeText = userChoices.venueSize;
-    if (sizeText === 'small') sizeText = 'Small & Cosy (Less than 100)';
-    if (sizeText === 'medium') sizeText = 'Quite Big (100-500)';
-    if (sizeText === 'large') sizeText = 'Big (501-2,000)';
-    if (sizeText === 'massive') sizeText = 'Massive (2,001-5,000)';
+    if (sizeText === 'small') sizeText = 'Small & Cosy (Up to 100)';
+    if (sizeText === 'medium') sizeText = 'Quite Big (100-5,000)';
     if (sizeText === 'huge') sizeText = 'Proper Huge (Over 5,000)';
     if (sizeText === 'any') sizeText = 'Any Size';
     html += `<p><strong>Venue Size:</strong> ${sizeText}</p>`;
@@ -590,10 +589,9 @@ async function filterGigs(choices) {
         const beforeSize = filtered.length;
         filtered = filtered.filter(gig => {
             const cap = gig.capacity;
+
             if (choices.venueSize === 'small') return cap <= 100;
-            if (choices.venueSize === 'medium') return cap > 100 && cap <= 500;
-            if (choices.venueSize === 'large') return cap > 500 && cap <= 2000;
-            if (choices.venueSize === 'massive') return cap > 2000 && cap <= 5000;
+            if (choices.venueSize === 'medium') return cap > 100 && cap <= 5000;
             if (choices.venueSize === 'huge') return cap > 5000;
             return true;
         });
