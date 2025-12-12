@@ -45,6 +45,9 @@ export async function DELETE(req: Request) {
 
         const client = await pool.connect();
         try {
+            // Delete associated bookings first to prevent Foreign Key violation
+            await client.query('DELETE FROM bookings WHERE event_id = $1', [id]);
+            // Then delete the event
             await client.query('DELETE FROM events WHERE id = $1', [id]);
             return NextResponse.json({ message: 'Deleted' });
         } finally {
