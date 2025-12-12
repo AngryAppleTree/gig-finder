@@ -63,17 +63,23 @@ function setupEventListeners() {
     });
 
     // Custom date input
-    document.getElementById('customDate').addEventListener('change', (e) => {
-        userChoices.customDate = e.target.value;
-        if (userChoices.customDate) {
-            setTimeout(nextStep, 500);
-        }
-    });
+    const customDateInput = document.getElementById('customDate');
+    if (customDateInput) {
+        customDateInput.addEventListener('change', (e) => {
+            userChoices.customDate = e.target.value;
+            if (userChoices.customDate) {
+                setTimeout(nextStep, 500);
+            }
+        });
+    }
 
     // Flexible checkbox
-    document.getElementById('flexibleDate').addEventListener('change', (e) => {
-        userChoices.flexible = e.target.checked;
-    });
+    const flexibleDateInput = document.getElementById('flexibleDate');
+    if (flexibleDateInput) {
+        flexibleDateInput.addEventListener('change', (e) => {
+            userChoices.flexible = e.target.checked;
+        });
+    }
 
     // Step 2: Where buttons
     document.querySelectorAll('#step2 .option-btn').forEach(btn => {
@@ -84,34 +90,42 @@ function setupEventListeners() {
             userChoices.where = value;
 
             if (value === 'local' || value === '100miles') {
-                document.getElementById('postcodeInput').classList.remove('hidden');
+                const pcInput = document.getElementById('postcodeInput');
+                if (pcInput) pcInput.classList.remove('hidden');
             } else {
-                document.getElementById('postcodeInput').classList.add('hidden');
+                const pcInput = document.getElementById('postcodeInput');
+                if (pcInput) pcInput.classList.add('hidden');
                 nextStep();
             }
         });
     });
 
     // Postcode input
-    document.getElementById('postcode').addEventListener('input', (e) => {
-        userChoices.postcode = e.target.value.toUpperCase();
-    });
+    const postcodeInput = document.getElementById('postcode');
+    if (postcodeInput) {
+        postcodeInput.addEventListener('input', (e) => {
+            userChoices.postcode = e.target.value.toUpperCase();
+        });
 
-    // Postcode Enter key
-    document.getElementById('postcode').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && userChoices.postcode && userChoices.postcode.length >= 2) {
-            nextStep();
-        }
-    });
+        // Postcode Enter key
+        postcodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && userChoices.postcode && userChoices.postcode.length >= 2) {
+                nextStep();
+            }
+        });
+    }
 
     // Postcode Next button
-    document.getElementById('postcodeNext').addEventListener('click', () => {
-        if (userChoices.postcode && userChoices.postcode.length >= 2) {
-            nextStep();
-        } else {
-            alert('Please enter at least the first part of your postcode (e.g., EH1)');
-        }
-    });
+    const postcodeNextBtn = document.getElementById('postcodeNext');
+    if (postcodeNextBtn) {
+        postcodeNextBtn.addEventListener('click', () => {
+            if (userChoices.postcode && userChoices.postcode.length >= 2) {
+                nextStep();
+            } else {
+                alert('Please enter at least the first part of your postcode (e.g., EH1)');
+            }
+        });
+    }
 
     // Step 3: Venue Size buttons
     document.querySelectorAll('#step3 .option-btn').forEach(btn => {
@@ -987,7 +1001,7 @@ async function performQuickSearch() {
     // Show Results View immediately
     document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.progress-step').forEach(el => el.classList.remove('active', 'completed'));
-    
+
     document.getElementById('results').classList.add('active');
     currentStep = 'results';
 
@@ -1013,17 +1027,17 @@ async function performQuickSearch() {
 
             // Render
             const html = renderGigs(gigs, true); // Show all results for search
-            
+
             let summary = '<h2 style="margin-bottom: 1rem; color: var(--color-primary);">Search Results</h2>';
             if (keyword) summary += `<p>Keyword: <strong>${keyword}</strong></p>`;
             if (city) summary += `<p>Location: <strong>${city}</strong></p>`;
             if (date) summary += `<p>From: <strong>${date}</strong></p>`;
-            
+
             resultsContainer.innerHTML = summary + html;
-            
+
             // Re-init swipe if needed (though renderGigs does it timeout)
         } else {
-             resultsContainer.innerHTML = '<p>No results found.</p>';
+            resultsContainer.innerHTML = '<p>No results found.</p>';
         }
 
     } catch (error) {
