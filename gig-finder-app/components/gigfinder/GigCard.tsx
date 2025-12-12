@@ -23,7 +23,7 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
     };
 
     return (
-        <div className="gig-card" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+        <div className="gig-card">
             <div className="gig-image">
                 <img
                     src={gig.imageUrl || '/no-photo.png'}

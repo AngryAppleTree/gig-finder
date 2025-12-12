@@ -15,16 +15,14 @@ export function ResultsList() {
             setIsMobile(window.innerWidth <= 768);
         };
 
-        // Initial check
         checkMobile();
-
         window.addEventListener('resize', checkMobile);
 
         const handleResults = (event: CustomEvent<Gig[]>) => {
             console.log("React received gigs:", event.detail);
             setGigs(event.detail);
             setHasSearched(true);
-            setCurrentIndex(0); // Reset carousel
+            setCurrentIndex(0);
         };
 
         const handleClear = () => {
@@ -62,7 +60,6 @@ export function ResultsList() {
         );
     }
 
-    // Render Navigation Buttons Helper
     function renderNavButtons() {
         return (
             <div className="nav-buttons" style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
@@ -92,21 +89,28 @@ export function ResultsList() {
                 </div>
 
                 <div className="carousel-container" style={{ position: 'relative' }}>
-
-                    {/* Carousel Track */}
                     <div style={{
                         display: 'flex',
                         transition: 'transform 0.3s ease-out',
                         transform: `translateX(-${currentIndex * 100}%)`
                     }}>
                         {gigs.map(gig => (
-                            <div key={gig.id} style={{ minWidth: '100%', padding: '0 5px', boxSizing: 'border-box' }}>
-                                <GigCard gig={gig} />
+                            <div key={gig.id} style={{
+                                minWidth: '100%',
+                                padding: '0 15%', // Increased padding to effectively shrink the card width (2/3 look)
+                                boxSizing: 'border-box',
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }}>
+                                <div style={{ width: '100%', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
+                                    {/* Wrapper to contain card visuals */}
+                                    <GigCard gig={gig} />
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Arrows */}
+                    {/* Controls */}
                     {gigs.length > 1 && (
                         <>
                             <button
@@ -157,7 +161,7 @@ export function ResultsList() {
         );
     }
 
-    // Desktop Grid View
+    // Desktop
     return (
         <div className="gigs-list">
             <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
