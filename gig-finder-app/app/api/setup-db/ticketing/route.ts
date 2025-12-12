@@ -31,6 +31,9 @@ export async function GET() {
         await client.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS tickets_sold INTEGER DEFAULT 0;`);
         await client.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS ticket_url TEXT;`);
 
+        // 3. Add Check-In Column (New)
+        await client.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP DEFAULT NULL;`);
+
         client.release();
         console.log('✅ Ticketing schema updated.');
         return NextResponse.json({ message: "Ticketing tables and columns configured successfully." });
