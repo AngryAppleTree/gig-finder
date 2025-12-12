@@ -15,4 +15,7 @@ export interface Gig {
     postcode?: string;
     price?: string;
     distance?: number;
+    vibe?: string; // For client-side filtering
+    capacity?: number; // For client-side filtering
+    priceVal?: number; // For client-side filtering
 }

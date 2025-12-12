@@ -6,6 +6,7 @@ import { ResultsList } from './ResultsList';
 import { postcodeCoordinates, venueLocations } from './constants';
 import { calculateDistance } from './utils';
 import { Gig } from './types';
+import { generateFallbackGigs } from './mockDataGen';
 import Script from 'next/script'; // For booking modal legacy logic if needed, but we try to avoid.
 
 interface WizardChoices {
@@ -154,8 +155,20 @@ export function Wizard({ isAdmin }: WizardProps) {
             const response = await fetch(`/api/events?location=${location}`);
             const data = await response.json();
 
-            if (data.events) {
-                let skiddleGigs: Gig[] = data.events.map((e: any) => ({
+            let rawEvents = data.events;
+            if (!rawEvents || rawEvents.length < 5) {
+                // Fallback if API empty or insufficient for demo
+                const mockGigs = generateFallbackGigs();
+                // Merge or replace? Legacy replaced.
+                if (!rawEvents || rawEvents.length === 0) {
+                    rawEvents = mockGigs;
+                } else {
+                    rawEvents = [...rawEvents, ...mockGigs];
+                }
+            }
+
+            if (rawEvents) {
+                let skiddleGigs: Gig[] = rawEvents.map((e: any) => ({
                     id: e.id,
                     name: e.name || e.eventname,
                     venue: e.venue.name || e.venue,
@@ -168,7 +181,10 @@ export function Wizard({ isAdmin }: WizardProps) {
                     imageUrl: e.imageUrl || e.imageurl,
                     ticketUrl: e.ticketUrl || e.link,
                     isInternalTicketing: e.isInternalTicketing,
-                    price: e.price || e.entryprice
+                    price: e.price || e.entryprice,
+                    vibe: e.vibe, // Mock data has this
+                    capacity: e.capacity, // Mock data has this
+                    distance: e.distance
                 }));
 
                 // Logic: Filter by Distance
@@ -200,9 +216,37 @@ export function Wizard({ isAdmin }: WizardProps) {
                     }
                 }
 
-                // Filter by Budget (Legacy Logic?)
-                // Not fully implemented in legacy script view, but implied.
-                // Step 5 just calls showResults.
+                // Filter by Venue Size
+                if (userChoices.venueSize && userChoices.venueSize !== 'any') {
+                    skiddleGigs = skiddleGigs.filter(gig => {
+                        if (!gig.capacity) return true; // Keep unknown
+                        if (userChoices.venueSize === 'small') return gig.capacity <= 100;
+                        if (userChoices.venueSize === 'medium') return gig.capacity > 100 && gig.capacity <= 5000;
+                        if (userChoices.venueSize === 'huge') return gig.capacity > 5000;
+                        return true;
+                    });
+                }
+
+                // Filter by Vibe (Genre)
+                if (userChoices.vibe && userChoices.vibe !== 'surprise') {
+                    skiddleGigs = skiddleGigs.filter(gig => {
+                        if (!gig.vibe) return true; // Keep unknown (Real gigs might not have vibe tagged yet)
+                        return gig.vibe === userChoices.vibe;
+                    });
+                }
+
+                // Filter by Budget
+                if (userChoices.budget && userChoices.budget !== 'any') {
+                    skiddleGigs = skiddleGigs.filter(gig => {
+                        if (gig.priceVal === undefined) return true; // Keep unknown prices
+                        if (userChoices.budget === 'free') return gig.priceVal === 0;
+                        if (userChoices.budget === 'low') return gig.priceVal > 0 && gig.priceVal <= 20;
+                        if (userChoices.budget === 'mid') return gig.priceVal > 20 && gig.priceVal <= 50;
+                        if (userChoices.budget === 'high') return gig.priceVal > 50;
+                        return true;
+                    });
+                }
+
 
                 // Dispatch
                 window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: skiddleGigs }));
