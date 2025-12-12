@@ -5,7 +5,11 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Gig } from './types';
 
-export function QuickSearch() {
+interface QuickSearchProps {
+    onSearch?: () => void;
+}
+
+export function QuickSearch({ onSearch }: QuickSearchProps) {
     const [keyword, setKeyword] = useState('');
     const [city, setCity] = useState('');
     const [date, setDate] = useState('');
@@ -56,15 +60,18 @@ export function QuickSearch() {
 
                 // Dispatch
                 window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: gigs }));
+                if (onSearch) onSearch();
             } else {
                 // Dispatch empty
                 window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: [] }));
+                if (onSearch) onSearch();
             }
 
         } catch (error) {
             console.error("Search failed", error);
             // Dispatch empty to show "No Results" or handle error UI
             window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: [] }));
+            if (onSearch) onSearch();
         } finally {
             setIsLoading(false);
         }
