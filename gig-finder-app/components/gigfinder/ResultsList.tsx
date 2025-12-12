@@ -115,7 +115,7 @@ export function ResultsList() {
 
     if (isMobile) {
         return (
-            <div className="mobile-results-container" style={{ maxWidth: '100%', overflow: 'hidden', paddingBottom: '20px' }}>
+            <div className="mobile-results-container" style={{ maxWidth: '100%', paddingBottom: '20px', marginBottom: '4rem' }}>
                 <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                     <p><strong>Showing {snapIndex + 1} of {gigs.length} gigs</strong></p>
                 </div>
@@ -129,7 +129,7 @@ export function ResultsList() {
                         overflowX: 'auto',
                         scrollSnapType: 'x mandatory',
                         gap: '16px',
-                        padding: '0 5vw', // Side padding creates center look
+                        padding: '0 7.5vw', // (100 - 85) / 2 = 7.5vw to center first item
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
                         WebkitOverflowScrolling: 'touch'
@@ -137,9 +137,11 @@ export function ResultsList() {
                 >
                     {gigs.map(gig => (
                         <div key={gig.id} style={{
-                            minWidth: '85vw',  // 85% width creates Peeking effect ("2/3" feel)
+                            minWidth: '85vw',
+                            width: '85vw',
                             scrollSnapAlign: 'center',
-                            flexShrink: 0
+                            flexShrink: 0,
+                            height: '100%' // Ensure height consistency
                         }}>
                             <GigCard gig={gig} />
                         </div>
