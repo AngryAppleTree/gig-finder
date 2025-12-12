@@ -1,32 +1,18 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GigCard } from './GigCard';
 import { Gig } from './types';
 
 export function ResultsList() {
     const [gigs, setGigs] = useState<Gig[]>([]);
     const [hasSearched, setHasSearched] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-
-    // Scroll Snap Support
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const [snapIndex, setSnapIndex] = useState(0);
 
     useEffect(() => {
-        const checkMobile = () => {
-            // Use 768px breakpoint
-            setIsMobile(window.innerWidth <= 768);
-        };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-
         const handleResults = (event: CustomEvent<Gig[]>) => {
             console.log("React received gigs:", event.detail);
             setGigs(event.detail);
             setHasSearched(true);
-            setSnapIndex(0);
-            if (scrollRef.current) scrollRef.current.scrollLeft = 0;
         };
 
         const handleClear = () => {
@@ -38,47 +24,10 @@ export function ResultsList() {
         window.addEventListener('gigfinder-results-clear', handleClear as EventListener);
 
         return () => {
-            window.removeEventListener('resize', checkMobile);
             window.removeEventListener('gigfinder-results-updated', handleResults as EventListener);
             window.removeEventListener('gigfinder-results-clear', handleClear as EventListener);
         };
     }, []);
-
-    // Handle Scroll Spy for Dots
-    const handleScroll = () => {
-        if (!scrollRef.current) return;
-        const container = scrollRef.current;
-        const scrollCenter = container.scrollLeft + container.clientWidth / 2;
-
-        // Find center-most slide
-        // Assuming simple item width logic:
-        // Or simpler: index = Math.round(scrollLeft / itemWidth).
-        // Since we use logic: 80vw width + gap.
-        // Let's rely on scroll event throttling if performance bad, but React 18 is usually fine.
-
-        const cardWidth = container.querySelector('div')?.clientWidth || 0;
-        if (cardWidth === 0) return;
-
-        const newIndex = Math.round(container.scrollLeft / (cardWidth + 16)); // 16px gap
-        if (newIndex !== snapIndex && newIndex >= 0 && newIndex < gigs.length) {
-            setSnapIndex(newIndex);
-        }
-    };
-
-    const scrollToSlide = (index: number) => {
-        if (!scrollRef.current) return;
-        const container = scrollRef.current;
-        const card = container.children[index] as HTMLElement;
-        if (card) {
-            // Scroll center align
-            const containerCenter = container.clientWidth / 2;
-            const cardCenter = card.offsetLeft + card.clientWidth / 2;
-            container.scrollTo({
-                left: cardCenter - containerCenter,
-                behavior: 'smooth'
-            });
-        }
-    };
 
     if (!hasSearched && gigs.length === 0) return null;
 
@@ -113,70 +62,7 @@ export function ResultsList() {
         );
     }
 
-    if (isMobile) {
-        return (
-            <div className="mobile-results-container" style={{ maxWidth: '100%', paddingBottom: '20px', marginBottom: '4rem' }}>
-                <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                    <p><strong>Showing {snapIndex + 1} of {gigs.length} gigs</strong></p>
-                </div>
-
-                <div
-                    ref={scrollRef}
-                    onScroll={handleScroll}
-                    className="scroller-snap"
-                    style={{
-                        display: 'flex',
-                        overflowX: 'auto',
-                        scrollSnapType: 'x mandatory',
-                        gap: '16px',
-                        padding: '0 7.5vw', // (100 - 85) / 2 = 7.5vw to center first item
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                        WebkitOverflowScrolling: 'touch'
-                    }}
-                >
-                    {gigs.map(gig => (
-                        <div key={gig.id} style={{
-                            minWidth: '85vw',
-                            width: '85vw',
-                            scrollSnapAlign: 'center',
-                            flexShrink: 0,
-                            height: '100%' // Ensure height consistency
-                        }}>
-                            <GigCard gig={gig} />
-                        </div>
-                    ))}
-                </div>
-                {/* Hide Scrollbars CSS Hack */}
-                <style jsx>{`
-                    .scroller-snap::-webkit-scrollbar {
-                        display: none;
-                    }
-                `}</style>
-
-                {/* Dots */}
-                {gigs.length > 1 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '15px', gap: '8px' }}>
-                        {gigs.map((_, i) => (
-                            <div
-                                key={i}
-                                onClick={() => scrollToSlide(i)}
-                                style={{
-                                    width: '10px', height: '10px', borderRadius: '50%',
-                                    background: i === snapIndex ? 'var(--color-primary)' : '#555',
-                                    cursor: 'pointer', transition: 'background 0.3s'
-                                }}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {renderNavButtons()}
-            </div>
-        );
-    }
-
-    // Desktop
+    // Standard Vertical Scroll List (Desktop & Mobile)
     return (
         <div className="gigs-list">
             <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
