@@ -1,5 +1,16 @@
 // GigFinder - Interactive Journey
 
+// XSS Mitigation Helper
+function escapeHtml(text) {
+    if (!text) return text;
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 let currentStep = 1;
 const totalSteps = 5;
 let isNavigating = false; // Prevent ghost clicks
@@ -285,7 +296,7 @@ function generateSummary() {
     // Where
     let whereText = userChoices.where;
     if (userChoices.postcode) {
-        whereText += ` (${userChoices.postcode})`;
+        whereText += ` (${escapeHtml(userChoices.postcode)})`;
     }
     html += `<p><strong>Where:</strong> ${whereText}</p>`;
 
@@ -1074,9 +1085,9 @@ async function performQuickSearch() {
             const html = renderGigs(gigs, true); // Show all results for search
 
             let summary = '<h2 style="margin-bottom: 1rem; color: var(--color-primary);">Search Results</h2>';
-            if (keyword) summary += `<p>Keyword: <strong>${keyword}</strong></p>`;
-            if (city) summary += `<p>Location: <strong>${city}</strong></p>`;
-            if (date) summary += `<p>From: <strong>${date}</strong></p>`;
+            if (keyword) summary += `<p>Keyword: <strong>${escapeHtml(keyword)}</strong></p>`;
+            if (city) summary += `<p>Location: <strong>${escapeHtml(city)}</strong></p>`;
+            if (date) summary += `<p>From: <strong>${escapeHtml(date)}</strong></p>`;
 
             resultsContainer.innerHTML = summary + html;
 
