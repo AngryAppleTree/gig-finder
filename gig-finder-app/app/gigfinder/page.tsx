@@ -10,12 +10,27 @@ export const viewport: Viewport = {
     themeColor: '#ff3366',
 };
 
-export default function GigFinderPage() {
+import { currentUser } from '@clerk/nextjs/server';
+
+export default async function GigFinderPage() {
+    const user = await currentUser();
+    const isAdmin = user?.publicMetadata?.role === 'admin';
+
+    let htmlContent = gigFinderHTML;
+    if (isAdmin) {
+        htmlContent = htmlContent.replace(
+            '<!-- ADMIN_LINK_PLACEHOLDER -->',
+            '<a href="/admin" class="btn-primary" style="display: inline-block; text-decoration: none; font-size: 1rem; padding: 0.8rem 1.5rem; background: #333; border: 1px solid #666;">ADMIN CONSOLE</a>'
+        );
+    } else {
+        htmlContent = htmlContent.replace('<!-- ADMIN_LINK_PLACEHOLDER -->', '');
+    }
+
     return (
         <>
             {/* Styles loaded in layout.tsx */}
 
-            <div dangerouslySetInnerHTML={{ __html: gigFinderHTML }} />
+            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
 
             <Script src="/gigfinder/script-api.js?v=13" strategy="afterInteractive" />
         </>
@@ -96,6 +111,7 @@ const gigFinderHTML = `
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <a href="/gigfinder/add-event" class="btn-primary" style="display: inline-block; text-decoration: none; font-size: 1rem; padding: 0.8rem 1.5rem;">ADD YOUR GIG +</a>
                     <a href="/gigfinder/my-gigs" class="btn-back" style="display: inline-block; text-decoration: none; font-size: 1rem; padding: 0.8rem 1.5rem;">MY GIGS</a>
+                    <!-- ADMIN_LINK_PLACEHOLDER -->
                 </div>
             </div>
         </section>

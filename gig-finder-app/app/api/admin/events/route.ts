@@ -1,5 +1,5 @@
+import { currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers'; // Updated import
 import { Pool } from 'pg';
 
 const pool = new Pool({
@@ -8,10 +8,8 @@ const pool = new Pool({
 });
 
 async function checkAdmin() {
-    const cookieStore = await cookies();
-    const adminCookie = cookieStore.get('gigfinder_admin');
-    // Simple check: does cookie exist? Ideally check value or signature, but for this MVP 'true' is set.
-    return adminCookie?.value === 'true';
+    const user = await currentUser();
+    return user?.publicMetadata?.role === 'admin';
 }
 
 export async function GET(req: Request) {

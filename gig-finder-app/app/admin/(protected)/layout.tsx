@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { currentUser } from '@clerk/nextjs/server';
 import AdminHeader from '../AdminHeader';
 
 export default async function ProtectedAdminLayout({
@@ -7,12 +7,12 @@ export default async function ProtectedAdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-    // Check for admin cookie
-    const cookieStore = await cookies();
-    const adminSession = cookieStore.get('gigfinder_admin');
+    const user = await currentUser();
+    const isAdmin = user?.publicMetadata?.role === 'admin';
 
-    if (!adminSession || adminSession.value !== 'true') {
-        redirect('/admin/login');
+    if (!isAdmin) {
+        // Not admin (or not logged in) -> Redirect to Home (or Clerk Sign In? Home is safer)
+        redirect('/');
     }
 
     return (
