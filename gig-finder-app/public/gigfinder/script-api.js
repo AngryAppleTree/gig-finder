@@ -842,7 +842,8 @@ function showMoreGigs() {
 }
 
 function showGigDetails(gigId) {
-    const gig = currentGigs.find(g => g.id === gigId);
+    // ID comparison needs to be loose or string-based because HTML attributes are strings
+    const gig = currentGigs.find(g => String(g.id) === String(gigId));
     if (!gig) return;
 
     // Hide results, show details
