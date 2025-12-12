@@ -708,81 +708,13 @@ let displayedGigsCount = 20; // Show 20 initially
 function renderGigs(gigs, showAll = false) {
     currentGigs = gigs; // Cache for detail view
 
-    if (gigs.length === 0) {
-        return '<div style="text-align: center; padding: 2rem;"><h3>No gigs found matching your criteria! 🎸</h3><p>Try adjusting your filters.</p></div>';
-    }
+    // Dispatch to React
+    console.log("Dispatching gigs to React", gigs.length);
+    window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: gigs }));
 
-    const gigsToShow = showAll ? gigs : gigs.slice(0, displayedGigsCount);
-
-    let html = `<div style="text-align: center; margin-bottom: 1rem;"><p><strong>Showing ${gigsToShow.length} of ${gigs.length} gigs</strong></p></div>`;
-    html += '<div class="gigs-list">';
-
-    gigsToShow.forEach(gig => {
-        let distanceHtml = '';
-        if (gig.distance !== undefined) {
-            distanceHtml = `<span style="font-size: 0.9rem; color: var(--color-primary);">(${gig.distance.toFixed(1)} miles away)</span>`;
-        }
-
-        // Format location with town
-        const locationText = gig.town ? `${gig.location}, ${gig.town}` : gig.location;
-
-        html += `
-            <div class="gig-card">
-                <div class="gig-image">
-                    <img src="${gig.imageUrl || '/no-photo.png'}" alt="${gig.name}" onerror="this.src='/no-photo.png'">
-                </div>
-                <div class="gig-details">
-                    <h3 class="gig-name">${gig.name}</h3>
-                    <div class="gig-info">
-                        <p class="gig-location">📍 ${locationText} ${distanceHtml}</p>
-                        <p class="gig-date">📅 ${gig.date} at ${gig.time}</p>
-                        <p class="gig-price">🎟️ ${gig.price}</p>
-                    </div>
-                    ${gig.isInternalTicketing
-                ? `<button class="btn-buy" style="background:var(--color-secondary); border-color:var(--color-secondary);" onclick="showGigDetails('${gig.id}')">Book Now</button>`
-                : (gig.ticketUrl && gig.ticketUrl !== '#'
-                    ? `<button class="btn-buy" onclick="showGigDetails('${gig.id}')">Get Tickets</button>`
-                    : `<button class="btn-buy" style="background-color: #888; color: white; border: none;" onclick="showGigDetails('${gig.id}')">More Info</button>`)
-            }
-                </div>
-            </div>
-        `;
-    });
-
-    html += '</div>';
-
-    // Add swipe controls and indicators for mobile
-    if (window.innerWidth <= 768 && gigsToShow.length > 1) {
-        html += `
-            <div class="swipe-controls">
-                <button class="swipe-btn" onclick="swipePrevious()" aria-label="Previous gig">←</button>
-                <button class="swipe-btn" onclick="swipeNext()" aria-label="Next gig">→</button>
-            </div>
-            <div class="swipe-indicators">
-                ${gigsToShow.map((_, i) => `<div class="swipe-dot ${i === 0 ? 'active' : ''}" data-dot-index="${i}"></div>`).join('')}
-            </div>
-        `;
-    }
-
-    // Add "Show More" button if there are more gigs
-    if (!showAll && gigs.length > displayedGigsCount) {
-        html += `
-            <div style="text-align: center; margin-top: 2rem;">
-                <button class="btn-primary" onclick="showMoreGigs()" style="padding: 1rem 2rem; font-size: 1.1rem;">
-                    Show More Gigs (${gigs.length - displayedGigsCount} remaining)
-                </button>
-            </div>
-        `;
-    }
-
-    // Initialize swipe index and positions
-    currentSwipeIndex = 0;
-    // This call needs to happen after the HTML is rendered to the DOM,
-    // so it's better placed in the function that inserts this HTML.
-    // For now, we'll keep it here for completeness, but note the potential timing issue.
-    setTimeout(updateCardPositions, 0);
-
-    return html;
+    // Legacy logic previously returned HTML. Now we return empty string because React handles the list.
+    // The legacy container will only display the Summary.
+    return '';
 }
 
 // Swipe functionality
@@ -1061,8 +993,10 @@ async function performQuickSearch() {
     document.getElementById('results').classList.add('active');
     currentStep = 'results';
 
-    const resultsContainer = document.querySelector('.results-summary');
-    resultsContainer.innerHTML = '<div style="text-align:center; padding:2rem;"><p>Searching gigs...</p></div>';
+    // Target Summary Container (don't overwrite #results which holds React Root)
+    const summaryContainer = document.getElementById('results-summary-container');
+    if (summaryContainer) summaryContainer.innerHTML = '<div style="text-align:center; padding:2rem;"><p>Searching gigs...</p></div>';
+
 
     try {
         // Build API URL
@@ -1079,26 +1013,30 @@ async function performQuickSearch() {
             const gigs = data.events.map(event => ({
                 ...event,
                 dateObj: new Date(event.dateObj)
-            })).sort((a, b) => a.dateObj - b.dateObj);
+            }));
 
-            // Render
-            const html = renderGigs(gigs, true); // Show all results for search
+            // Sort
+            gigs.sort((a, b) => a.dateObj - b.dateObj);
+
+            // Render (this now dispatches event to React and returns empty string)
+            renderGigs(gigs, true);
 
             let summary = '<h2 style="margin-bottom: 1rem; color: var(--color-primary);">Search Results</h2>';
             if (keyword) summary += `<p>Keyword: <strong>${escapeHtml(keyword)}</strong></p>`;
             if (city) summary += `<p>Location: <strong>${escapeHtml(city)}</strong></p>`;
             if (date) summary += `<p>From: <strong>${escapeHtml(date)}</strong></p>`;
 
-            resultsContainer.innerHTML = summary + html;
-
-            // Re-init swipe if needed (though renderGigs does it timeout)
+            if (summaryContainer) summaryContainer.innerHTML = summary;
         } else {
-            resultsContainer.innerHTML = '<p>No results found.</p>';
+            if (summaryContainer) summaryContainer.innerHTML = '<p>No results found.</p>';
+            window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: [] }));
+            window.dispatchEvent(new CustomEvent('gigfinder-results-clear'));
         }
 
     } catch (error) {
         console.error('Search failed:', error);
-        resultsContainer.innerHTML = '<p>Error searching gigs. Please try again.</p>';
+        const summaryContainer = document.getElementById('results-summary-container');
+        if (summaryContainer) summaryContainer.innerHTML = '<p>Error searching gigs. Please try again.</p>';
     }
 }
 

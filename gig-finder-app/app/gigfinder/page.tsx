@@ -13,6 +13,7 @@ export const viewport: Viewport = {
 import { currentUser } from '@clerk/nextjs/server';
 import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { SearchMounter } from '../../components/gigfinder/SearchMounter';
+import { ResultsMounter } from '../../components/gigfinder/ResultsMounter';
 
 export default async function GigFinderPage() {
     const user = await currentUser();
@@ -46,6 +47,7 @@ export default async function GigFinderPage() {
 
             <Script src="/gigfinder/script-api.js?v=13" strategy="afterInteractive" />
             <SearchMounter />
+            <ResultsMounter />
         </>
     );
 }
@@ -257,10 +259,15 @@ const gigFinderHTML = `
         <!-- Results Page -->
         <section class="step" id="results" aria-labelledby="results-title">
             <h2 class="step-title" id="results-title">Your Gigs</h2>
-            <div class="results-summary">
-                <p>Finding gigs that match your preferences...</p>
-            </div>
-            <div class="nav-buttons">
+            
+            <!-- Script Updates Summary Here -->
+            <div id="results-summary-container" class="results-summary"></div>
+            
+            <!-- React Updates List Here -->
+            <div id="react-results-root"></div>
+
+            <!-- Legacy Buttons if script fails (React should handle this, but keep for fallback structure) -->
+            <div id="legacy-nav-buttons" class="nav-buttons hidden">
                 <button class="btn-back" onclick="goBack()">← Back</button>
                 <button class="btn-primary" onclick="resetQuiz()">Start Over</button>
             </div>
