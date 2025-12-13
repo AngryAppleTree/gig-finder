@@ -16,10 +16,18 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
         ? <span style={{ fontSize: '0.9rem', color: 'var(--color-primary)' }}>({gig.distance.toFixed(1)} miles away)</span>
         : null;
 
+    const handleBooking = () => {
+        window.dispatchEvent(new CustomEvent('gigfinder-open-booking', {
+            detail: { id: gig.id, name: gig.name }
+        }));
+    };
+
     const handleMoreInfo = () => {
-        if (typeof window !== 'undefined' && (window as any).showGigDetails) {
-            (window as any).showGigDetails(String(gig.id));
-        }
+        // Legacy "More Info" page is deprecated/removed.
+        // For now, if no ticket URL, just alert or do nothing.
+        // Or dispatch booking event if we want to use the modal as a detail view?
+        // Let's just alert the user to check the venue.
+        alert(`More info for ${gig.name} at ${gig.venue}. Please check the venue website.`);
     };
 
     return (
@@ -44,7 +52,7 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                         <button
                             className="btn-buy"
                             style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%' }}
-                            onClick={handleMoreInfo}
+                            onClick={handleBooking}
                         >
                             Book Now
                         </button>

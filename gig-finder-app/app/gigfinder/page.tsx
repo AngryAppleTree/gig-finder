@@ -38,9 +38,6 @@ export default async function GigFinderPage() {
 
             <Footer />
             <BookingModal />
-
-            {/* Legacy Script - Maintained for Booking functions only */}
-            <Script src="/gigfinder/script-api.js?v=15" strategy="afterInteractive" />
         </>
     );
 }
