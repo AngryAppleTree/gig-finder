@@ -1,4 +1,4 @@
-import React from 'react';
+import Link from 'next/link';
 
 export function Footer() {
     return (
@@ -14,7 +14,7 @@ export function Footer() {
             </div>
 
             <div className="footer-bottom">
-                <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. | <a href="/privacy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a> | <a href="/contact.html">Contact</a> | <a href="/admin">Admin</a></p>
+                <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. | <Link href="/privacy">Privacy Policy</Link> | <Link href="/terms">Terms of Service</Link> | <Link href="/contact">Contact</Link> | <Link href="/admin">Admin</Link></p>
             </div>
         </footer>
     );
