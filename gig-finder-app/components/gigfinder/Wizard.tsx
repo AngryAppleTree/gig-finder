@@ -49,14 +49,19 @@ export function Wizard({ isAdmin }: WizardProps) {
     }, []);
 
     const nextStep = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         setCurrentStep(prev => prev + 1);
+        // Scroll after React renders the new step
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
     };
 
     const goBack = () => {
         if (currentStep > 1) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
             setCurrentStep(prev => prev - 1);
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
         }
     };
 
