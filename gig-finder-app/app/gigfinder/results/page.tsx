@@ -7,7 +7,6 @@ import { Footer } from '@/components/gigfinder/Footer';
 import { Gig } from '@/components/gigfinder/types';
 import { postcodeCoordinates, venueLocations } from '@/components/gigfinder/constants';
 import { calculateDistance } from '@/components/gigfinder/utils';
-import { generateFallbackGigs } from '@/components/gigfinder/mockDataGen';
 
 function ResultsPageContent() {
     const searchParams = useSearchParams();
@@ -47,15 +46,7 @@ function ResultsPageContent() {
 
             let rawEvents = data.events || [];
 
-            // Fallback to mock data if insufficient results
-            if (rawEvents.length < 5) {
-                const mockGigs = generateFallbackGigs();
-                if (rawEvents.length === 0) {
-                    rawEvents = mockGigs;
-                } else {
-                    rawEvents = [...rawEvents, ...mockGigs];
-                }
-            }
+            // No fallback - production should only show real events
 
             // Transform to Gig format
             let transformedGigs: Gig[] = rawEvents.map((e: any) => ({
