@@ -11,7 +11,8 @@ export async function GET() {
         const client = await pool.connect();
 
         // Reset table (DROP) for development consistency
-        await client.query(`DROP TABLE IF EXISTS events`);
+        // DANGER: DISABLED FOR SAFETY
+        // await client.query(`DROP TABLE IF EXISTS events`);
 
         // Create the "events" table with fingerprint
         await client.query(`
