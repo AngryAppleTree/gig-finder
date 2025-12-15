@@ -1,15 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Gig } from './types';
 
-interface QuickSearchProps {
-    onSearch?: () => void;
-}
-
-export function QuickSearch({ onSearch }: QuickSearchProps) {
+export function QuickSearch() {
+    const router = useRouter();
     const [keyword, setKeyword] = useState('');
     const [city, setCity] = useState('');
     const [date, setDate] = useState('');
@@ -17,64 +14,15 @@ export function QuickSearch({ onSearch }: QuickSearchProps) {
 
     const handleSearch = async () => {
         setIsLoading(true);
-        try {
-            // Scroll to results immediately to show responsiveness
-            const resultsSection = document.getElementById('results');
-            if (resultsSection) {
-                resultsSection.classList.add('active');
-                resultsSection.scrollIntoView({ behavior: 'smooth' });
-            }
 
-            // Dispatch clear event
-            window.dispatchEvent(new CustomEvent('gigfinder-results-clear'));
+        // Build URL search parameters for the results page
+        const params = new URLSearchParams();
+        if (keyword) params.append('keyword', keyword);
+        if (city) params.append('location', city);
+        if (date) params.append('minDate', date);
 
-            // Build Params
-            const params = new URLSearchParams();
-            if (keyword) params.append('keyword', keyword);
-            if (city) params.append('location', city);
-            if (date) params.append('minDate', date);
-
-            // Allow all genres implicitly or handle generic search
-            const response = await fetch(`/api/events?${params.toString()}`);
-            const data = await response.json();
-
-            if (data.success && data.events) {
-                // Transform Data
-                const gigs: Gig[] = data.events.map((event: any) => ({
-                    id: event.id,
-                    name: event.name || event.eventname,
-                    venue: event.venue.name || event.venue,
-                    location: event.venue.name || event.location, // Normalized
-                    town: event.venue.town || event.town,
-                    date: typeof event.date === 'string' ? event.date : new Date(event.dateObj).toLocaleDateString(),
-                    time: event.time || event.openingtimes?.doorsopen || 'TBA',
-                    dateObj: event.dateObj,
-                    description: event.description,
-                    imageUrl: event.imageurl || event.imageUrl, // Handle both cases
-                    image: event.imageurl || event.imageUrl,
-                    ticketUrl: event.link || event.ticketUrl,
-                    isInternalTicketing: event.isInternalTicketing,
-                    price: event.price || event.entryprice,
-                    distance: event.distance
-                }));
-
-                // Dispatch
-                window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: gigs }));
-                if (onSearch) onSearch();
-            } else {
-                // Dispatch empty
-                window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: [] }));
-                if (onSearch) onSearch();
-            }
-
-        } catch (error) {
-            console.error("Search failed", error);
-            // Dispatch empty to show "No Results" or handle error UI
-            window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: [] }));
-            if (onSearch) onSearch();
-        } finally {
-            setIsLoading(false);
-        }
+        // Navigate to results page
+        router.push(`/gigfinder/results?${params.toString()}`);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

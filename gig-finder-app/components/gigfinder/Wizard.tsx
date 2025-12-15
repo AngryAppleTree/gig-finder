@@ -1,13 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { QuickSearch } from './QuickSearch';
-import { ResultsList } from './ResultsList';
-import { postcodeCoordinates, venueLocations } from './constants';
-import { calculateDistance } from './utils';
-import { Gig } from './types';
-import { generateFallbackGigs } from './mockDataGen';
-import Script from 'next/script'; // For booking modal legacy logic if needed, but we try to avoid.
+import Script from 'next/script';
 
 interface WizardChoices {
     when: string | null;
@@ -36,10 +32,9 @@ interface WizardProps {
 }
 
 export function Wizard({ isAdmin }: WizardProps) {
+    const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
     const [choices, setChoices] = useState<WizardChoices>(initialChoices);
-    const [showResults, setShowResults] = useState(false);
-    const [searchResults, setSearchResults] = useState<Gig[]>([]);
     const [isRejection, setIsRejection] = useState(false);
 
     // Legacy style reset
@@ -59,18 +54,13 @@ export function Wizard({ isAdmin }: WizardProps) {
     };
 
     const goBack = () => {
-        if (showResults) {
-            setShowResults(false);
-            setCurrentStep(5); // Back to budget
-            window.dispatchEvent(new CustomEvent('gigfinder-results-clear'));
-        } else if (currentStep > 1) {
+        if (currentStep > 1) {
             setCurrentStep(prev => prev - 1);
         }
     };
 
     const resetQuiz = () => {
         setChoices(initialChoices);
-        setShowResults(false);
         setIsRejection(false);
         setCurrentStep(1);
         window.dispatchEvent(new CustomEvent('gigfinder-results-clear'));
@@ -146,121 +136,25 @@ export function Wizard({ isAdmin }: WizardProps) {
     };
 
     const performWizardSearch = async (userChoices: WizardChoices) => {
-        // Mocking the Filter Logic from Legacy Script (or porting it)
-        try {
-            // Fetch All Gigs (Mock or Real)
-            // Legacy fetches /api/events?location=... based on postcode.
-            let location = 'Edinburgh';
-            if (userChoices.postcode?.startsWith('G')) location = 'Glasgow';
+        // Build URL search parameters for the results page
+        const params = new URLSearchParams();
 
-            const response = await fetch(`/api/events?location=${location}`);
-            const data = await response.json();
+        // Determine location
+        let location = 'Edinburgh';
+        if (userChoices.postcode?.startsWith('G')) location = 'Glasgow';
+        params.append('location', location);
 
-            let rawEvents = data.events;
-            if (!rawEvents || rawEvents.length < 5) {
-                // Fallback if API empty or insufficient for demo
-                const mockGigs = generateFallbackGigs();
-                // Merge or replace? Legacy replaced.
-                if (!rawEvents || rawEvents.length === 0) {
-                    rawEvents = mockGigs;
-                } else {
-                    rawEvents = [...rawEvents, ...mockGigs];
-                }
-            }
+        // Add wizard choices as URL params
+        if (userChoices.when) params.append('when', userChoices.when);
+        if (userChoices.customDate) params.append('minDate', userChoices.customDate);
+        if (userChoices.postcode) params.append('postcode', userChoices.postcode);
+        if (userChoices.where) params.append('distance', userChoices.where);
+        if (userChoices.venueSize) params.append('venueSize', userChoices.venueSize);
+        if (userChoices.vibe) params.append('genre', userChoices.vibe);
+        if (userChoices.budget) params.append('budget', userChoices.budget);
 
-            if (rawEvents) {
-                let skiddleGigs: Gig[] = rawEvents.map((e: any) => ({
-                    id: e.id,
-                    name: e.name || e.eventname,
-                    venue: e.venue.name || e.venue,
-                    location: e.venue.name || e.location,
-                    town: e.venue.town || e.town,
-                    date: typeof e.date === 'string' ? e.date : new Date(e.dateObj).toLocaleDateString(),
-                    time: e.time || 'TBA',
-                    dateObj: e.dateObj,
-                    description: e.description,
-                    imageUrl: e.imageUrl || e.imageurl,
-                    ticketUrl: e.ticketUrl || e.link,
-                    isInternalTicketing: e.isInternalTicketing,
-                    price: e.price || e.entryprice,
-                    vibe: e.vibe, // Mock data has this
-                    capacity: e.capacity, // Mock data has this
-                    distance: e.distance
-                }));
-
-                // Logic: Filter by Distance
-                // Need User Coords
-                let userCoords = null;
-                if (userChoices.postcode) {
-                    // Check exact match or default
-                    const shortPC = userChoices.postcode.split(' ')[0]; // E.g. EH1
-                    userCoords = postcodeCoordinates[shortPC] || postcodeCoordinates['DEFAULT'];
-                }
-
-                if (userCoords) {
-                    skiddleGigs = skiddleGigs.map(g => {
-                        // Find venue coords
-                        // Legacy uses hardcoded venueLocations. 
-                        // Check constants.
-                        const venueData = venueLocations[g.venue]; // Match by name
-                        if (venueData) {
-                            const dist = calculateDistance(userCoords!.lat, userCoords!.lon, venueData.lat, venueData.lon);
-                            return { ...g, distance: dist };
-                        }
-                        return g;
-                    });
-
-                    if (userChoices.where === 'local') {
-                        skiddleGigs = skiddleGigs.filter(g => g.distance !== undefined && g.distance <= 10);
-                    } else if (userChoices.where === '100miles') {
-                        skiddleGigs = skiddleGigs.filter(g => g.distance !== undefined && g.distance <= 100);
-                    }
-                }
-
-                // Filter by Venue Size
-                if (userChoices.venueSize && userChoices.venueSize !== 'any') {
-                    skiddleGigs = skiddleGigs.filter(gig => {
-                        if (!gig.capacity) return true; // Keep unknown
-                        if (userChoices.venueSize === 'small') return gig.capacity <= 100;
-                        if (userChoices.venueSize === 'medium') return gig.capacity > 100 && gig.capacity <= 5000;
-                        if (userChoices.venueSize === 'huge') return gig.capacity > 5000;
-                        return true;
-                    });
-                }
-
-                // Filter by Vibe (Genre)
-                if (userChoices.vibe && userChoices.vibe !== 'surprise') {
-                    skiddleGigs = skiddleGigs.filter(gig => {
-                        if (!gig.vibe) return true; // Keep unknown (Real gigs might not have vibe tagged yet)
-                        return gig.vibe === userChoices.vibe;
-                    });
-                }
-
-                // Filter by Budget
-                if (userChoices.budget && userChoices.budget !== 'any') {
-                    skiddleGigs = skiddleGigs.filter(gig => {
-                        if (gig.priceVal === undefined) return true; // Keep unknown prices
-                        if (userChoices.budget === 'free') return gig.priceVal === 0;
-                        if (userChoices.budget === 'low') return gig.priceVal > 0 && gig.priceVal <= 20;
-                        if (userChoices.budget === 'mid') return gig.priceVal > 20 && gig.priceVal <= 50;
-                        if (userChoices.budget === 'high') return gig.priceVal > 50;
-                        return true;
-                    });
-                }
-
-
-                // Dispatch
-                // Dispatch
-                // window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: skiddleGigs }));
-                setSearchResults(skiddleGigs);
-                setShowResults(true);
-                setCurrentStep(6); // Results
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            }
-        } catch (e) {
-            console.error("Wizard Search Failed", e);
-        }
+        // Navigate to results page
+        router.push(`/gigfinder/results?${params.toString()}`);
     };
 
 
@@ -271,15 +165,6 @@ export function Wizard({ isAdmin }: WizardProps) {
                 <p className="step-description">We focus on grassroots gigs. Huge stadiums aren't our vibe.</p>
                 <button className="btn-primary" onClick={resetQuiz}>Try Again</button>
             </div>
-        );
-    }
-
-    if (showResults) {
-        return (
-            <section className="step active" id="r-results">
-                <h2 className="step-title" id="results-title">Your Gigs</h2>
-                <ResultsList gigs={searchResults} />
-            </section>
         );
     }
 
@@ -304,7 +189,7 @@ export function Wizard({ isAdmin }: WizardProps) {
                     <section className="step active" id="r-step1">
 
                         <div id="quick-search-mount">
-                            <QuickSearch onSearch={() => setShowResults(true)} />
+                            <QuickSearch />
                         </div>
 
                         <div style={{ textAlign: 'center', position: 'relative', marginBottom: '2rem' }}>
