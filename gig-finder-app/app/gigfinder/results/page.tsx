@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { GigCard } from '@/components/gigfinder/GigCard';
 import { Footer } from '@/components/gigfinder/Footer';
@@ -9,7 +9,7 @@ import { postcodeCoordinates, venueLocations } from '@/components/gigfinder/cons
 import { calculateDistance } from '@/components/gigfinder/utils';
 import { generateFallbackGigs } from '@/components/gigfinder/mockDataGen';
 
-export default function ResultsPage() {
+function ResultsPageContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [gigs, setGigs] = useState<Gig[]>([]);
@@ -224,5 +224,28 @@ export default function ResultsPage() {
             </main>
             <Footer />
         </>
+    );
+}
+
+// Loading fallback component
+function ResultsLoading() {
+    return (
+        <div className="container" style={{ textAlign: 'center', paddingTop: '120px' }}>
+            <h1 className="main-title">GIG<br />FINDER</h1>
+            <main className="container" style={{ paddingTop: '120px' }}>
+                <div className="step active">
+                    <h2 className="step-title">🔍 Loading...</h2>
+                </div>
+            </main>
+        </div>
+    );
+}
+
+// Wrap in Suspense to fix Next.js static generation
+export default function ResultsPage() {
+    return (
+        <Suspense fallback={<ResultsLoading />}>
+            <ResultsPageContent />
+        </Suspense>
     );
 }
