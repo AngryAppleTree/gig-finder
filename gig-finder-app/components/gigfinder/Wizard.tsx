@@ -55,6 +55,7 @@ export function Wizard({ isAdmin }: WizardProps) {
 
     const goBack = () => {
         if (currentStep > 1) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             setCurrentStep(prev => prev - 1);
         }
     };
@@ -87,7 +88,13 @@ export function Wizard({ isAdmin }: WizardProps) {
     const handleLocation = (value: string) => {
         setChoices(prev => ({ ...prev, where: value }));
         if (value === 'local' || value === '100miles') {
-            // Show postcode logic
+            // Show postcode input and scroll to it
+            setTimeout(() => {
+                const postcodeInput = document.getElementById('postcodeInput');
+                if (postcodeInput) {
+                    postcodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
         } else {
             nextStep();
         }
