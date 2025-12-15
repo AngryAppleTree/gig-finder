@@ -39,6 +39,7 @@ export function Wizard({ isAdmin }: WizardProps) {
     const [currentStep, setCurrentStep] = useState(1);
     const [choices, setChoices] = useState<WizardChoices>(initialChoices);
     const [showResults, setShowResults] = useState(false);
+    const [searchResults, setSearchResults] = useState<Gig[]>([]);
     const [isRejection, setIsRejection] = useState(false);
 
     // Legacy style reset
@@ -249,7 +250,9 @@ export function Wizard({ isAdmin }: WizardProps) {
 
 
                 // Dispatch
-                window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: skiddleGigs }));
+                // Dispatch
+                // window.dispatchEvent(new CustomEvent('gigfinder-results-updated', { detail: skiddleGigs }));
+                setSearchResults(skiddleGigs);
                 setShowResults(true);
                 setCurrentStep(6); // Results
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -275,7 +278,7 @@ export function Wizard({ isAdmin }: WizardProps) {
         return (
             <section className="step active" id="r-results">
                 <h2 className="step-title" id="results-title">Your Gigs</h2>
-                <ResultsList />
+                <ResultsList gigs={searchResults} />
             </section>
         );
     }

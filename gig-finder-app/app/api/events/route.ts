@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
             time: e.date.toString().match(/\d{2}:\d{2}/)?.[0] || 'TBA', // Extract time from timestamp
             priceVal: parseFloat(e.price) || 0,
             price: e.price,
-            vibe: e.genre || 'all',
+            vibe: e.genre ? mapGenreToVibe([{ name: e.genre }]) : 'all',
             ticketUrl: e.ticket_url || null, // Use DB ticket_url or null
             description: e.description,
             imageUrl: e.image_url || '', // Use stored image or empty

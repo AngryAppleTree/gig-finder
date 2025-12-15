@@ -4,30 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { GigCard } from './GigCard';
 import { Gig } from './types';
 
-export function ResultsList() {
-    const [gigs, setGigs] = useState<Gig[]>([]);
-    const [hasSearched, setHasSearched] = useState(false);
+interface ResultsListProps {
+    gigs: Gig[];
+}
 
-    useEffect(() => {
-        const handleResults = (event: CustomEvent<Gig[]>) => {
-            console.log("React received gigs:", event.detail);
-            setGigs(event.detail);
-            setHasSearched(true);
-        };
+export function ResultsList({ gigs }: ResultsListProps) {
+    const hasSearched = true; // If mounted, we assume search happened
 
-        const handleClear = () => {
-            setGigs([]);
-            setHasSearched(false);
-        };
-
-        window.addEventListener('gigfinder-results-updated', handleResults as EventListener);
-        window.addEventListener('gigfinder-results-clear', handleClear as EventListener);
-
-        return () => {
-            window.removeEventListener('gigfinder-results-updated', handleResults as EventListener);
-            window.removeEventListener('gigfinder-results-clear', handleClear as EventListener);
-        };
-    }, []);
 
     if (!hasSearched && gigs.length === 0) return null;
 
