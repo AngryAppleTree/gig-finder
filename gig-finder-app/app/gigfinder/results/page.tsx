@@ -152,7 +152,7 @@ function ResultsPageContent() {
 
     if (isLoading) {
         return (
-            <div className="container" style={{ textAlign: 'center', paddingTop: '120px' }}>
+            <>
                 <h1 className="main-title">GIG<br />FINDER</h1>
                 <main className="container" style={{ paddingTop: '120px' }}>
                     <div className="step active">
@@ -162,13 +162,13 @@ function ResultsPageContent() {
                         </p>
                     </div>
                 </main>
-            </div>
+            </>
         );
     }
 
     if (error) {
         return (
-            <div className="container" style={{ textAlign: 'center', paddingTop: '120px' }}>
+            <>
                 <h1 className="main-title">GIG<br />FINDER</h1>
                 <main className="container" style={{ paddingTop: '120px' }}>
                     <div className="step active">
@@ -182,7 +182,7 @@ function ResultsPageContent() {
                         </div>
                     </div>
                 </main>
-            </div>
+            </>
         );
     }
 
@@ -208,7 +208,7 @@ function ResultsPageContent() {
                                 <strong>Showing {gigs.length} gig{gigs.length !== 1 ? 's' : ''}</strong>
                             </div>
 
-                            <div className="gigs-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
+                            <div className="gigs-list">
                                 {gigs.map(gig => (
                                     <GigCard key={gig.id} gig={gig} />
                                 ))}
@@ -230,14 +230,14 @@ function ResultsPageContent() {
 // Loading fallback component
 function ResultsLoading() {
     return (
-        <div className="container" style={{ textAlign: 'center', paddingTop: '120px' }}>
+        <>
             <h1 className="main-title">GIG<br />FINDER</h1>
             <main className="container" style={{ paddingTop: '120px' }}>
                 <div className="step active">
                     <h2 className="step-title">🔍 Loading...</h2>
                 </div>
             </main>
-        </div>
+        </>
     );
 }
 
