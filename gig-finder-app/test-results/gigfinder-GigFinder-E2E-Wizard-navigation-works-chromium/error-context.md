@@ -1,0 +1,73 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Sign In" [ref=e3] [cursor=pointer]
+  - heading "GIG FINDER" [level=1]:
+    - text: GIG
+    - text: FINDER
+  - main [ref=e4]:
+    - navigation "Progress" [ref=e5]:
+      - generic [ref=e6]: "1"
+      - generic [ref=e8]: "2"
+      - generic [ref=e10]: "3"
+      - generic [ref=e12]: "4"
+    - generic [ref=e13]:
+      - generic [ref=e15]:
+        - heading "Quick Search" [level=3] [ref=e16]
+        - generic [ref=e17]:
+          - textbox "Artist or Venue" [ref=e18]
+          - generic [ref=e19]:
+            - textbox "City (e.g. Edinburgh)" [ref=e20]
+            - textbox [ref=e21]
+        - button "SEARCH GIGS" [ref=e22] [cursor=pointer]
+      - generic [ref=e23]:
+        - separator [ref=e24]
+        - generic [ref=e25]: OR TAKE THE JOURNEY
+      - heading "When do you want to go?" [level=2] [ref=e26]
+      - generic [ref=e27]:
+        - button "🔥 Tonight" [ref=e28] [cursor=pointer]:
+          - generic [ref=e29]: 🔥
+          - generic [ref=e30]: Tonight
+        - button "💥 This Weekend" [ref=e31] [cursor=pointer]:
+          - generic [ref=e32]: 💥
+          - generic [ref=e33]: This Weekend
+        - button "⚡ This Week" [ref=e34] [cursor=pointer]:
+          - generic [ref=e35]: ⚡
+          - generic [ref=e36]: This Week
+        - button "🎯 Pick a Date" [ref=e37] [cursor=pointer]:
+          - generic [ref=e38]: 🎯
+          - generic [ref=e39]: Pick a Date
+        - button "🎲 I Don't Know" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41]: 🎲
+          - generic [ref=e42]: I Don't Know
+      - generic [ref=e43]:
+        - paragraph [ref=e44]: PROMISING A GOOD NIGHT?
+        - generic [ref=e45]:
+          - link "ADD YOUR GIG +" [ref=e46] [cursor=pointer]:
+            - /url: /gigfinder/add-event
+          - link "MY GIGS" [ref=e47] [cursor=pointer]:
+            - /url: /gigfinder/my-gigs
+  - contentinfo [ref=e48]:
+    - generic [ref=e50]:
+      - img "GigFinder Logo" [ref=e51]
+      - generic [ref=e52]:
+        - generic [ref=e53]: Powered by
+        - generic [ref=e54]: Angry Apple Tree
+    - paragraph [ref=e56]:
+      - text: © 2025 Angry Apple Tree Ltd. All rights reserved. |
+      - link "Privacy Policy" [ref=e57] [cursor=pointer]:
+        - /url: /privacy
+      - text: "|"
+      - link "Terms of Service" [ref=e58] [cursor=pointer]:
+        - /url: /terms
+      - text: "|"
+      - link "Contact" [ref=e59] [cursor=pointer]:
+        - /url: /contact
+      - text: "|"
+      - link "Admin" [ref=e60] [cursor=pointer]:
+        - /url: /admin
+  - button "Open Next.js Dev Tools" [ref=e66] [cursor=pointer]:
+    - img [ref=e67]
+  - alert [ref=e70]
+```

@@ -14,6 +14,7 @@ export function BookingModal() {
 
     useEffect(() => {
         const handleOpen = (e: CustomEvent) => {
+            console.log('Modal received event:', e.detail);
             if (e.detail) {
                 setGigId(e.detail.id);
                 setEventName(e.detail.name);
