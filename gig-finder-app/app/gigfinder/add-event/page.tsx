@@ -183,7 +183,46 @@ function AddEventForm() {
             {/* Price (Optional) */}
             <div>
                 <label htmlFor="price" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Price</label>
-                <input type="text" id="price" name="price" className="text-input" style={{ width: '100%' }} placeholder="e.g. £10 or Free" />
+                <div style={{ position: 'relative' }}>
+                    <span style={{
+                        position: 'absolute',
+                        left: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: 'var(--color-primary)',
+                        fontFamily: 'var(--font-primary)',
+                        fontSize: '1.2rem',
+                        pointerEvents: 'none'
+                    }}>£</span>
+                    <input
+                        type="text"
+                        id="price"
+                        name="price"
+                        className="text-input"
+                        style={{ width: '100%', paddingLeft: '32px' }}
+                        placeholder="10.00 or 0 for Free"
+                        pattern="^\d+(\.\d{0,2})?$"
+                        title="Enter a valid price (e.g., 10 or 10.50). Use 0 for free entry."
+                        onInput={(e) => {
+                            const input = e.currentTarget;
+                            // Remove any non-numeric characters except decimal point
+                            let value = input.value.replace(/[^\d.]/g, '');
+                            // Ensure only one decimal point
+                            const parts = value.split('.');
+                            if (parts.length > 2) {
+                                value = parts[0] + '.' + parts.slice(1).join('');
+                            }
+                            // Limit to 2 decimal places
+                            if (parts[1] && parts[1].length > 2) {
+                                value = parts[0] + '.' + parts[1].substring(0, 2);
+                            }
+                            input.value = value;
+                        }}
+                    />
+                </div>
+                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                    Enter amount in £ (e.g., 10 or 10.50). Use 0 for free entry.
+                </p>
             </div>
 
             {/* Image Upload */}

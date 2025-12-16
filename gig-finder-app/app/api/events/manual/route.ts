@@ -49,18 +49,31 @@ export async function POST(request: NextRequest) {
 
         const client = await pool.connect();
 
-        // Check optional price
-        const price = priceBody || 'TBA';
+        // Parse price - extract numerical value
+        let ticketPrice = null;
+        let displayPrice = priceBody || 'TBA';
+
+        if (priceBody) {
+            // Remove any non-numeric characters except decimal point
+            const numericPrice = priceBody.replace(/[^\d.]/g, '');
+            const parsedPrice = parseFloat(numericPrice);
+
+            if (!isNaN(parsedPrice)) {
+                ticketPrice = parsedPrice;
+                // Format display price with £ symbol
+                displayPrice = parsedPrice === 0 ? 'Free' : `£${parsedPrice.toFixed(2)}`;
+            }
+        }
 
         // Insert
         // Note: 'date' comes as YYYY-MM-DD. We might want to combine with time.
         const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
 
         const result = await client.query(
-            `INSERT INTO events (name, venue, date, genre, description, price, user_id, fingerprint, is_internal_ticketing, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            `INSERT INTO events (name, venue, date, genre, description, price, ticket_price, price_currency, user_id, fingerprint, is_internal_ticketing, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING id`,
-            [name, venue, timestamp, genre, description, price, userId, fingerprint, isInternalTicketing || false, imageUrl]
+            [name, venue, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', userId, fingerprint, isInternalTicketing || false, imageUrl]
         );
 
         client.release();
