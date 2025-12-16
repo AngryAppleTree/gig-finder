@@ -2,9 +2,11 @@ import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-11-17.clover',
-});
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2025-11-17.clover',
+    })
+    : null;
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
@@ -13,6 +15,14 @@ const pool = new Pool({
 
 export async function POST(req: NextRequest) {
     try {
+        // Check if Stripe is configured
+        if (!stripe) {
+            return NextResponse.json(
+                { error: 'Payment system not configured. Please contact support.' },
+                { status: 503 }
+            );
+        }
+
         const { eventId, quantity, customerName, customerEmail } = await req.json();
 
         // Validate inputs

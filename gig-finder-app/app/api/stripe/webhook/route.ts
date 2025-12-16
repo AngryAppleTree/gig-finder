@@ -4,9 +4,11 @@ import { Pool } from 'pg';
 import { Resend } from 'resend';
 import QRCode from 'qrcode';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-11-17.clover',
-});
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2025-11-17.clover',
+    })
+    : null;
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
@@ -16,6 +18,14 @@ const pool = new Pool({
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
+    // Check if Stripe is configured
+    if (!stripe) {
+        return NextResponse.json(
+            { error: 'Webhook handler not configured' },
+            { status: 503 }
+        );
+    }
+
     const body = await req.text();
     const sig = req.headers.get('stripe-signature')!;
 
