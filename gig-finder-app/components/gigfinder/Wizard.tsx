@@ -173,8 +173,9 @@ export function Wizard({ isAdmin }: WizardProps) {
     if (isRejection) {
         return (
             <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-                <h2 className="step-title">🚫 Too Big!</h2>
-                <p className="step-description">Get tae fuck</p>
+                <h1 style={{ fontFamily: 'var(--font-primary)', fontSize: '3rem', color: 'var(--color-primary)', marginBottom: '1rem' }}>GET TAE FUCK</h1>
+                <h2 style={{ fontFamily: 'var(--font-primary)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>We only do small gigs!</h2>
+                <h3 style={{ fontSize: '1.2rem', color: '#ccc', marginBottom: '2rem' }}>We prefer sweaty, smelly cellars.</h3>
                 <button className="btn-primary" onClick={resetQuiz}>Try Again</button>
             </div>
         );
