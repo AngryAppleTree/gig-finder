@@ -6,7 +6,9 @@ export function BookingModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [gigId, setGigId] = useState<string | number>('');
     const [eventName, setEventName] = useState('');
+    const [ticketPrice, setTicketPrice] = useState<number>(0);
     const [formData, setFormData] = useState({ name: '', email: '' });
+    const [quantity, setQuantity] = useState(1);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -15,9 +17,11 @@ export function BookingModal() {
             if (e.detail) {
                 setGigId(e.detail.id);
                 setEventName(e.detail.name);
+                setTicketPrice(e.detail.price || 0);
                 setIsOpen(true);
                 setStatus('idle');
                 setFormData({ name: '', email: '' });
+                setQuantity(1);
             }
         };
 
@@ -38,7 +42,8 @@ export function BookingModal() {
                 body: JSON.stringify({
                     eventId: gigId,
                     customerName: formData.name,
-                    customerEmail: formData.email
+                    customerEmail: formData.email,
+                    quantity: quantity
                 })
             });
 
@@ -131,6 +136,79 @@ export function BookingModal() {
                                     style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid #333', background: '#000', color: 'white', fontFamily: 'inherit' }}
                                 />
                                 <p style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem' }}>We'll email your ticket instantly.</p>
+                            </div>
+
+                            {/* Quantity Selector */}
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Number of Tickets</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        disabled={quantity <= 1}
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            border: '2px solid var(--color-primary)',
+                                            background: quantity <= 1 ? '#333' : 'var(--color-surface)',
+                                            color: quantity <= 1 ? '#666' : 'var(--color-primary)',
+                                            fontSize: '1.5rem',
+                                            cursor: quantity <= 1 ? 'not-allowed' : 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        −
+                                    </button>
+                                    <div style={{
+                                        flex: 1,
+                                        textAlign: 'center',
+                                        fontSize: '1.5rem',
+                                        fontWeight: 'bold',
+                                        color: 'var(--color-primary)',
+                                        fontFamily: 'var(--font-display)'
+                                    }}>
+                                        {quantity}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setQuantity(Math.min(10, quantity + 1))}
+                                        disabled={quantity >= 10}
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            border: '2px solid var(--color-primary)',
+                                            background: quantity >= 10 ? '#333' : 'var(--color-surface)',
+                                            color: quantity >= 10 ? '#666' : 'var(--color-primary)',
+                                            fontSize: '1.5rem',
+                                            cursor: quantity >= 10 ? 'not-allowed' : 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                {ticketPrice > 0 && (
+                                    <p style={{
+                                        fontSize: '0.9rem',
+                                        color: 'var(--color-secondary)',
+                                        marginTop: '0.5rem',
+                                        textAlign: 'center',
+                                        fontWeight: 'bold'
+                                    }}>
+                                        Total: £{(ticketPrice * quantity).toFixed(2)}
+                                    </p>
+                                )}
+                                <p style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem', textAlign: 'center' }}>
+                                    Maximum 10 tickets per booking
+                                </p>
                             </div>
                             <button
                                 type="submit"

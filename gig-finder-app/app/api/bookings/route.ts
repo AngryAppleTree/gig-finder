@@ -50,12 +50,15 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
-    const { eventId, name, email } = await req.json();
+    const { eventId, name, email, quantity = 1 } = await req.json();
 
     // Validation
     if (!eventId || !name || !email) {
         return NextResponse.json({ error: 'Missing required fields (eventId, name, email)' }, { status: 400 });
     }
+
+    // Validate quantity
+    const ticketQuantity = Math.max(1, Math.min(10, parseInt(String(quantity)) || 1));
 
     const client = await pool.connect();
 
@@ -63,7 +66,7 @@ export async function POST(req: Request) {
         await client.query('BEGIN');
 
         // Check Capacity & Locking to prevent race conditions
-        const eventRes = await client.query('SELECT name, venue, date, max_capacity, tickets_sold, is_internal_ticketing FROM events WHERE id = $1 FOR UPDATE', [eventId]);
+        const eventRes = await client.query('SELECT name, venue, date, max_capacity, tickets_sold, is_internal_ticketing, ticket_price FROM events WHERE id = $1 FOR UPDATE', [eventId]);
 
         if (eventRes.rowCount === 0) {
             throw new Error('Event not found');
@@ -76,19 +79,28 @@ export async function POST(req: Request) {
         // Let's block to be strict, user must enable it.
         // if (!event.is_internal_ticketing) { ... }
 
-        if ((event.tickets_sold || 0) >= (event.max_capacity || 100)) {
-            throw new Error('Sorry, this event is Sold Out!');
+        // Check if enough capacity for requested quantity
+        const currentSold = event.tickets_sold || 0;
+        const maxCapacity = event.max_capacity || 100;
+        const availableTickets = maxCapacity - currentSold;
+
+        if (availableTickets < ticketQuantity) {
+            if (availableTickets === 0) {
+                throw new Error('Sorry, this event is Sold Out!');
+            } else {
+                throw new Error(`Only ${availableTickets} ticket(s) remaining!`);
+            }
         }
 
         // Create Booking and return ID
         const bookingRes = await client.query(
-            'INSERT INTO bookings (event_id, customer_name, customer_email) VALUES ($1, $2, $3) RETURNING id',
-            [eventId, name, email]
+            'INSERT INTO bookings (event_id, customer_name, customer_email, quantity) VALUES ($1, $2, $3, $4) RETURNING id',
+            [eventId, name, email, ticketQuantity]
         );
         const bookingId = bookingRes.rows[0].id;
 
-        // Update Sold Count
-        await client.query('UPDATE events SET tickets_sold = COALESCE(tickets_sold, 0) + 1 WHERE id = $1', [eventId]);
+        // Update Sold Count by quantity
+        await client.query('UPDATE events SET tickets_sold = COALESCE(tickets_sold, 0) + $1 WHERE id = $2', [ticketQuantity, eventId]);
 
         await client.query('COMMIT');
 
