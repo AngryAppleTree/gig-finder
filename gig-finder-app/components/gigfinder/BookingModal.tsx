@@ -65,8 +65,8 @@ export function BookingModal() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         eventId: gigId,
-                        customerName: formData.name,
-                        customerEmail: formData.email,
+                        name: formData.name,
+                        email: formData.email,
                         quantity: quantity
                     })
                 });
