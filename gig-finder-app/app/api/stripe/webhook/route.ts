@@ -15,7 +15,7 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function POST(req: NextRequest) {
     // Check if Stripe is configured
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
             await client.query('COMMIT');
 
             // Send confirmation email
-            if (process.env.RESEND_API_KEY) {
+            if (process.env.RESEND_API_KEY && resend) {
                 const qrBuffer = await QRCode.toBuffer(
                     `GF-TICKET:${bookingId}-${eventId}`,
                     { width: 300, margin: 2 }
