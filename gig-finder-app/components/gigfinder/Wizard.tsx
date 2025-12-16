@@ -174,7 +174,7 @@ export function Wizard({ isAdmin }: WizardProps) {
         return (
             <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
                 <h2 className="step-title">🚫 Too Big!</h2>
-                <p className="step-description">We focus on grassroots gigs. Huge stadiums aren't our vibe.</p>
+                <p className="step-description">Get tae fuck</p>
                 <button className="btn-primary" onClick={resetQuiz}>Try Again</button>
             </div>
         );
