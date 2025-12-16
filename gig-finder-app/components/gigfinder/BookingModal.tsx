@@ -36,22 +36,47 @@ export function BookingModal() {
         setStatus('submitting');
 
         try {
-            const res = await fetch('/api/bookings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    eventId: gigId,
-                    customerName: formData.name,
-                    customerEmail: formData.email,
-                    quantity: quantity
-                })
-            });
+            // Check if this is a paid event
+            if (ticketPrice && ticketPrice > 0) {
+                // Paid event - redirect to Stripe Checkout
+                const res = await fetch('/api/stripe/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventId: gigId,
+                        quantity: quantity,
+                        customerName: formData.name,
+                        customerEmail: formData.email
+                    })
+                });
 
-            const data = await res.json();
-            if (data.success) {
-                setStatus('success');
+                const data = await res.json();
+
+                if (data.url) {
+                    // Redirect to Stripe Checkout
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Payment setup failed');
+                }
             } else {
-                throw new Error(data.error || 'Booking failed');
+                // Free event - use existing booking flow
+                const res = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventId: gigId,
+                        customerName: formData.name,
+                        customerEmail: formData.email,
+                        quantity: quantity
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    setStatus('success');
+                } else {
+                    throw new Error(data.error || 'Booking failed');
+                }
             }
         } catch (err: any) {
             setStatus('error');
