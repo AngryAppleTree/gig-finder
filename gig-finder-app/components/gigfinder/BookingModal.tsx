@@ -14,7 +14,6 @@ export function BookingModal() {
 
     useEffect(() => {
         const handleOpen = (e: CustomEvent) => {
-            console.log('Modal received event:', e.detail);
             if (e.detail) {
                 setGigId(e.detail.id);
                 setEventName(e.detail.name);
@@ -132,7 +131,6 @@ export function BookingModal() {
                     </div>
                 ) : (
                     <>
-                        <h2 style={{ color: 'var(--color-primary)', marginBottom: '0.5rem', textAlign: 'center', fontFamily: 'var(--font-display)' }}>Get on the List</h2>
                         <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#ccc', fontSize: '0.9rem' }}>{eventName}</p>
 
                         {status === 'error' && (
