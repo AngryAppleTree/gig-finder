@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        let name, venue, date, time, genre, description, priceBody, isInternalTicketing, imageUrl;
+        let name, venue, date, time, genre, description, priceBody, isInternalTicketing, imageUrl, maxCapacity;
 
         const contentType = request.headers.get('content-type') || '';
         const isJson = contentType.includes('application/json');
@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
             const body = await request.json();
             ({ name, venue, date, time, genre, description, price: priceBody, imageUrl } = body);
             isInternalTicketing = body.is_internal_ticketing;
+            maxCapacity = body.max_capacity;
         } else {
             // Handle standard form submission
             const formData = await request.formData();
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
             description = formData.get('description')?.toString();
             priceBody = formData.get('price')?.toString();
             isInternalTicketing = formData.get('is_internal_ticketing') === 'true';
+            maxCapacity = formData.get('max_capacity')?.toString();
             // Optional image upload via form data (raw file needs handling, or string if client did stuff)
             // For now assuming string if present
             imageUrl = formData.get('imageUrl')?.toString();
@@ -48,6 +50,9 @@ export async function POST(request: NextRequest) {
         const fingerprint = `${date}|${venue.toLowerCase().trim()}|${name.toLowerCase().trim()}`;
 
         const client = await pool.connect();
+
+        // Parse and validate capacity
+        const eventCapacity = maxCapacity ? Math.max(1, Math.min(10000, parseInt(maxCapacity))) : 100;
 
         // Parse price - extract numerical value
         let ticketPrice = null;
@@ -70,10 +75,10 @@ export async function POST(request: NextRequest) {
         const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
 
         const result = await client.query(
-            `INSERT INTO events (name, venue, date, genre, description, price, ticket_price, price_currency, user_id, fingerprint, is_internal_ticketing, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            `INSERT INTO events (name, venue, date, genre, description, price, ticket_price, price_currency, user_id, fingerprint, is_internal_ticketing, max_capacity, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING id`,
-            [name, venue, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', userId, fingerprint, isInternalTicketing || false, imageUrl]
+            [name, venue, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', userId, fingerprint, isInternalTicketing || false, eventCapacity, imageUrl]
         );
 
         client.release();

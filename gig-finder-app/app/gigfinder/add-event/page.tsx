@@ -245,6 +245,28 @@ function AddEventForm() {
                 )}
             </div>
 
+            {/* Venue Capacity */}
+            <div>
+                <label htmlFor="max_capacity" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                    Venue Capacity
+                    <span style={{ fontSize: '0.7rem', color: '#888', textTransform: 'none', marginLeft: '0.5rem' }}>(optional)</span>
+                </label>
+                <input
+                    type="number"
+                    id="max_capacity"
+                    name="max_capacity"
+                    className="text-input"
+                    style={{ width: '100%' }}
+                    placeholder="100"
+                    min="1"
+                    max="10000"
+                    defaultValue="100"
+                />
+                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                    Maximum number of people who can attend (default: 100)
+                </p>
+            </div>
+
             {/* Guest List Option */}
             <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginTop: '0.5rem', borderRadius: '4px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
