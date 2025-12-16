@@ -84,6 +84,7 @@ function AddEventForm() {
             genre: formData.get('genre') as string,
             description: formData.get('description') as string,
             price: formData.get('price') as string,
+            max_capacity: formData.get('max_capacity') as string,
             is_internal_ticketing: !!formData.get('is_internal_ticketing'),
             imageUrl: posterBase64 // Send logic string
         };
