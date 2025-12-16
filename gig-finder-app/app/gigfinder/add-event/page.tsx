@@ -229,7 +229,7 @@ function AddEventForm() {
             {/* Image Upload */}
             <div>
                 <label htmlFor="poster" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
-                    Gig Poster / Image
+                    Gig Poster / Image (Optional)
                 </label>
                 <input
                     type="file"
