@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         manualFingerprints.add(fp);
 
         return {
-            id: `manual-${e.id}`,
+            id: e.id,  // Use numeric ID directly
             name: e.name,
             location: e.venue,
             venue: e.venue,
@@ -99,7 +99,8 @@ export async function GET(request: NextRequest) {
             // Ticketing Fields
             isInternalTicketing: e.is_internal_ticketing || false,
             ticketsSold: e.tickets_sold || 0,
-            maxCapacity: e.max_capacity || 100
+            maxCapacity: e.max_capacity || 100,
+            ticketPrice: e.ticket_price || 0  // Add numeric price for modal
         };
     });
 
