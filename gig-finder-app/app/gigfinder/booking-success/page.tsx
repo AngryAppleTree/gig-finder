@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function BookingSuccessPage() {
+function BookingSuccessContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
     const [loading, setLoading] = useState(true);
@@ -63,5 +63,19 @@ export default function BookingSuccessPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function BookingSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <h2 style={{ fontFamily: 'var(--font-primary)', fontSize: '2rem' }}>Loading...</h2>
+                </div>
+            </div>
+        }>
+            <BookingSuccessContent />
+        </Suspense>
     );
 }
