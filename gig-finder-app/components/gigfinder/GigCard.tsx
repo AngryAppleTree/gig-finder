@@ -18,7 +18,11 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
 
     const handleBooking = () => {
         window.dispatchEvent(new CustomEvent('gigfinder-open-booking', {
-            detail: { id: gig.id, name: gig.name }
+            detail: {
+                id: gig.id,
+                name: gig.name,
+                price: gig.priceVal || 0
+            }
         }));
     };
 
