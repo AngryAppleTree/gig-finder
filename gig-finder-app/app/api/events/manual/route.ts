@@ -46,13 +46,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        // Validate capacity is provided
+        if (!maxCapacity) {
+            return NextResponse.json({ error: 'Venue capacity is required' }, { status: 400 });
+        }
+
         // Create fingerprint (e.g., date|venue|name)
         const fingerprint = `${date}|${venue.toLowerCase().trim()}|${name.toLowerCase().trim()}`;
 
         const client = await pool.connect();
 
-        // Parse and validate capacity
-        const eventCapacity = maxCapacity ? Math.max(1, Math.min(10000, parseInt(maxCapacity))) : 100;
+        // Parse and validate capacity (must be between 1 and 10,000)
+        const eventCapacity = Math.max(1, Math.min(10000, parseInt(maxCapacity)));
 
         // Parse price - extract numerical value
         let ticketPrice = null;

@@ -249,21 +249,20 @@ function AddEventForm() {
             <div>
                 <label htmlFor="max_capacity" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
                     Venue Capacity
-                    <span style={{ fontSize: '0.7rem', color: '#888', textTransform: 'none', marginLeft: '0.5rem' }}>(optional)</span>
                 </label>
                 <input
                     type="number"
                     id="max_capacity"
                     name="max_capacity"
+                    required
                     className="text-input"
                     style={{ width: '100%' }}
-                    placeholder="100"
+                    placeholder="e.g. 100, 250, 500"
                     min="1"
                     max="10000"
-                    defaultValue="100"
                 />
                 <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
-                    Maximum number of people who can attend (default: 100)
+                    Maximum number of people who can attend this event
                 </p>
             </div>
 
