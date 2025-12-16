@@ -3,6 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { GigCard } from '@/components/gigfinder/GigCard';
+import { BookingModal } from '@/components/gigfinder/BookingModal';
 import { Footer } from '@/components/gigfinder/Footer';
 import { Gig } from '@/components/gigfinder/types';
 import { postcodeCoordinates, venueLocations } from '@/components/gigfinder/constants';
@@ -213,6 +214,7 @@ function ResultsPageContent() {
                     </div>
                 </section>
             </main>
+            <BookingModal />
             <Footer />
         </>
     );
