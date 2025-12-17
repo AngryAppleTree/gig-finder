@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { scrapeBanshee } from '@/scraper/ingest-banshee';
-import { scrapeSneaky } from '@/scraper/ingest-sneaky';
-import { scrapeStramash } from '@/scraper/ingest-stramash';
-import { scrapeLeith } from '@/scraper/ingest-leith';
+import { scrapeBansheeAPI, scrapeSneakyAPI, scrapeStramashAPI, scrapeLeithAPI } from '@/scraper/api-wrappers';
 import { cookies } from 'next/headers';
 
 async function checkAdmin() {
@@ -23,13 +20,13 @@ export async function POST(req: Request) {
 
         let stats;
         if (scraper === 'banshee') {
-            stats = await scrapeBanshee();
+            stats = await scrapeBansheeAPI();
         } else if (scraper === 'sneaky') {
-            stats = await scrapeSneaky();
+            stats = await scrapeSneakyAPI();
         } else if (scraper === 'stramash') {
-            stats = await scrapeStramash();
+            stats = await scrapeStramashAPI();
         } else if (scraper === 'leith') {
-            stats = await scrapeLeith();
+            stats = await scrapeLeithAPI();
         } else {
             return NextResponse.json({ error: 'Invalid scraper name' }, { status: 400 });
         }
@@ -40,6 +37,9 @@ export async function POST(req: Request) {
         });
     } catch (error) {
         console.error('Scraper API Error:', error);
-        return NextResponse.json({ error: 'Scraper Execution Failed' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Scraper Execution Failed',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
     }
 }

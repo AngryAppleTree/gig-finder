@@ -106,12 +106,12 @@ export async function scrapeLeith() {
                         user_id, created_at, fingerprint, ticket_url, approved, image_url
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10, $11)
                  `, [
-                    evt.name,
+                    evt.name.substring(0, 50), // Truncate to 50 chars max
                     'Leith Depot',
                     timestamp,
-                    'Indie',
-                    evt.priceText || '12.00',
-                    `Live at Leith Depot. ${evt.priceText}`,
+                    'Indie'.substring(0, 50),
+                    (evt.priceText || '12.00').substring(0, 50),
+                    `Live at Leith Depot. ${evt.priceText}`.substring(0, 500), // Description can be longer
                     'scraper_v1',
                     fingerprint,
                     evt.ticketUrl || null,
