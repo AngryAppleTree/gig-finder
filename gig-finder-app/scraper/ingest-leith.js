@@ -102,20 +102,18 @@ export async function scrapeLeith() {
             if (checkRes.rows.length === 0) {
                 await client.query(`
                     INSERT INTO events (
-                        name, venue, date, genre, price, description, 
-                        user_id, created_at, fingerprint, ticket_url, approved, image_url
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10, $11)
+                        name, venue, date, price, description, 
+                        user_id, created_at, fingerprint, ticket_url, image_url
+                    ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9)
                  `, [
-                    evt.name.substring(0, 50), // Truncate to 50 chars max
+                    evt.name,
                     'Leith Depot',
                     timestamp,
-                    'Indie'.substring(0, 50),
                     (evt.priceText || '12.00').substring(0, 50),
-                    `Live at Leith Depot. ${evt.priceText}`.substring(0, 500), // Description can be longer
+                    `Live at Leith Depot. ${evt.priceText}`.substring(0, 500),
                     'scraper_v1',
                     fingerprint,
                     evt.ticketUrl || null,
-                    true,
                     evt.imageUrl || null
                 ]);
                 console.log(`   + Added: ${evt.name} @ ${dateStr}`);

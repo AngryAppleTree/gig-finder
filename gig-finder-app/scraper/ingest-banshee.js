@@ -99,19 +99,17 @@ export async function scrapeBanshee() {
                     await client.query(
                         `INSERT INTO events (
                               name, venue, date, price, ticket_url, description, 
-                              fingerprint, user_id, approved, created_at, genre, image_url
-                          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10, $11)`,
+                              fingerprint, user_id, created_at, image_url
+                          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9)`,
                         [
                             evt.title,
                             VENUE_NAME,
-                            eventDate, // Full Date (includes time)
-                            'Free', // Default price
+                            eventDate,
+                            'Free',
                             evt.link,
                             'Scraped from /cinema',
                             fingerprint,
                             USER_ID,
-                            true,
-                            'Cinema/Varies',
                             evt.imageUrl
                         ]
                     );

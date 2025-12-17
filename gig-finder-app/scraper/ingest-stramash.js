@@ -116,8 +116,8 @@ export async function scrapeStramash() {
                     await client.query(
                         `INSERT INTO events (
                                 name, venue, date, price, ticket_url, description, 
-                                fingerprint, user_id, approved, created_at, genre
-                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)`,
+                                fingerprint, user_id, created_at
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
                         [
                             title,
                             VENUE_NAME,
@@ -126,9 +126,7 @@ export async function scrapeStramash() {
                             link,
                             description,
                             fingerprint,
-                            USER_ID,
-                            true,
-                            genre
+                            USER_ID
                         ]
                     );
                     console.log(`  + Upserted: ${dateStr} - ${title}`);
