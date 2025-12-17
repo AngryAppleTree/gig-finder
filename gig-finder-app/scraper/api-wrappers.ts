@@ -38,7 +38,7 @@ export async function scrapeBansheeAPI() {
             const dayNum = parseInt(dateText, 10);
             if (isNaN(dayNum)) continue;
 
-            const events = [];
+            const events: Array<{ title: string; link: string; imageUrl: string | null | undefined }> = [];
             $(dayEl).find('.events-container .event').each((i, ev) => {
                 let title = $(ev).text().trim();
                 let link = $(ev).attr('href');
@@ -196,7 +196,7 @@ export async function scrapeStramashAPI() {
             const pageHtml = await pageResp.text();
             const $p = cheerio.load(pageHtml);
 
-            let eventDate = null;
+            let eventDate: Date | null = null;
             $p('script[type="application/ld+json"]').each((i, el) => {
                 if (eventDate) return;
                 try {
