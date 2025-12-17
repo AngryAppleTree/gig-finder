@@ -209,13 +209,17 @@ export async function scrapeStramashAPI() {
                 } catch (e) { /* ignore */ }
             });
 
-            if (!eventDate || isNaN(eventDate.getTime())) continue;
+            if (!eventDate) continue;
+
+            // Type assertion needed because TypeScript can't narrow types through closures
+            const validEventDate: Date = eventDate;
+            if (isNaN(validEventDate.getTime())) continue;
 
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
-            if (eventDate < yesterday) continue;
+            if (validEventDate < yesterday) continue;
 
-            const dateStr = eventDate.toISOString().split('T')[0];
+            const dateStr = validEventDate.toISOString().split('T')[0];
             const fingerprint = `${dateStr}|${VENUE_NAME.toLowerCase()}|${title.toLowerCase().trim()}`;
 
             const existRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);
@@ -228,7 +232,7 @@ export async function scrapeStramashAPI() {
                     [
                         title.substring(0, 50),
                         VENUE_NAME,
-                        eventDate,
+                        validEventDate,
                         'Free',
                         link,
                         fingerprint,
