@@ -52,7 +52,8 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                     <p className="gig-price">🎟️ {gig.price}</p>
                 </div>
                 <div style={{ marginTop: '1rem' }}>
-                    {gig.isInternalTicketing ? (
+                    {/* Only allow internal ticketing for manually created events */}
+                    {gig.isInternalTicketing && gig.source === 'manual' ? (
                         <button
                             className="btn-buy"
                             style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%' }}

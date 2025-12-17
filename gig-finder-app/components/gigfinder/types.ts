@@ -18,4 +18,5 @@ export interface Gig {
     vibe?: string; // For client-side filtering
     capacity?: number; // For client-side filtering
     priceVal?: number; // For client-side filtering
+    source?: string; // 'manual' or 'skiddle' - determines if internal ticketing is allowed
 }
