@@ -94,7 +94,9 @@ export async function GET(request: NextRequest) {
             ticketUrl: e.ticket_url || null, // Use DB ticket_url or null
             description: e.description,
             imageUrl: e.image_url || '', // Use stored image or empty
-            source: 'manual',
+            // Determine source: user-created vs scraped
+            // Scrapers use user_id like 'scraper_banshee', real users have Clerk IDs starting with 'user_'
+            source: e.user_id && e.user_id.startsWith('user_') ? 'manual' : 'scraped',
             priority: 1,
             // Ticketing Fields
             isInternalTicketing: e.is_internal_ticketing || false,
