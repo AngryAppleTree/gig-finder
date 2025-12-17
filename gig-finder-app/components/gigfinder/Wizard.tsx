@@ -12,7 +12,6 @@ interface WizardChoices {
     where: string | null;
     postcode: string | null;
     venueSize: string | null;
-    vibe: string | null;
     budget: string | null;
 }
 
@@ -23,7 +22,6 @@ const initialChoices: WizardChoices = {
     where: null,
     postcode: null,
     venueSize: null,
-    vibe: null,
     budget: null
 };
 
@@ -124,21 +122,13 @@ export function Wizard({ isAdmin }: WizardProps) {
             // Legacy: showRejectionScreen(). 
             // I'll implement a Rejection View.
         } else {
-            // Legacy Logic: If size selected, SKIP Step 4 (Vibe) and go to Step 5 (Budget)?
-            // Line 151 of script-api.js: "Skip Step 4 ... vibe = 'surprise'".
-            setChoices(prev => ({ ...prev, vibe: 'surprise' }));
-            setCurrentStep(5); // Skip step 4
+            // Go directly to budget (step 4)
+            setCurrentStep(4);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
-    // Step 4 Handlers
-    const handleVibe = (value: string) => {
-        setChoices(prev => ({ ...prev, vibe: value }));
-        nextStep();
-    };
-
-    // Step 5 Handlers -> Search
+    // Step 4 Handlers (Budget) -> Search
     const handleBudget = async (value: string) => {
         const finalChoices = { ...choices, budget: value };
         setChoices(finalChoices);
@@ -162,7 +152,6 @@ export function Wizard({ isAdmin }: WizardProps) {
         if (userChoices.postcode) params.append('postcode', userChoices.postcode);
         if (userChoices.where) params.append('distance', userChoices.where);
         if (userChoices.venueSize) params.append('venueSize', userChoices.venueSize);
-        if (userChoices.vibe) params.append('genre', userChoices.vibe);
         if (userChoices.budget) params.append('budget', userChoices.budget);
 
         // Navigate to results page
@@ -323,57 +312,9 @@ export function Wizard({ isAdmin }: WizardProps) {
                     </section>
                 )}
 
-                {/* Step 4 */}
+                {/* Step 4 - Budget (was step 5) */}
                 {currentStep === 4 && (
                     <section className="step active" id="r-step4">
-                        <h2 className="step-title">What's your sound?</h2>
-                        <div className="options-grid">
-                            <button className="option-btn" onClick={() => handleVibe('rock_blues_punk')}>
-                                <span className="option-icon">🎸</span>
-                                <span className="option-text">Rock'n'roll, Blues & Punk</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('indie_alt')}>
-                                <span className="option-icon">🎹</span>
-                                <span className="option-text">Indie & Alternative</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('metal')}>
-                                <span className="option-icon">🤘</span>
-                                <span className="option-text">Hard Rock & Metal</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('pop')}>
-                                <span className="option-icon">🎤</span>
-                                <span className="option-text">Pop & Charts</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('electronic')}>
-                                <span className="option-icon">🎧</span>
-                                <span className="option-text">Electronic & Dance</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('hiphop')}>
-                                <span className="option-icon">🔥</span>
-                                <span className="option-text">Hip Hop & R&B</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('acoustic')}>
-                                <span className="option-icon">🎻</span>
-                                <span className="option-text">Acoustic, Folk, Jazz...</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('classical')}>
-                                <span className="option-icon">🎼</span>
-                                <span className="option-text">Classical & Orchestra</span>
-                            </button>
-                            <button className="option-btn" onClick={() => handleVibe('surprise')}>
-                                <span className="option-icon">🎰</span>
-                                <span className="option-text">Surprise Me!</span>
-                            </button>
-                        </div>
-                        <div className="nav-buttons">
-                            <button className="btn-back" onClick={goBack}>← Back</button>
-                        </div>
-                    </section>
-                )}
-
-                {/* Step 5 */}
-                {currentStep === 5 && (
-                    <section className="step active" id="r-step5">
                         <h2 className="step-title">What's your budget?</h2>
                         <div className="options-grid">
                             <button className="option-btn" onClick={() => handleBudget('free')}>
