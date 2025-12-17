@@ -201,6 +201,11 @@ export async function GET(request: NextRequest) {
             count: allEvents.length,
             events: allEvents,
             sources: ['manual', 'skiddle']
+        }, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate',
+                'Pragma': 'no-cache'
+            }
         });
 
     } catch (error) {
