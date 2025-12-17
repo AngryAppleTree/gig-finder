@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
+import { getOrCreateVenue } from './venue-helper.js';
 
 export async function scrapeSneaky() {
     console.log('🎸 Initiating Sneaky Pete\'s Ingestion (RSS Mode)...');
@@ -80,18 +81,21 @@ export async function scrapeSneaky() {
             const timestamp = `${dateStr} ${timeStr}:00`;
             const fingerprint = `${dateStr}|sneaky petes|${item.name.toLowerCase().trim()}`;
 
+            // Get venue ID
+            const venueId = await getOrCreateVenue(client, 'Sneaky Pete\'s');
+
             // Upsert
             const checkRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);
 
             if (checkRes.rows.length === 0) {
                 await client.query(`
                     INSERT INTO events (
-                        name, venue, date, price, description, 
+                        name, venue_id, date, price, description, 
                         user_id, created_at, fingerprint, ticket_url, image_url
                     ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9)
                  `, [
                     item.name,
-                    'Sneaky Pete\'s',
+                    venueId,
                     timestamp,
                     '0.00',
                     item.description || 'Live at Sneaky Pete\'s',

@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
+import { getOrCreateVenue } from './venue-helper.js';
 
 export async function scrapeLeith() {
     console.log('🎸 Initiating Leith Depot Ingestion (Cheerio Selectors)...');
@@ -96,18 +97,21 @@ export async function scrapeLeith() {
 
             const fingerprint = `${dateStr}|leith depot|${evt.name.toLowerCase().trim()}`;
 
+            // Get venue ID
+            const venueId = await getOrCreateVenue(client, 'Leith Depot');
+
             // Check existence
             const checkRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);
 
             if (checkRes.rows.length === 0) {
                 await client.query(`
                     INSERT INTO events (
-                        name, venue, date, price, description, 
+                        name, venue_id, date, price, description, 
                         user_id, created_at, fingerprint, ticket_url, image_url
                     ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9)
                  `, [
                     evt.name,
-                    'Leith Depot',
+                    venueId,
                     timestamp,
                     (evt.priceText || '12.00').substring(0, 50),
                     `Live at Leith Depot. ${evt.priceText}`.substring(0, 500),

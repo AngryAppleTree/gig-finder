@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
+import { getOrCreateVenue } from './venue-helper.js';
 
 const VENUE_NAME = 'The Banshee Labyrinth';
 const USER_ID = 'scraper_banshee';
@@ -93,17 +94,20 @@ export async function scrapeBanshee() {
 
                 const fingerprint = `${dateStr}|${VENUE_NAME.toLowerCase()}|${evt.title.toLowerCase().trim()}`;
 
+                // Get venue ID
+                const venueId = await getOrCreateVenue(client, VENUE_NAME);
+
                 // Insert
                 const existRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);
                 if (existRes.rows.length === 0) {
                     await client.query(
                         `INSERT INTO events (
-                              name, venue, date, price, ticket_url, description, 
+                              name, venue_id, date, price, ticket_url, description, 
                               fingerprint, user_id, created_at, image_url
                           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9)`,
                         [
                             evt.title,
-                            VENUE_NAME,
+                            venueId,
                             eventDate,
                             'Free',
                             evt.link,

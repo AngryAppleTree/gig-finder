@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
+import { getOrCreateVenue } from './venue-helper.js';
 
 const VENUE_NAME = 'Stramash';
 const USER_ID = 'scraper_stramash';
@@ -108,19 +109,21 @@ export async function scrapeStramash() {
                 const title = eventData.name || rssTitle;
                 const description = eventData.description || '';
                 const fingerprint = `${dateStr}|${VENUE_NAME.toLowerCase()}|${title.toLowerCase().trim()}`;
-                const genre = 'Live Music';
+
+                // Get venue ID
+                const venueId = await getOrCreateVenue(client, VENUE_NAME);
 
                 // Check DB
                 const existRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);
                 if (existRes.rows.length === 0) {
                     await client.query(
                         `INSERT INTO events (
-                                name, venue, date, price, ticket_url, description, 
+                                name, venue_id, date, price, ticket_url, description, 
                                 fingerprint, user_id, created_at
                             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
                         [
                             title,
-                            VENUE_NAME,
+                            venueId,
                             dateObj,
                             'Free',
                             link,
