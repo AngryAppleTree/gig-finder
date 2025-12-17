@@ -267,13 +267,13 @@ function AddEventForm() {
                 </p>
             </div>
 
-            {/* Guest List Option */}
+            {/* Internal Ticketing Option */}
             <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginTop: '0.5rem', borderRadius: '4px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
                     <input type="checkbox" name="is_internal_ticketing" value="true" style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }} />
                     <div style={{ textAlign: 'left' }}>
-                        <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Guest List?</span>
-                        <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book a free spot directly on GigFinder.</span>
+                        <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Ticketing on GigFinder?</span>
+                        <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book tickets directly on GigFinder (free or paid).</span>
                     </div>
                 </label>
             </div>
