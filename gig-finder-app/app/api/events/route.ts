@@ -44,20 +44,33 @@ export async function GET(request: NextRequest) {
 
     const apiKey = process.env.SKIDDLE_API_KEY || '';
 
-    // 1. Fetch Manual Gigs (Level 1 Data)
+    // 1. Fetch Manual Gigs (Level 1 Data) with Venue Info
     let manualEvents: any[] = [];
     try {
         const client = await pool.connect();
-        // Basic filtering for manual gigs: Only future events
-        let query = 'SELECT * FROM events WHERE date >= CURRENT_DATE';
+        // JOIN with venues table to get rich venue data
+        let query = `
+            SELECT 
+                e.*,
+                v.name as venue_name,
+                v.capacity as venue_capacity,
+                v.latitude as venue_latitude,
+                v.longitude as venue_longitude,
+                v.city as venue_city,
+                v.postcode as venue_postcode,
+                v.address as venue_address
+            FROM events e
+            LEFT JOIN venues v ON e.venue_id = v.id
+            WHERE e.date >= CURRENT_DATE
+        `;
         const params: any[] = [];
 
         if (keyword) {
-            query += ` AND (name ILIKE $1 OR venue ILIKE $1)`;
+            query += ` AND (e.name ILIKE $1 OR v.name ILIKE $1)`;
             params.push(`%${keyword}%`);
         }
 
-        query += ' ORDER BY date ASC';
+        query += ' ORDER BY e.date ASC';
 
         const res = await client.query(query, params);
         manualEvents = res.rows;
@@ -74,17 +87,24 @@ export async function GET(request: NextRequest) {
 
         // Ensure fingerprint is generated if missing (legacy)
         const dateStr = new Date(e.date).toISOString().split('T')[0];
-        const fp = e.fingerprint || `${dateStr}|${e.venue.toLowerCase().trim()}|${e.name.toLowerCase().trim()}`;
+        const venueName = e.venue_name || e.venue || 'Unknown Venue';
+        const fp = e.fingerprint || `${dateStr}|${venueName.toLowerCase().trim()}|${e.name.toLowerCase().trim()}`;
         manualFingerprints.add(fp);
+
+        // Use venue data from JOIN or fallback to defaults
+        const venueCity = e.venue_city || location;
+        const venueLat = e.venue_latitude || 55.9533; // Default to Edinburgh center
+        const venueLon = e.venue_longitude || -3.1883;
+        const venueCapacity = e.venue_capacity || null;
 
         return {
             id: e.id,  // Use numeric ID directly
             name: e.name,
-            location: e.venue,
-            venue: e.venue,
-            town: location, // Approximate, or store in DB
-            coords: { lat: 55.9533, lon: -3.1883 }, // Default to Edinburgh center for now, or use geocoding later
-            capacity: 'Unknown',
+            location: venueName,
+            venue: venueName,
+            town: venueCity,
+            coords: { lat: venueLat, lon: venueLon }, // Real coordinates from venues table!
+            capacity: venueCapacity ? venueCapacity.toString() : 'Unknown',
             dateObj: e.date, // Timestamp
             date: new Date(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
             time: e.date.toString().match(/\d{2}:\d{2}/)?.[0] || 'TBA', // Extract time from timestamp
@@ -101,7 +121,7 @@ export async function GET(request: NextRequest) {
             // Ticketing Fields
             isInternalTicketing: e.is_internal_ticketing || false,
             ticketsSold: e.tickets_sold || 0,
-            maxCapacity: e.max_capacity || 100,
+            maxCapacity: e.max_capacity || venueCapacity || 100,
             ticketPrice: e.ticket_price || 0  // Add numeric price for modal
         };
     });
