@@ -86,6 +86,7 @@ function AddEventForm() {
             price: formData.get('price') as string,
             max_capacity: formData.get('max_capacity') as string,
             is_internal_ticketing: !!formData.get('is_internal_ticketing'),
+            sell_tickets: !!formData.get('sell_tickets'),
             imageUrl: posterBase64 // Send logic string
         };
 
@@ -267,15 +268,33 @@ function AddEventForm() {
                 </p>
             </div>
 
-            {/* Internal Ticketing Option */}
-            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginTop: '0.5rem', borderRadius: '4px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
-                    <input type="checkbox" name="is_internal_ticketing" value="true" style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }} />
-                    <div style={{ textAlign: 'left' }}>
-                        <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Ticketing on GigFinder?</span>
-                        <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book tickets directly on GigFinder (free or paid).</span>
-                    </div>
+            {/* Ticketing Options */}
+            <div style={{ marginTop: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                    Ticketing Options
                 </label>
+
+                {/* Free Guest List */}
+                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginBottom: '0.5rem', borderRadius: '4px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
+                        <input type="checkbox" name="is_internal_ticketing" value="true" style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }} />
+                        <div style={{ textAlign: 'left' }}>
+                            <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Guest List (Free)</span>
+                            <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book free tickets directly on GigFinder.</span>
+                        </div>
+                    </label>
+                </div>
+
+                {/* Paid Ticket Sales */}
+                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', borderRadius: '4px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
+                        <input type="checkbox" name="sell_tickets" value="true" style={{ width: '24px', height: '24px', accentColor: 'var(--color-secondary)' }} />
+                        <div style={{ textAlign: 'left' }}>
+                            <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-secondary)' }}>Sell Tickets (Paid)</span>
+                            <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Sell paid tickets via Stripe. Set a ticket price above.</span>
+                        </div>
+                    </label>
+                </div>
             </div>
 
             {/* Submit Button */}
