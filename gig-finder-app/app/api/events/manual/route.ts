@@ -69,17 +69,19 @@ export async function POST(request: NextRequest) {
                 venue = venueResult.rows[0].name; // For fingerprint
                 console.log('New venue created with ID:', venueId);
 
-                // Notify admin about new venue (fire and forget)
-                fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/notify-new-venue`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        venueName: newVenue.name,
-                        city: newVenue.city,
-                        capacity: newVenue.capacity,
-                        createdBy: userId
-                    })
-                }).catch(err => console.error('Failed to notify admin:', err));
+                // Notify admin about new venue (direct function call - more reliable than fetch)
+                sendNewVenueNotification(
+                    newVenue.name,
+                    newVenue.city,
+                    newVenue.capacity,
+                    userId
+                ).then(result => {
+                    if (result.success) {
+                        console.log('✅ Admin notification sent successfully');
+                    } else {
+                        console.error('❌ Admin notification failed:', result.error);
+                    }
+                }).catch(err => console.error('❌ Failed to notify admin:', err));
             } else if (venueId && !venue) {
                 // Get venue name for fingerprint
                 const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [venueId]);
