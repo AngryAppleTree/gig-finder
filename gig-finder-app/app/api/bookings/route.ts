@@ -66,18 +66,18 @@ export async function POST(req: Request) {
         await client.query('BEGIN');
 
         // Check Capacity & Locking to prevent race conditions
+        // Lock the events row first (can't use FOR UPDATE with LEFT JOIN)
         const eventRes = await client.query(`
             SELECT 
-                e.name, 
-                e.date, 
-                e.max_capacity, 
-                e.tickets_sold, 
-                e.is_internal_ticketing, 
-                e.ticket_price,
-                v.name as venue_name
-            FROM events e
-            LEFT JOIN venues v ON e.venue_id = v.id
-            WHERE e.id = $1 
+                name, 
+                date, 
+                max_capacity, 
+                tickets_sold, 
+                is_internal_ticketing, 
+                ticket_price,
+                venue_id
+            FROM events
+            WHERE id = $1 
             FOR UPDATE
         `, [eventId]);
 
@@ -86,6 +86,15 @@ export async function POST(req: Request) {
         }
 
         const event = eventRes.rows[0];
+
+        // Get venue name separately (no lock needed)
+        event.venue_name = 'TBA';
+        if (event.venue_id) {
+            const venueRes = await client.query('SELECT name FROM venues WHERE id = $1', [event.venue_id]);
+            if (venueRes.rows[0]) {
+                event.venue_name = venueRes.rows[0].name;
+            }
+        }
 
         // Ensure internal ticketing is enabled
         // Note: For MVP testing, if is_internal_ticketing is null/false, we might want to block or default allow for testing? 
