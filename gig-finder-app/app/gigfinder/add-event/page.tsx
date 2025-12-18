@@ -147,6 +147,8 @@ function AddEventForm() {
             genre: formData.get('genre') as string,
             description: formData.get('description') as string,
             price: formData.get('price') as string,
+            presale_price: formData.get('presale_price') as string,
+            presale_caption: formData.get('presale_caption') as string,
             is_internal_ticketing: !!formData.get('is_internal_ticketing'),
             sell_tickets: !!formData.get('sell_tickets'),
             imageUrl: posterBase64
@@ -409,6 +411,57 @@ function AddEventForm() {
                 </div>
                 <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
                     Enter amount in £ (e.g., 10 or 10.50). Use 0 for free entry.
+                </p>
+            </div>
+
+            {/* Presale Price (Optional) */}
+            <div>
+                <label htmlFor="presale_price" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                    Record Presale Price (Optional)
+                </label>
+                <div style={{ position: 'relative' }}>
+                    <span style={{
+                        position: 'absolute',
+                        left: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: 'var(--color-primary)',
+                        fontFamily: 'var(--font-primary)',
+                        fontSize: '1.2rem',
+                        pointerEvents: 'none'
+                    }}>£</span>
+                    <input
+                        type="text"
+                        id="presale_price"
+                        name="presale_price"
+                        className="text-input"
+                        style={{ width: '100%', paddingLeft: '32px' }}
+                        placeholder="8.00"
+                        pattern="^\d+(\.\d{0,2})?$"
+                        title="Enter a valid price (e.g., 8 or 8.50)"
+                    />
+                </div>
+                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                    Discounted price for customers who pre-buy records
+                </p>
+            </div>
+
+            {/* Presale Caption (Optional) */}
+            <div>
+                <label htmlFor="presale_caption" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                    Presale Explanation (Optional)
+                </label>
+                <input
+                    type="text"
+                    id="presale_caption"
+                    name="presale_caption"
+                    className="text-input"
+                    style={{ width: '100%' }}
+                    placeholder="e.g., Buy our new album and get £2 off entry!"
+                    maxLength={200}
+                />
+                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                    Explain the presale offer (max 200 characters)
                 </p>
             </div>
 

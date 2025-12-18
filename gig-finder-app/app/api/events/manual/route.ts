@@ -15,14 +15,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        let name, venue, date, time, genre, description, priceBody, isInternalTicketing, sellTickets, imageUrl, maxCapacity, venueId, newVenue;
+        let name, venue, date, time, genre, description, priceBody, presalePrice, presaleCaption, isInternalTicketing, sellTickets, imageUrl, maxCapacity, venueId, newVenue;
 
         const contentType = request.headers.get('content-type') || '';
         const isJson = contentType.includes('application/json');
 
         if (isJson) {
             const body = await request.json();
-            ({ name, venue, date, time, genre, description, price: priceBody, imageUrl, venue_id: venueId, new_venue: newVenue } = body);
+            ({ name, venue, date, time, genre, description, price: priceBody, presale_price: presalePrice, presale_caption: presaleCaption, imageUrl, venue_id: venueId, new_venue: newVenue } = body);
             isInternalTicketing = body.is_internal_ticketing;
             sellTickets = body.sell_tickets;
             maxCapacity = body.max_capacity;
@@ -130,14 +130,24 @@ export async function POST(request: NextRequest) {
                 }
             }
 
+            // Parse presale price if provided
+            let presalePriceValue = null;
+            if (presalePrice) {
+                const numericPresale = presalePrice.replace(/[^\d.]/g, '');
+                const parsedPresale = parseFloat(numericPresale);
+                if (!isNaN(parsedPresale)) {
+                    presalePriceValue = parsedPresale;
+                }
+            }
+
             // Insert event with venue_id
             const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
 
             const result = await client.query(
-                `INSERT INTO events (name, venue_id, date, genre, description, price, ticket_price, price_currency, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                `INSERT INTO events (name, venue_id, date, genre, description, price, ticket_price, price_currency, presale_price, presale_caption, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
        RETURNING id`,
-                [name, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl]
+                [name, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', presalePriceValue, presaleCaption || null, userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl]
             );
 
             client.release();
