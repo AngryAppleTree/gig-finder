@@ -95,11 +95,6 @@ export default function ContactPage() {
                             {status === 'loading' ? 'Sending...' : 'Send Message 🚀'}
                         </button>
                     </form>
-
-                    <div className={styles.contactInfo}>
-                        <h3>Other Ways to Reach Us</h3>
-                        <p><strong>Email:</strong> <a href="mailto:alex.bunch@angryappletree.com" className={styles.link}>alex.bunch@angryappletree.com</a></p>
-                    </div>
                 </div>
             </main>
 
