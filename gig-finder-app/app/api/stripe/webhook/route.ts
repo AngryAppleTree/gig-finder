@@ -56,7 +56,10 @@ export async function POST(req: NextRequest) {
 
             // Get event details
             const eventRes = await client.query(
-                'SELECT name, venue, date, ticket_price FROM events WHERE id = $1',
+                `SELECT e.name, e.date, e.ticket_price, v.name as venue_name
+                 FROM events e
+                 LEFT JOIN venues v ON e.venue_id = v.id
+                 WHERE e.id = $1`,
                 [eventId]
             );
 
@@ -105,7 +108,7 @@ export async function POST(req: NextRequest) {
                             <p>Hi ${customerName},</p>
                             <p>Your payment of <strong>£${totalPaid}</strong> has been confirmed.</p>
                             <p><strong>Event:</strong> ${eventData.name}<br>
-                            <strong>Venue:</strong> ${eventData.venue}<br>
+                            <strong>Venue:</strong> ${eventData.venue_name || 'TBA'}<br>>
                             <strong>Date:</strong> ${dateStr}<br>
                             <strong>Tickets:</strong> ${quantity}</p>
                             

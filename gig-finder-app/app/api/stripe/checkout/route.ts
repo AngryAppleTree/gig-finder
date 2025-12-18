@@ -38,7 +38,10 @@ export async function POST(req: NextRequest) {
         try {
             // Get event details
             const eventRes = await client.query(
-                'SELECT name, venue, date, ticket_price, max_capacity, tickets_sold FROM events WHERE id = $1',
+                `SELECT e.name, e.date, e.ticket_price, e.max_capacity, e.tickets_sold, v.name as venue_name
+                 FROM events e
+                 LEFT JOIN venues v ON e.venue_id = v.id
+                 WHERE e.id = $1`,
                 [eventId]
             );
 
@@ -78,7 +81,7 @@ export async function POST(req: NextRequest) {
                             currency: 'gbp',
                             product_data: {
                                 name: event.name,
-                                description: `${event.venue} - ${new Date(event.date).toLocaleDateString()}`,
+                                description: `${event.venue_name || 'TBA'} - ${new Date(event.date).toLocaleDateString()}`,
                             },
                             unit_amount: unitAmount,
                         },
