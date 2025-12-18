@@ -114,7 +114,7 @@ export default function VenuesPage() {
                     onClick={handleCreate}
                     style={{
                         background: 'var(--color-primary)',
-                        color: 'black',
+                        color: 'white',
                         padding: '0.75rem 1.5rem',
                         border: 'none',
                         borderRadius: '4px',
@@ -232,7 +232,7 @@ export default function VenuesPage() {
                             onClick={handleSave}
                             style={{
                                 background: 'var(--color-primary)',
-                                color: 'black',
+                                color: 'white',
                                 padding: '0.75rem 1.5rem',
                                 border: 'none',
                                 borderRadius: '4px',
@@ -285,7 +285,7 @@ export default function VenuesPage() {
                                         onClick={() => handleEdit(venue)}
                                         style={{
                                             background: 'var(--color-secondary)',
-                                            color: 'black',
+                                            color: 'white',
                                             padding: '0.5rem 1rem',
                                             border: 'none',
                                             borderRadius: '4px',
