@@ -42,8 +42,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Basic validation
-        if (!name || !venue || !date) {
+        if (!name || !date) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // Validate venue is provided
+        if (!venueId && !newVenue) {
+            return NextResponse.json({ error: 'Venue is required' }, { status: 400 });
         }
 
         const client = await pool.connect();
@@ -56,10 +61,11 @@ export async function POST(request: NextRequest) {
                     `INSERT INTO venues (name, city, capacity) 
                      VALUES ($1, $2, $3) 
                      ON CONFLICT (name) DO UPDATE SET city = EXCLUDED.city, capacity = EXCLUDED.capacity
-                     RETURNING id`,
+                     RETURNING id, name`,
                     [newVenue.name, newVenue.city || null, newVenue.capacity || null]
                 );
                 venueId = venueResult.rows[0].id;
+                venue = venueResult.rows[0].name; // For fingerprint
                 console.log('New venue created with ID:', venueId);
 
                 // Notify admin about new venue (fire and forget)
@@ -73,6 +79,12 @@ export async function POST(request: NextRequest) {
                         createdBy: userId
                     })
                 }).catch(err => console.error('Failed to notify admin:', err));
+            } else if (venueId && !venue) {
+                // Get venue name for fingerprint
+                const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [venueId]);
+                if (venueResult.rows[0]) {
+                    venue = venueResult.rows[0].name;
+                }
             }
 
             // Validate capacity - use venue capacity if available, otherwise require it
@@ -97,7 +109,7 @@ export async function POST(request: NextRequest) {
             }
 
             // Create fingerprint (e.g., date|venue|name)
-            const fingerprint = `${date}|${venue.toLowerCase().trim()}|${name.toLowerCase().trim()}`;
+            const fingerprint = `${date}|${(venue || 'unknown').toLowerCase().trim()}|${name.toLowerCase().trim()}`;
 
             // Parse price - extract numerical value
             let ticketPrice = null;
@@ -119,10 +131,10 @@ export async function POST(request: NextRequest) {
             const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
 
             const result = await client.query(
-                `INSERT INTO events (name, venue, venue_id, date, genre, description, price, ticket_price, price_currency, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                `INSERT INTO events (name, venue_id, date, genre, description, price, ticket_price, price_currency, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING id`,
-                [name, venue, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl]
+                [name, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl]
             );
 
             client.release();
