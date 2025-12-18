@@ -80,6 +80,9 @@ export default function AdminDashboard() {
                     <a href="/admin/events" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-center">
                         Manage All Events
                     </a>
+                    <a href="/admin/venues" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-center">
+                        Manage Venues
+                    </a>
                     <a href="/gigfinder" target="_blank" className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-center">
                         View Live Site
                     </a>
