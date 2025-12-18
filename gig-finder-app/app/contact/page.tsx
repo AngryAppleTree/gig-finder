@@ -5,14 +5,43 @@ import styles from './contact.module.css';
 import { Footer } from '../../components/gigfinder/Footer';
 
 export default function ContactPage() {
-    const [status, setStatus] = useState<'idle' | 'success'>('idle');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Simulate submission
-        console.log("Form Submitted");
-        setStatus('success');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setStatus('loading');
+        setErrorMessage('');
+
+        const formData = new FormData(e.currentTarget);
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            subject: formData.get('subject'),
+            message: formData.get('message'),
+        };
+
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setStatus('success');
+                e.currentTarget.reset();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                setStatus('error');
+                setErrorMessage(result.error || 'Failed to send message');
+            }
+        } catch (error) {
+            setStatus('error');
+            setErrorMessage('Network error. Please try again or email us directly.');
+        }
     };
 
     return (
@@ -24,6 +53,12 @@ export default function ContactPage() {
                     {status === 'success' && (
                         <div className={styles.successMessage}>
                             ✅ Thank you! Your message has been sent successfully. We'll get back to you soon!
+                        </div>
+                    )}
+
+                    {status === 'error' && (
+                        <div className={styles.successMessage} style={{ background: '#fee', border: '1px solid #fcc' }}>
+                            ❌ {errorMessage}
                         </div>
                     )}
 
@@ -56,7 +91,9 @@ export default function ContactPage() {
                                 placeholder="Tell us what's on your mind..." className={styles.textarea}></textarea>
                         </div>
 
-                        <button type="submit" className={styles.btnSubmit}>Send Message 🚀</button>
+                        <button type="submit" className={styles.btnSubmit} disabled={status === 'loading'}>
+                            {status === 'loading' ? 'Sending...' : 'Send Message 🚀'}
+                        </button>
                     </form>
 
                     <div className={styles.contactInfo}>
