@@ -39,6 +39,7 @@ export default function ContactPage() {
                 setErrorMessage(result.error || 'Failed to send message');
             }
         } catch (error) {
+            console.error('Contact form submission error:', error);
             setStatus('error');
             setErrorMessage('Network error. Please try again or email us directly.');
         }

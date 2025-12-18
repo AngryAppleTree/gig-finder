@@ -67,6 +67,11 @@ export async function POST(req: Request) {
 
     } catch (error: any) {
         console.error('Contact form error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
         return NextResponse.json(
             { error: 'Failed to send message. Please try again or email us directly.' },
             { status: 500 }
