@@ -50,6 +50,34 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                     <p className="gig-location">📍 {locationText} {distanceHtml}</p>
                     <p className="gig-date">📅 {gig.date} at {gig.time}</p>
                     <p className="gig-price">🎟️ {gig.price}</p>
+                    {gig.presale_price && (
+                        <div style={{
+                            marginTop: '0.5rem',
+                            padding: '0.5rem',
+                            background: 'rgba(255, 51, 102, 0.1)',
+                            border: '1px solid var(--color-primary)',
+                            borderRadius: '4px'
+                        }}>
+                            <p style={{
+                                color: 'var(--color-secondary)',
+                                fontWeight: 'bold',
+                                fontSize: '0.9rem',
+                                margin: '0 0 0.25rem 0'
+                            }}>
+                                💿 Presale: £{gig.presale_price.toFixed(2)}
+                            </p>
+                            {gig.presale_caption && (
+                                <p style={{
+                                    color: '#ccc',
+                                    fontSize: '0.75rem',
+                                    margin: 0,
+                                    fontStyle: 'italic'
+                                }}>
+                                    {gig.presale_caption}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div style={{ marginTop: '1rem' }}>
                     {/* Only allow internal ticketing for manually created events */}

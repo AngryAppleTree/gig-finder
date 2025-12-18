@@ -19,4 +19,6 @@ export interface Gig {
     capacity?: number; // For client-side filtering
     priceVal?: number; // For client-side filtering
     source?: string; // 'manual' or 'skiddle' - determines if internal ticketing is allowed
+    presale_price?: number; // Discounted price for record buyers
+    presale_caption?: string; // Explanation of presale offer
 }
