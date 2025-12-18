@@ -52,10 +52,11 @@ function AddEventFormV2() {
 
     const fetchVenues = async () => {
         try {
-            const res = await fetch('/api/admin/venues');
+            const res = await fetch('/api/venues');
             const data = await res.json();
             if (data.venues) {
                 setVenues(data.venues);
+                console.log('Loaded venues:', data.venues);
             }
         } catch (error) {
             console.error('Failed to fetch venues:', error);
