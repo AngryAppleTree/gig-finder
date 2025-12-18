@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { sendNewVenueNotification } from '@/lib/notifications';
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
