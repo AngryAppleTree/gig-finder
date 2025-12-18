@@ -266,6 +266,10 @@ export function Wizard({ isAdmin }: WizardProps) {
                                 <span className="option-icon">🛣️</span>
                                 <span className="option-text">Within 100 Miles</span>
                             </button>
+                            <button className="option-btn" onClick={() => handleLocation('scotland')}>
+                                <span className="option-icon">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span>
+                                <span className="option-text">Anywhere in Scotland</span>
+                            </button>
                         </div>
 
                         {(choices.where === 'local' || choices.where === '100miles') && (
