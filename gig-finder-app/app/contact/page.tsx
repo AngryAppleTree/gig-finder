@@ -34,6 +34,11 @@ export default function ContactPage() {
                 setStatus('success');
                 e.currentTarget.reset();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Redirect to home after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/gigfinder';
+                }, 3000);
             } else {
                 setStatus('error');
                 setErrorMessage(result.error || 'Failed to send message');
@@ -59,7 +64,9 @@ export default function ContactPage() {
                 <div className={styles.card}>
                     {status === 'success' && (
                         <div className={styles.successMessage}>
-                            ✅ Thank you! Your message has been sent successfully. We'll get back to you soon!
+                            ✅ Thank you! Your message has been sent successfully.
+                            <br />
+                            <small>Redirecting you back to GigFinder in 3 seconds...</small>
                         </div>
                     )}
 
