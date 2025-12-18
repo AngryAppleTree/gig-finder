@@ -3,16 +3,34 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense, useState } from 'react';
 
+interface Venue {
+    id: number;
+    name: string;
+    city?: string;
+    capacity?: number;
+}
+
 function AddEventForm() {
     const { isLoaded, isSignedIn } = useUser();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const successParam = searchParams.get('success');
+    const newVenueParam = searchParams.get('newVenue');
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [posterPreview, setPosterPreview] = useState<string>('');
     const [posterBase64, setPosterBase64] = useState<string>('');
-    const [statusMessage, setStatusMessage] = useState(successParam === 'true' ? '✅ Success! Gig added.' : '');
+    const [statusMessage, setStatusMessage] = useState('');
+
+    // Venue autocomplete state
+    const [venues, setVenues] = useState<Venue[]>([]);
+    const [venueInput, setVenueInput] = useState('');
+    const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+    const [showVenueSuggestions, setShowVenueSuggestions] = useState(false);
+    const [isNewVenue, setIsNewVenue] = useState(false);
+
+    // New venue fields
+    const [newVenueCity, setNewVenueCity] = useState('');
+    const [newVenueCapacity, setNewVenueCapacity] = useState('');
 
     useEffect(() => {
         if (isLoaded && !isSignedIn) {
@@ -20,15 +38,63 @@ function AddEventForm() {
         }
     }, [isLoaded, isSignedIn, router]);
 
+    // Show success message for new venue
+    useEffect(() => {
+        if (newVenueParam) {
+            setStatusMessage(`✅ Thanks for submitting a gig! We have notified the admin so they can add the new venue as "${newVenueParam}" was not yet on our radar.`);
+        }
+    }, [newVenueParam]);
+
+    // Fetch venues on mount
+    useEffect(() => {
+        fetchVenues();
+    }, []);
+
+    const fetchVenues = async () => {
+        try {
+            const res = await fetch('/api/venues');
+            const data = await res.json();
+            if (data.venues) {
+                setVenues(data.venues);
+                console.log('Loaded venues:', data.venues);
+            }
+        } catch (error) {
+            console.error('Failed to fetch venues:', error);
+        }
+    };
+
+    const handleVenueInputChange = (value: string) => {
+        setVenueInput(value);
+        setShowVenueSuggestions(true);
+
+        // Check if it matches an existing venue
+        const match = venues.find(v => v.name.toLowerCase() === value.toLowerCase());
+        if (match) {
+            setSelectedVenue(match);
+            setIsNewVenue(false);
+        } else {
+            setSelectedVenue(null);
+            setIsNewVenue(value.length > 0);
+        }
+    };
+
+    const handleVenueSelect = (venue: Venue) => {
+        setVenueInput(venue.name);
+        setSelectedVenue(venue);
+        setIsNewVenue(false);
+        setShowVenueSuggestions(false);
+    };
+
+    const filteredVenues = venues.filter(v =>
+        v.name.toLowerCase().includes(venueInput.toLowerCase())
+    ).slice(0, 5);
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             try {
-                // Initial Preview
                 const tempUrl = URL.createObjectURL(file);
                 setPosterPreview(tempUrl);
-
-                // Resize and Compress
                 const resized = await resizeImage(file);
                 setPosterBase64(resized);
             } catch (err) {
@@ -46,7 +112,6 @@ function AddEventForm() {
                 const img = new Image();
                 img.src = event.target?.result as string;
                 img.onload = () => {
-                    // Resize to max 600px width
                     const MAX_WIDTH = 600;
                     let width = img.width;
                     let height = img.height;
@@ -61,8 +126,6 @@ function AddEventForm() {
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx?.drawImage(img, 0, 0, width, height);
-
-                    // Compress to JPEG 70% quality
                     resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
             };
@@ -76,19 +139,37 @@ function AddEventForm() {
 
         const formData = new FormData(e.currentTarget);
 
-        const payload = {
+        // Build payload
+        const payload: any = {
             name: formData.get('name') as string,
-            venue: formData.get('venue') as string,
             date: formData.get('date') as string,
             time: formData.get('time') as string,
             genre: formData.get('genre') as string,
             description: formData.get('description') as string,
             price: formData.get('price') as string,
-            max_capacity: formData.get('max_capacity') as string,
             is_internal_ticketing: !!formData.get('is_internal_ticketing'),
             sell_tickets: !!formData.get('sell_tickets'),
-            imageUrl: posterBase64 // Send logic string
+            imageUrl: posterBase64
         };
+
+        // Handle venue
+        if (selectedVenue) {
+            // Existing venue
+            payload.venue_id = selectedVenue.id;
+            payload.venue = selectedVenue.name; // For backward compatibility
+        } else if (isNewVenue && venueInput) {
+            // New venue - create it
+            payload.venue = venueInput;
+            payload.new_venue = {
+                name: venueInput,
+                city: newVenueCity,
+                capacity: parseInt(newVenueCapacity) || null
+            };
+        } else {
+            setStatusMessage('❌ Please select or enter a venue');
+            setIsSubmitting(false);
+            return;
+        }
 
         try {
             const res = await fetch('/api/events/manual', {
@@ -98,13 +179,19 @@ function AddEventForm() {
             });
 
             if (res.ok) {
-                // Redirect logic
-                router.push('/gigfinder/add-event?success=true');
-                // Or just reset form
-                setStatusMessage('✅ Event Added Successfully!');
-                setPosterPreview('');
-                setPosterBase64('');
-                (e.target as HTMLFormElement).reset();
+                if (isNewVenue) {
+                    // Redirect with new venue message
+                    router.push(`/gigfinder/add-event?newVenue=${encodeURIComponent(venueInput)}`);
+                } else {
+                    // Normal success
+                    setStatusMessage('✅ Event Added Successfully!');
+                    setPosterPreview('');
+                    setPosterBase64('');
+                    setVenueInput('');
+                    setSelectedVenue(null);
+                    setIsNewVenue(false);
+                    (e.target as HTMLFormElement).reset();
+                }
             } else {
                 const data = await res.json();
                 setStatusMessage(`❌ Error: ${data.error || 'Failed to add event'}`);
@@ -143,11 +230,124 @@ function AddEventForm() {
                 <input type="text" id="name" name="name" required className="text-input" style={{ width: '100%' }} placeholder="e.g. The Spiders from Mars" />
             </div>
 
-            {/* Venue */}
-            <div>
+            {/* Venue with Autocomplete */}
+            <div style={{ position: 'relative' }}>
                 <label htmlFor="venue" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Venue</label>
-                <input type="text" id="venue" name="venue" required className="text-input" style={{ width: '100%' }} placeholder="e.g. Leith Depot" />
+                <input
+                    type="text"
+                    id="venue"
+                    value={venueInput}
+                    onChange={(e) => handleVenueInputChange(e.target.value)}
+                    onFocus={() => setShowVenueSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowVenueSuggestions(false), 200)}
+                    required
+                    className="text-input"
+                    style={{ width: '100%' }}
+                    placeholder="Start typing venue name..."
+                    autoComplete="off"
+                />
+
+                {/* Autocomplete Dropdown */}
+                {showVenueSuggestions && venueInput && filteredVenues.length > 0 && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        background: '#222',
+                        border: '1px solid var(--color-primary)',
+                        borderRadius: '4px',
+                        marginTop: '4px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        zIndex: 1000
+                    }}>
+                        {filteredVenues.map(venue => (
+                            <div
+                                key={venue.id}
+                                onClick={() => handleVenueSelect(venue)}
+                                style={{
+                                    padding: '0.75rem',
+                                    cursor: 'pointer',
+                                    borderBottom: '1px solid #333',
+                                    transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <div style={{ fontWeight: 'bold' }}>{venue.name}</div>
+                                <div style={{ fontSize: '0.85rem', color: '#888' }}>
+                                    {venue.city || 'Unknown city'} • Capacity: {venue.capacity || 'Unknown'}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* New Venue Indicator */}
+                {isNewVenue && venueInput && (
+                    <p style={{ fontSize: '0.85rem', color: 'var(--color-secondary)', marginTop: '0.5rem' }}>
+                        ✨ New venue - we'll add "{venueInput}" to our database
+                    </p>
+                )}
             </div>
+
+            {/* Conditional: New Venue Fields */}
+            {isNewVenue && venueInput && (
+                <div style={{
+                    padding: '1rem',
+                    background: 'rgba(255, 215, 0, 0.1)',
+                    border: '2px solid var(--color-secondary)',
+                    borderRadius: '8px'
+                }}>
+                    <h3 style={{
+                        fontFamily: 'var(--font-primary)',
+                        fontSize: '1.2rem',
+                        marginBottom: '1rem',
+                        color: 'var(--color-secondary)'
+                    }}>
+                        New Venue Details
+                    </h3>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                                Town/City *
+                            </label>
+                            <input
+                                type="text"
+                                value={newVenueCity}
+                                onChange={(e) => setNewVenueCity(e.target.value)}
+                                required={isNewVenue}
+                                className="text-input"
+                                style={{ width: '100%' }}
+                                placeholder="e.g. Edinburgh"
+                            />
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                                Venue Capacity *
+                            </label>
+                            <input
+                                type="number"
+                                value={newVenueCapacity}
+                                onChange={(e) => setNewVenueCapacity(e.target.value)}
+                                required={isNewVenue}
+                                className="text-input"
+                                style={{ width: '100%' }}
+                                placeholder="e.g. 200"
+                                min="1"
+                                max="10000"
+                            />
+                        </div>
+                    </div>
+
+                    <p style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '0.5rem' }}>
+                        💡 This information helps us categorize the venue correctly
+                    </p>
+                </div>
+            )}
 
             {/* Date & Time */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -182,7 +382,7 @@ function AddEventForm() {
                 <textarea id="description" name="description" className="text-input" style={{ width: '100%', minHeight: '100px', textTransform: 'none' }} placeholder="Tell us about the gig..."></textarea>
             </div>
 
-            {/* Price (Optional) */}
+            {/* Price */}
             <div>
                 <label htmlFor="price" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Price</label>
                 <div style={{ position: 'relative' }}>
@@ -205,21 +405,6 @@ function AddEventForm() {
                         placeholder="10.00 or 0 for Free"
                         pattern="^\d+(\.\d{0,2})?$"
                         title="Enter a valid price (e.g., 10 or 10.50). Use 0 for free entry."
-                        onInput={(e) => {
-                            const input = e.currentTarget;
-                            // Remove any non-numeric characters except decimal point
-                            let value = input.value.replace(/[^\d.]/g, '');
-                            // Ensure only one decimal point
-                            const parts = value.split('.');
-                            if (parts.length > 2) {
-                                value = parts[0] + '.' + parts.slice(1).join('');
-                            }
-                            // Limit to 2 decimal places
-                            if (parts[1] && parts[1].length > 2) {
-                                value = parts[0] + '.' + parts[1].substring(0, 2);
-                            }
-                            input.value = value;
-                        }}
                     />
                 </div>
                 <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
@@ -245,27 +430,6 @@ function AddEventForm() {
                         <img src={posterPreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px', border: '2px solid #555' }} />
                     </div>
                 )}
-            </div>
-
-            {/* Venue Capacity */}
-            <div>
-                <label htmlFor="max_capacity" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
-                    Venue Capacity
-                </label>
-                <input
-                    type="number"
-                    id="max_capacity"
-                    name="max_capacity"
-                    required
-                    className="text-input"
-                    style={{ width: '100%' }}
-                    placeholder="e.g. 100, 250, 500"
-                    min="1"
-                    max="10000"
-                />
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
-                    Maximum number of people who can attend this event
-                </p>
             </div>
 
             {/* Ticketing Options */}
