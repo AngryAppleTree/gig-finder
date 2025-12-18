@@ -63,23 +63,42 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { name, venue, date, time, price, ticket_url, description, genre } = body;
+        const { name, venue, venueId, date, time, price, ticket_url, description, genre } = body;
 
         const dateTimeStr = `${date}T${time}:00`;
         const dateObj = new Date(dateTimeStr);
 
-        const fingerprint = `${date}|${venue.toLowerCase()}|${name.toLowerCase().trim()}`;
-
         const client = await pool.connect();
         try {
+            // If venueId provided, use it; otherwise try to find venue by name
+            let finalVenueId = venueId;
+            let venueName = venue;
+
+            if (!finalVenueId && venue) {
+                // Try to find venue by name
+                const venueResult = await client.query('SELECT id, name FROM venues WHERE name = $1', [venue]);
+                if (venueResult.rows[0]) {
+                    finalVenueId = venueResult.rows[0].id;
+                    venueName = venueResult.rows[0].name;
+                }
+            } else if (finalVenueId && !venueName) {
+                // Get venue name for fingerprint
+                const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [finalVenueId]);
+                if (venueResult.rows[0]) {
+                    venueName = venueResult.rows[0].name;
+                }
+            }
+
+            const fingerprint = `${date}|${(venueName || 'unknown').toLowerCase()}|${name.toLowerCase().trim()}`;
+
             const res = await client.query(`
                 INSERT INTO events (
-                    name, venue, date, price, ticket_url, description, 
+                    name, venue_id, date, price, ticket_url, description, 
                     fingerprint, user_id, approved, created_at, genre
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)
                 RETURNING id
             `, [
-                name, venue, dateObj, price, ticket_url, description,
+                name, finalVenueId || null, dateObj, price, ticket_url, description,
                 fingerprint, 'admin', true, genre
             ]);
             return NextResponse.json({ message: 'Created', id: res.rows[0].id });
