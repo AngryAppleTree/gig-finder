@@ -12,6 +12,7 @@ interface Venue {
     longitude?: number;
     capacity?: number;
     website?: string;
+    phone?: string;
     event_count?: number;
 }
 
@@ -158,11 +159,22 @@ export default function VenuesPage() {
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Address</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Address (Optional)</label>
                             <input
                                 type="text"
                                 value={formData.address || ''}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                placeholder="e.g. 123 High Street"
+                                style={{ width: '100%', padding: '0.5rem', background: '#222', color: 'white', border: '1px solid #444', borderRadius: '4px' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Phone (Optional)</label>
+                            <input
+                                type="tel"
+                                value={formData.phone || ''}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                placeholder="e.g. 0131 123 4567"
                                 style={{ width: '100%', padding: '0.5rem', background: '#222', color: 'white', border: '1px solid #444', borderRadius: '4px' }}
                             />
                         </div>

@@ -61,6 +61,18 @@ export async function POST(request: NextRequest) {
                 );
                 venueId = venueResult.rows[0].id;
                 console.log('New venue created with ID:', venueId);
+
+                // Notify admin about new venue (fire and forget)
+                fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/notify-new-venue`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        venueName: newVenue.name,
+                        city: newVenue.city,
+                        capacity: newVenue.capacity,
+                        createdBy: userId
+                    })
+                }).catch(err => console.error('Failed to notify admin:', err));
             }
 
             // Validate capacity - use venue capacity if available, otherwise require it
