@@ -1,6 +1,6 @@
+import { currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
-import { cookies } from 'next/headers';
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
@@ -8,9 +8,8 @@ const pool = new Pool({
 });
 
 async function checkAdmin() {
-    const cookieStore = await cookies();
-    const adminSession = cookieStore.get('gigfinder_admin');
-    return adminSession?.value === 'true';
+    const user = await currentUser();
+    return user?.publicMetadata?.role === 'admin';
 }
 
 // GET - List all venues
