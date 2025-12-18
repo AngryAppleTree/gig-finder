@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getVenueCapacity } from './venue-capacities';
 import { mapGenreToVibe } from './genre-mapping';
 import { findOrCreateVenue, type VenueData } from '@/lib/venue-utils';
+import { findOrCreateEvent, type EventData } from '@/lib/event-utils';
 
 const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
 
@@ -194,10 +195,9 @@ export async function GET(request: NextRequest) {
 
         console.log(`✅ Processed ${venueMap.size} unique venues`);
 
-        // Transform Skiddle
+        // Process and persist Skiddle events to database
         const skiddleEvents = await Promise.all((data.results || []).map(async (event: SkiddleEvent, index: number) => {
-            // ... (Logic from previous file for Price/Vibe/Date) ...
-            // Re-implementing simplified logic here to keep file clean
+            // Parse price
             let priceVal = 0;
             let priceText = 'Free';
             if (event.entryprice) {
@@ -205,32 +205,52 @@ export async function GET(request: NextRequest) {
                 if (m) { priceVal = parseFloat(m[1]); priceText = `£${priceVal.toFixed(2)}`; }
             }
 
+            // Map genre to vibe
             let vibe = mapGenreToVibe(event.genres || []);
             if (vibe === 'indie_alt' && !event.genres?.length) {
-                // Fallback detection (simplified for replacement)
+                // Fallback detection
                 const text = (event.eventname + ' ' + event.description).toLowerCase();
                 if (text.match(/rock|punk/)) vibe = 'rock_blues_punk';
                 else if (text.match(/metal/)) vibe = 'metal';
                 else if (text.match(/electronic|dj/)) vibe = 'electronic';
-                // ... others omitted for brevity, keeping existing logic is best but I must replace full block
             }
 
             const dateObj = new Date(event.date);
             const dateStr = event.date; // YYYY-MM-DD
 
-            // Deduplication Fingerprint Check
-            // Fingerprint: date|venue|name
+            // Deduplication check against manual events
             const fp = `${dateStr}|${event.venue.name.toLowerCase().trim()}|${event.eventname.toLowerCase().trim()}`;
-
             if (manualFingerprints.has(fp)) {
-                return null; // Skip this event, Manual Version takes priority
+                return null; // Skip - manual version takes priority
             }
 
-            // Get venue capacity from database via venueMap
+            // Get venue ID from venueMap
             const venueId = venueMap.get(event.venue.name.toLowerCase());
-            let venueCapacity: number | null = null;
+            if (!venueId) {
+                console.error(`⚠️  No venue ID for ${event.venue.name}, skipping event`);
+                return null;
+            }
 
-            if (venueId) {
+            // Persist event to database using shared utility
+            try {
+                const eventData: EventData = {
+                    name: event.eventname,
+                    venueId: venueId,
+                    date: dateStr,
+                    time: event.openingtimes?.doorsopen || undefined,
+                    genre: event.genres?.[0]?.name || undefined,
+                    description: event.description || undefined,
+                    price: priceText,
+                    ticketPrice: priceVal,
+                    ticketUrl: event.link,
+                    imageUrl: event.imageurl,
+                    source: 'skiddle'
+                };
+
+                const persistedEvent = await findOrCreateEvent(eventData);
+
+                // Get venue capacity for display
+                let venueCapacity: number | null = null;
                 try {
                     const client = await pool.connect();
                     const venueResult = await client.query('SELECT capacity FROM venues WHERE id = $1', [venueId]);
@@ -241,28 +261,32 @@ export async function GET(request: NextRequest) {
                 } catch (err) {
                     console.error(`Failed to get capacity for venue ${event.venue.name}:`, err);
                 }
-            }
 
-            return {
-                id: parseInt(event.id),
-                name: event.eventname,
-                location: event.venue.name,
-                venue: event.venue.name,
-                town: event.venue.town,
-                coords: { lat: parseFloat(event.venue.latitude), lon: parseFloat(event.venue.longitude) },
-                capacity: venueCapacity, // Use capacity from venues table
-                dateObj: event.date,
-                date: dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
-                time: event.openingtimes?.doorsopen || 'TBA',
-                priceVal,
-                price: priceText,
-                vibe,
-                ticketUrl: event.link,
-                description: event.description || '',
-                imageUrl: event.imageurl,
-                source: 'skiddle',
-                priority: 3
-            };
+                // Return formatted event for display
+                return {
+                    id: persistedEvent.id, // Use database ID
+                    name: event.eventname,
+                    location: event.venue.name,
+                    venue: event.venue.name,
+                    town: event.venue.town,
+                    coords: { lat: parseFloat(event.venue.latitude), lon: parseFloat(event.venue.longitude) },
+                    capacity: venueCapacity,
+                    dateObj: event.date,
+                    date: dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+                    time: event.openingtimes?.doorsopen || 'TBA',
+                    priceVal,
+                    price: priceText,
+                    vibe,
+                    ticketUrl: event.link,
+                    description: event.description || '',
+                    imageUrl: event.imageurl,
+                    source: 'skiddle',
+                    priority: 3
+                };
+            } catch (error) {
+                console.error(`Failed to persist event ${event.eventname}:`, error);
+                return null; // Skip this event if persistence fails
+            }
         }));
 
         const filteredSkiddleEvents = skiddleEvents.filter((e: any) => e !== null); // Remove skipped
