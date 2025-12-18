@@ -19,14 +19,25 @@ export async function GET(req: Request) {
 
     const client = await pool.connect();
     try {
-        // Fetch all future events + recent past
+        // Fetch all future events + recent past with venue names
         const res = await client.query(`
-            SELECT * FROM events 
-            WHERE date >= NOW() - INTERVAL '7 days'
-            ORDER BY date ASC
+            SELECT 
+                e.*,
+                v.name as venue_name
+            FROM events e
+            LEFT JOIN venues v ON e.venue_id = v.id
+            WHERE e.date >= NOW() - INTERVAL '7 days'
+            ORDER BY e.date ASC
             LIMIT 200
         `);
-        return NextResponse.json({ events: res.rows });
+
+        // Map venue_name to venue for frontend compatibility
+        const eventsWithVenue = res.rows.map(event => ({
+            ...event,
+            venue: event.venue_name || 'Unknown Venue'
+        }));
+
+        return NextResponse.json({ events: eventsWithVenue });
     } finally {
         client.release();
     }
