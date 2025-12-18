@@ -66,7 +66,20 @@ export async function POST(req: Request) {
         await client.query('BEGIN');
 
         // Check Capacity & Locking to prevent race conditions
-        const eventRes = await client.query('SELECT name, venue, date, max_capacity, tickets_sold, is_internal_ticketing, ticket_price FROM events WHERE id = $1 FOR UPDATE', [eventId]);
+        const eventRes = await client.query(`
+            SELECT 
+                e.name, 
+                e.date, 
+                e.max_capacity, 
+                e.tickets_sold, 
+                e.is_internal_ticketing, 
+                e.ticket_price,
+                v.name as venue_name
+            FROM events e
+            LEFT JOIN venues v ON e.venue_id = v.id
+            WHERE e.id = $1 
+            FOR UPDATE
+        `, [eventId]);
 
         if (eventRes.rowCount === 0) {
             throw new Error('Event not found');
@@ -123,7 +136,7 @@ export async function POST(req: Request) {
                             <h1 style="color: #000;">You're on the list!</h1>
                             <p>Hi ${name},</p>
                             <p>Your spot for <strong>${event.name}</strong> is confirmed.</p>
-                            <p><strong>Venue:</strong> ${event.venue}<br><strong>Date:</strong> ${dateStr}</p>
+                            <p><strong>Venue:</strong> ${event.venue_name || 'TBA'}<br><strong>Date:</strong> ${dateStr}</p>
                             
                             <div style="text-align: center; margin: 20px 0;">
                                 <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
