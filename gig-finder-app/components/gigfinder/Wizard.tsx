@@ -159,6 +159,11 @@ export function Wizard({ isAdmin }: WizardProps) {
     };
 
 
+    // ============================================================================
+    // 🔒 LOCKED: DO NOT MODIFY THIS SECTION
+    // This humorous rejection screen is a core part of the GigFinder brand identity.
+    // The messaging, tone, and behavior are intentionally designed and should not be changed.
+    // ============================================================================
     if (isRejection) {
         return (
             <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
@@ -169,6 +174,7 @@ export function Wizard({ isAdmin }: WizardProps) {
             </div>
         );
     }
+    // ============================================================================
 
     // Render Steps
     return (

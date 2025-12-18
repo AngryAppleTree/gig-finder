@@ -5,6 +5,7 @@ import { Pool } from 'pg';
 import { NextRequest, NextResponse } from 'next/server';
 import { getVenueCapacity } from './venue-capacities';
 import { mapGenreToVibe } from './genre-mapping';
+import { findOrCreateVenue, type VenueData } from '@/lib/venue-utils';
 
 const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
 
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
             venue: venueName,
             town: venueCity,
             coords: { lat: venueLat, lon: venueLon }, // Real coordinates from venues table!
-            capacity: venueCapacity ? venueCapacity.toString() : 'Unknown',
+            capacity: venueCapacity || null, // Return as number from venues table
             dateObj: e.date, // Timestamp
             date: new Date(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
             time: e.date.toString().match(/\d{2}:\d{2}/)?.[0] || 'TBA', // Extract time from timestamp
@@ -158,8 +159,43 @@ export async function GET(request: NextRequest) {
         if (!response.ok) throw new Error(`Skiddle API error: ${response.status}`);
         const data = await response.json();
 
+        // Process venues from Skiddle events - ensure they exist in database
+        const venueMap = new Map<string, number>(); // venue name -> venue_id
+        const skiddleResults = data.results || [];
+
+        console.log(`📍 Processing ${skiddleResults.length} venues from Skiddle...`);
+
+        for (const event of skiddleResults) {
+            const venueName = event.venue?.name;
+            if (!venueName || venueMap.has(venueName.toLowerCase())) {
+                continue; // Skip if no venue or already processed
+            }
+
+            try {
+                const venueData: VenueData = {
+                    name: venueName,
+                    city: event.venue.town || location,
+                    latitude: event.venue.latitude ? parseFloat(event.venue.latitude) : undefined,
+                    longitude: event.venue.longitude ? parseFloat(event.venue.longitude) : undefined,
+                    // Skiddle doesn't provide capacity, address, postcode, or website in event data
+                };
+
+                const venueResult = await findOrCreateVenue(venueData, 'skiddle');
+                venueMap.set(venueName.toLowerCase(), venueResult.id);
+
+                if (venueResult.isNew) {
+                    console.log(`  ✨ New venue created: ${venueName}`);
+                }
+            } catch (error) {
+                console.error(`  ❌ Failed to process venue ${venueName}:`, error);
+                // Continue with other venues
+            }
+        }
+
+        console.log(`✅ Processed ${venueMap.size} unique venues`);
+
         // Transform Skiddle
-        const skiddleEvents = (data.results || []).map((event: SkiddleEvent, index: number) => {
+        const skiddleEvents = await Promise.all((data.results || []).map(async (event: SkiddleEvent, index: number) => {
             // ... (Logic from previous file for Price/Vibe/Date) ...
             // Re-implementing simplified logic here to keep file clean
             let priceVal = 0;
@@ -190,6 +226,23 @@ export async function GET(request: NextRequest) {
                 return null; // Skip this event, Manual Version takes priority
             }
 
+            // Get venue capacity from database via venueMap
+            const venueId = venueMap.get(event.venue.name.toLowerCase());
+            let venueCapacity: number | null = null;
+
+            if (venueId) {
+                try {
+                    const client = await pool.connect();
+                    const venueResult = await client.query('SELECT capacity FROM venues WHERE id = $1', [venueId]);
+                    if (venueResult.rows[0]?.capacity) {
+                        venueCapacity = venueResult.rows[0].capacity;
+                    }
+                    client.release();
+                } catch (err) {
+                    console.error(`Failed to get capacity for venue ${event.venue.name}:`, err);
+                }
+            }
+
             return {
                 id: parseInt(event.id),
                 name: event.eventname,
@@ -197,7 +250,7 @@ export async function GET(request: NextRequest) {
                 venue: event.venue.name,
                 town: event.venue.town,
                 coords: { lat: parseFloat(event.venue.latitude), lon: parseFloat(event.venue.longitude) },
-                capacity: getVenueCapacity(event.venue.name),
+                capacity: venueCapacity, // Use capacity from venues table
                 dateObj: event.date,
                 date: dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
                 time: event.openingtimes?.doorsopen || 'TBA',
@@ -210,10 +263,12 @@ export async function GET(request: NextRequest) {
                 source: 'skiddle',
                 priority: 3
             };
-        }).filter((e: any) => e !== null); // Remove skipped
+        }));
+
+        const filteredSkiddleEvents = skiddleEvents.filter((e: any) => e !== null); // Remove skipped
 
         // Merge Level 1 and Level 3
-        const allEvents = [...formattedManualEvents, ...skiddleEvents];
+        const allEvents = [...formattedManualEvents, ...filteredSkiddleEvents];
 
         // Sort by Date
         allEvents.sort((a, b) => new Date(a.dateObj).getTime() - new Date(b.dateObj).getTime());

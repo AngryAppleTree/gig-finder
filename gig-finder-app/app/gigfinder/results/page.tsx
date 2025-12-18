@@ -94,13 +94,29 @@ function ResultsPageContent() {
                 }
             }
 
-            // 2. Venue size filtering
+            // 2. Venue size filtering (uses capacity from venues table)
             if (venueSize && venueSize !== 'any') {
                 transformedGigs = transformedGigs.filter(gig => {
-                    if (!gig.capacity) return true;
-                    if (venueSize === 'small') return gig.capacity <= 100;
-                    if (venueSize === 'medium') return gig.capacity > 100 && gig.capacity <= 5000;
-                    if (venueSize === 'huge') return gig.capacity > 5000;
+                    // Parse capacity - could be string or number from API
+                    let capacityNum: number | null = null;
+
+                    if (typeof gig.capacity === 'number') {
+                        capacityNum = gig.capacity;
+                    } else if (typeof gig.capacity === 'string' && gig.capacity !== 'Unknown') {
+                        const parsed = parseInt(gig.capacity);
+                        if (!isNaN(parsed)) {
+                            capacityNum = parsed;
+                        }
+                    }
+
+                    // If venue has no capacity data, include it (will improve as venues are added)
+                    if (capacityNum === null) return true;
+
+                    // Apply size filters based on venue capacity
+                    if (venueSize === 'small') return capacityNum <= 100;
+                    if (venueSize === 'medium') return capacityNum > 100 && capacityNum <= 5000;
+                    if (venueSize === 'huge') return capacityNum > 5000;
+
                     return true;
                 });
             }
