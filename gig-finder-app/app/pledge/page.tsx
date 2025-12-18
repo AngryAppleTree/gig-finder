@@ -10,6 +10,12 @@ export default function PledgePage() {
             <main>
                 <h1 className={styles.heroTitle}>🎵 Our Pledge</h1>
 
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <a href="/gigfinder" className={styles.btnSubmit} style={{ display: 'inline-block', textDecoration: 'none', padding: '0.75rem 1.5rem' }}>
+                        ← Back to GigFinder
+                    </a>
+                </div>
+
                 <div className={styles.card}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>
                         The Gig-Finder Pledge: More Than Just a Ticket

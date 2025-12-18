@@ -49,6 +49,12 @@ export default function ContactPage() {
             <main>
                 <h1 className={styles.heroTitle}>📧 Contact Us</h1>
 
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <a href="/gigfinder" className={styles.btnSubmit} style={{ display: 'inline-block', textDecoration: 'none', padding: '0.75rem 1.5rem' }}>
+                        ← Back to GigFinder
+                    </a>
+                </div>
+
                 <div className={styles.card}>
                     {status === 'success' && (
                         <div className={styles.successMessage}>

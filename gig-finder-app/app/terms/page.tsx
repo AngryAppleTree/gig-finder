@@ -10,6 +10,12 @@ export default function TermsPage() {
             <main>
                 <h1 className={styles.heroTitle}>Terms & Conditions</h1>
 
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <a href="/gigfinder" className={styles.btnSubmit} style={{ display: 'inline-block', textDecoration: 'none', padding: '0.75rem 1.5rem' }}>
+                        ← Back to GigFinder
+                    </a>
+                </div>
+
                 <div className={styles.card}>
                     <div style={{ color: '#e0e0e0', lineHeight: 1.6 }}>
                         <h2 style={{ fontSize: '1.5rem', color: '#ff3366', marginBottom: '1rem' }}>
