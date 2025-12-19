@@ -9,7 +9,15 @@ const pool = new Pool({
 
 async function checkAdmin() {
     const user = await currentUser();
-    return user?.publicMetadata?.role === 'admin';
+    if (!user) return false;
+
+    // Check metadata role OR verified email address
+    const isAdminRole = user.publicMetadata?.role === 'admin';
+    const isAdminEmail = user.emailAddresses.some(email =>
+        email.emailAddress === process.env.ADMIN_EMAIL
+    );
+
+    return isAdminRole || isAdminEmail;
 }
 
 export async function GET(req: Request) {

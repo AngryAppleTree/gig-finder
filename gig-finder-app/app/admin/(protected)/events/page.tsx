@@ -14,12 +14,23 @@ export default function AdminEvents() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [error, setError] = useState<string | null>(null);
+
     const fetchEvents = async () => {
         setLoading(true);
-        const res = await fetch('/api/admin/events');
-        if (res.ok) {
-            const data = await res.json();
-            setEvents(data.events);
+        setError(null);
+        try {
+            const res = await fetch('/api/admin/events');
+            if (res.ok) {
+                const data = await res.json();
+                setEvents(data.events);
+            } else {
+                const err = await res.json();
+                setError(err.error || `Error ${res.status}: ${res.statusText}`);
+            }
+        } catch (e) {
+            setError('Failed to fetch events');
+            console.error(e);
         }
         setLoading(false);
     };
@@ -67,6 +78,12 @@ export default function AdminEvents() {
                     <button onClick={fetchEvents} className="text-sm bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">Refresh</button>
                 </div>
             </div>
+
+            {error && (
+                <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded mb-4">
+                    {error}
+                </div>
+            )}
 
             {loading ? (
                 <div className="text-center p-8">Loading events...</div>
