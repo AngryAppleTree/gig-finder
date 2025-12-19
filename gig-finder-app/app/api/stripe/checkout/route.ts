@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
+import { calculatePlatformFee } from '@/lib/platform-fee';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { eventId, quantity, customerName, customerEmail } = await req.json();
+        const { eventId, quantity, recordsQuantity, recordsPrice, customerName, customerEmail } = await req.json();
 
         // Validate inputs
         if (!eventId || !quantity || !customerName || !customerEmail) {
@@ -68,26 +69,73 @@ export async function POST(req: NextRequest) {
                 );
             }
 
-            // Calculate total amount (in pence for GBP)
-            const unitAmount = Math.round(event.ticket_price * 100);
-            const totalAmount = unitAmount * quantity;
+            // Parse prices to numbers
+            const ticketPrice = typeof event.ticket_price === 'number'
+                ? event.ticket_price
+                : parseFloat(event.ticket_price);
+
+            const recordPrice = recordsPrice && recordsQuantity > 0
+                ? (typeof recordsPrice === 'number' ? recordsPrice : parseFloat(recordsPrice))
+                : 0;
+
+            // Calculate subtotals
+            const ticketsSubtotal = ticketPrice * quantity;
+            const recordsSubtotal = recordPrice * (recordsQuantity || 0);
+
+            // Calculate platform fee
+            const feeCalculation = calculatePlatformFee({
+                ticketsSubtotal,
+                recordsSubtotal
+            });
+
+            // Build line items for Stripe
+            const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+                // Tickets
+                {
+                    price_data: {
+                        currency: 'gbp',
+                        product_data: {
+                            name: `${event.name} - Tickets`,
+                            description: `${event.venue_name || 'TBA'} - ${new Date(event.date).toLocaleDateString()}`,
+                        },
+                        unit_amount: Math.round(ticketPrice * 100), // Convert to pence
+                    },
+                    quantity: quantity,
+                }
+            ];
+
+            // Add records if purchased
+            if (recordsQuantity && recordsQuantity > 0 && recordPrice > 0) {
+                lineItems.push({
+                    price_data: {
+                        currency: 'gbp',
+                        product_data: {
+                            name: `${event.name} - Vinyl Records`,
+                            description: 'Presale vinyl record',
+                        },
+                        unit_amount: Math.round(recordPrice * 100), // Convert to pence
+                    },
+                    quantity: recordsQuantity,
+                });
+            }
+
+            // Add platform fee
+            lineItems.push({
+                price_data: {
+                    currency: 'gbp',
+                    product_data: {
+                        name: 'Platform Fee',
+                        description: 'GigFinder service fee',
+                    },
+                    unit_amount: Math.round(feeCalculation.platformFee * 100), // Convert to pence
+                },
+                quantity: 1,
+            });
 
             // Create Stripe Checkout Session
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
-                line_items: [
-                    {
-                        price_data: {
-                            currency: 'gbp',
-                            product_data: {
-                                name: event.name,
-                                description: `${event.venue_name || 'TBA'} - ${new Date(event.date).toLocaleDateString()}`,
-                            },
-                            unit_amount: unitAmount,
-                        },
-                        quantity: quantity,
-                    },
-                ],
+                line_items: lineItems,
                 mode: 'payment',
                 success_url: `${req.nextUrl.origin}/gigfinder/booking-success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${req.nextUrl.origin}/gigfinder/booking-cancelled`,
@@ -95,6 +143,9 @@ export async function POST(req: NextRequest) {
                 metadata: {
                     eventId: eventId.toString(),
                     quantity: quantity.toString(),
+                    recordsQuantity: (recordsQuantity || 0).toString(),
+                    recordsPrice: recordPrice.toString(),
+                    platformFee: feeCalculation.platformFee.toString(),
                     customerName: customerName,
                     customerEmail: customerEmail,
                 },
