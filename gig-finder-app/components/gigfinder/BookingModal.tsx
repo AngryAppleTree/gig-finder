@@ -1,14 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { calculatePlatformFee, formatCurrency, getPlatformFeeDescription } from '@/lib/platform-fee';
 
 export function BookingModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [gigId, setGigId] = useState<string | number>('');
     const [eventName, setEventName] = useState('');
     const [ticketPrice, setTicketPrice] = useState<number>(0);
+    const [presalePrice, setPresalePrice] = useState<number | null>(null);
+    const [presaleCaption, setPresaleCaption] = useState<string>('');
     const [formData, setFormData] = useState({ name: '', email: '' });
     const [quantity, setQuantity] = useState(1);
+    const [recordsQuantity, setRecordsQuantity] = useState(0);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -18,10 +22,13 @@ export function BookingModal() {
                 setGigId(e.detail.id);
                 setEventName(e.detail.name);
                 setTicketPrice(e.detail.price || 0);
+                setPresalePrice(e.detail.presale_price || null);
+                setPresaleCaption(e.detail.presale_caption || '');
                 setIsOpen(true);
                 setStatus('idle');
                 setFormData({ name: '', email: '' });
                 setQuantity(1);
+                setRecordsQuantity(0);
             }
         };
 
@@ -45,6 +52,8 @@ export function BookingModal() {
                     body: JSON.stringify({
                         eventId: gigId,
                         quantity: quantity,
+                        recordsQuantity: recordsQuantity,
+                        recordsPrice: presalePrice,
                         customerName: formData.name,
                         customerEmail: formData.email
                     })
@@ -103,8 +112,10 @@ export function BookingModal() {
                 background: '#1a1a1a',
                 padding: '2rem',
                 borderRadius: '12px',
-                maxWidth: '400px',
+                maxWidth: '450px',
                 width: '90%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
                 position: 'relative',
                 border: '1px solid var(--color-primary)',
                 boxShadow: '0 0 20px rgba(255,51,102,0.3)'
@@ -162,7 +173,7 @@ export function BookingModal() {
                                 <p style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem' }}>We'll email your ticket instantly.</p>
                             </div>
 
-                            {/* Quantity Selector */}
+                            {/* Tickets Quantity Selector */}
                             <div style={{ marginBottom: '1.5rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Number of Tickets</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -219,21 +230,138 @@ export function BookingModal() {
                                         +
                                     </button>
                                 </div>
-                                {ticketPrice > 0 && (
-                                    <p style={{
-                                        fontSize: '0.9rem',
-                                        color: 'var(--color-secondary)',
-                                        marginTop: '0.5rem',
-                                        textAlign: 'center',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        Total: £{(ticketPrice * quantity).toFixed(2)}
-                                    </p>
-                                )}
                                 <p style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem', textAlign: 'center' }}>
                                     Maximum 10 tickets per booking
                                 </p>
                             </div>
+
+                            {/* Presale Records Section - Only show if presale price exists */}
+                            {presalePrice && presalePrice > 0 && (
+                                <div style={{
+                                    marginBottom: '1.5rem',
+                                    padding: '1rem',
+                                    background: 'rgba(255, 51, 102, 0.1)',
+                                    border: '1px solid var(--color-primary)',
+                                    borderRadius: '8px'
+                                }}>
+                                    <div style={{ marginBottom: '0.8rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                            🎵 Add Vinyl Records
+                                        </label>
+                                        {presaleCaption && (
+                                            <p style={{ fontSize: '0.75rem', color: '#ccc', marginBottom: '0.5rem' }}>
+                                                {presaleCaption}
+                                            </p>
+                                        )}
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--color-secondary)', fontWeight: 'bold' }}>
+                                            {formatCurrency(presalePrice)} per record
+                                        </p>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setRecordsQuantity(Math.max(0, recordsQuantity - 1))}
+                                            disabled={recordsQuantity <= 0}
+                                            style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '50%',
+                                                border: '2px solid var(--color-primary)',
+                                                background: recordsQuantity <= 0 ? '#333' : 'var(--color-surface)',
+                                                color: recordsQuantity <= 0 ? '#666' : 'var(--color-primary)',
+                                                fontSize: '1.5rem',
+                                                cursor: recordsQuantity <= 0 ? 'not-allowed' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            −
+                                        </button>
+                                        <div style={{
+                                            flex: 1,
+                                            textAlign: 'center',
+                                            fontSize: '1.5rem',
+                                            fontWeight: 'bold',
+                                            color: 'var(--color-primary)',
+                                            fontFamily: 'var(--font-display)'
+                                        }}>
+                                            {recordsQuantity}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setRecordsQuantity(Math.min(10, recordsQuantity + 1))}
+                                            disabled={recordsQuantity >= 10}
+                                            style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '50%',
+                                                border: '2px solid var(--color-primary)',
+                                                background: recordsQuantity >= 10 ? '#333' : 'var(--color-surface)',
+                                                color: recordsQuantity >= 10 ? '#666' : 'var(--color-primary)',
+                                                fontSize: '1.5rem',
+                                                cursor: recordsQuantity >= 10 ? 'not-allowed' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Order Summary with Platform Fee */}
+                            {ticketPrice > 0 && (
+                                <div style={{
+                                    marginBottom: '1.5rem',
+                                    padding: '1rem',
+                                    background: 'rgba(0,0,0,0.3)',
+                                    borderRadius: '8px',
+                                    border: '1px solid #333'
+                                }}>
+                                    <h4 style={{ fontSize: '0.9rem', marginBottom: '0.8rem', color: '#ccc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        Order Summary
+                                    </h4>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                                        <span style={{ color: '#999' }}>Tickets ({quantity}x)</span>
+                                        <span style={{ color: 'white' }}>{formatCurrency(ticketPrice * quantity)}</span>
+                                    </div>
+                                    {recordsQuantity > 0 && presalePrice && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                                            <span style={{ color: '#999' }}>Records ({recordsQuantity}x)</span>
+                                            <span style={{ color: 'white' }}>{formatCurrency(presalePrice * recordsQuantity)}</span>
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+                                        <span style={{ color: '#999' }}>{getPlatformFeeDescription()}</span>
+                                        <span style={{ color: 'white' }}>{formatCurrency(calculatePlatformFee({
+                                            ticketsSubtotal: ticketPrice * quantity,
+                                            recordsSubtotal: (presalePrice || 0) * recordsQuantity
+                                        }).platformFee)}</span>
+                                    </div>
+                                    <div style={{
+                                        borderTop: '1px solid #444',
+                                        marginTop: '0.8rem',
+                                        paddingTop: '0.8rem',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        fontSize: '1.1rem',
+                                        fontWeight: 'bold'
+                                    }}>
+                                        <span style={{ color: 'var(--color-secondary)' }}>Total</span>
+                                        <span style={{ color: 'var(--color-secondary)' }}>
+                                            {formatCurrency(calculatePlatformFee({
+                                                ticketsSubtotal: ticketPrice * quantity,
+                                                recordsSubtotal: (presalePrice || 0) * recordsQuantity
+                                            }).total)}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                             <button
                                 type="submit"
                                 className="btn-primary"
