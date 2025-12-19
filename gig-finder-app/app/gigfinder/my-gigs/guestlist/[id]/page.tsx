@@ -9,6 +9,10 @@ interface Booking {
     id: number;
     customer_name: string;
     customer_email: string;
+    quantity: number;
+    records_quantity?: number;
+    records_price?: number;
+    platform_fee?: number;
     status: string;
     created_at: string;
 }
@@ -170,6 +174,8 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                                     <tr style={{ textAlign: 'left', borderBottom: '1px solid #555' }}>
                                         <th style={{ padding: '1rem' }}>Name</th>
                                         <th style={{ padding: '1rem' }}>Email</th>
+                                        <th style={{ padding: '1rem' }}>Tickets</th>
+                                        <th style={{ padding: '1rem' }}>Records</th>
                                         <th style={{ padding: '1rem' }}>Status</th>
                                     </tr>
                                 </thead>
@@ -178,6 +184,16 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                                         <tr key={b.id} style={{ borderBottom: '1px solid #222' }}>
                                             <td style={{ padding: '1rem' }}>{b.customer_name}</td>
                                             <td style={{ padding: '1rem', color: '#aaa' }}>{b.customer_email}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span style={{ color: 'var(--color-secondary)' }}>🎟️ {b.quantity || 1}</span>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                {b.records_quantity && b.records_quantity > 0 ? (
+                                                    <span style={{ color: '#ff69b4' }}>💿 {b.records_quantity}</span>
+                                                ) : (
+                                                    <span style={{ color: '#555' }}>-</span>
+                                                )}
+                                            </td>
                                             <td style={{ padding: '1rem' }}>
                                                 <span style={{
                                                     padding: '0.2rem 0.5rem',
