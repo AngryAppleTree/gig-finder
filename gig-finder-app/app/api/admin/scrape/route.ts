@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
 import { scrapeBansheeAPI, scrapeSneakyAPI, scrapeStramashAPI, scrapeLeithAPI } from '@/scraper/api-wrappers';
-import { cookies } from 'next/headers';
 
 async function checkAdmin() {
-    const cookieStore = await cookies();
-    const adminSession = cookieStore.get('gigfinder_admin');
-    return adminSession?.value === 'true';
+    const user = await currentUser();
+    if (!user) return false;
+
+    // Check metadata role OR verified email address
+    const isAdminRole = user.publicMetadata?.role === 'admin';
+    const isAdminEmail = user.emailAddresses.some(email =>
+        email.emailAddress === process.env.ADMIN_EMAIL
+    );
+
+    return isAdminRole || isAdminEmail;
 }
 
 export async function POST(req: Request) {

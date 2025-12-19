@@ -5,6 +5,7 @@
 
 import { Pool } from 'pg';
 import * as cheerio from 'cheerio';
+import { findOrCreateVenue } from '@/lib/venue-utils';
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
@@ -20,6 +21,14 @@ export async function scrapeBansheeAPI() {
 
     const client = await pool.connect();
     try {
+        // Get or create venue
+        const venue = await findOrCreateVenue({
+            name: VENUE_NAME,
+            city: 'Edinburgh',
+            postcode: 'EH1 1SR',
+            capacity: 70
+        }, 'banshee_scraper');
+
         const resp = await fetch(url);
         if (!resp.ok) throw new Error(`Failed to fetch ${url}`);
 
@@ -70,12 +79,12 @@ export async function scrapeBansheeAPI() {
                 if (existRes.rows.length === 0) {
                     await client.query(
                         `INSERT INTO events (
-                              name, venue, date, price, ticket_url, description, 
+                              name, venue_id, date, price, ticket_url, description, 
                               fingerprint, user_id, approved, created_at, genre, image_url
                           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10, $11)`,
                         [
-                            evt.title.substring(0, 50),
-                            VENUE_NAME,
+                            evt.title.substring(0, 200),
+                            venue.id,
                             eventDate,
                             'Free',
                             evt.link,
@@ -107,6 +116,14 @@ export async function scrapeSneakyAPI() {
 
     const client = await pool.connect();
     try {
+        // Get or create venue
+        const venue = await findOrCreateVenue({
+            name: VENUE_NAME,
+            city: 'Edinburgh',
+            postcode: 'EH1 1SR',
+            capacity: 100
+        }, 'sneaky_scraper');
+
         const resp = await fetch(feedUrl);
         if (!resp.ok) throw new Error('Failed to fetch RSS');
 
@@ -136,12 +153,12 @@ export async function scrapeSneakyAPI() {
             if (existRes.rows.length === 0) {
                 await client.query(
                     `INSERT INTO events (
-                        name, venue, date, price, ticket_url, fingerprint, 
+                        name, venue_id, date, price, ticket_url, fingerprint, 
                         user_id, approved, created_at, genre
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9)`,
                     [
-                        title.substring(0, 50),
-                        VENUE_NAME,
+                        title.substring(0, 200),
+                        venue.id,
                         eventDate,
                         'Free',
                         link,
@@ -169,6 +186,12 @@ export async function scrapeStramashAPI() {
 
     const client = await pool.connect();
     try {
+        // Get or create venue
+        const venue = await findOrCreateVenue({
+            name: VENUE_NAME,
+            city: 'Edinburgh'
+        }, 'stramash_scraper');
+
         const resp = await fetch(feedUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -226,12 +249,12 @@ export async function scrapeStramashAPI() {
             if (existRes.rows.length === 0) {
                 await client.query(
                     `INSERT INTO events (
-                        name, venue, date, price, ticket_url, fingerprint, 
+                        name, venue_id, date, price, ticket_url, fingerprint, 
                         user_id, approved, created_at, genre
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9)`,
                     [
-                        title.substring(0, 50),
-                        VENUE_NAME,
+                        title.substring(0, 200),
+                        venue.id,
                         validEventDate,
                         'Free',
                         link,
@@ -259,6 +282,13 @@ export async function scrapeLeithAPI() {
 
     const client = await pool.connect();
     try {
+        // Get or create venue
+        const venue = await findOrCreateVenue({
+            name: VENUE_NAME,
+            city: 'Edinburgh',
+            postcode: 'EH6 7EQ'
+        }, 'leith_scraper');
+
         const resp = await fetch(url);
         if (!resp.ok) throw new Error(`Failed to fetch: ${resp.status}`);
 
@@ -316,12 +346,12 @@ export async function scrapeLeithAPI() {
             if (checkRes.rows.length === 0) {
                 await client.query(`
                     INSERT INTO events (
-                        name, venue, date, genre, price, description, 
+                        name, venue_id, date, genre, price, description, 
                         user_id, created_at, fingerprint, ticket_url, approved, image_url
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10, $11)
                  `, [
-                    evt.name.substring(0, 50),
-                    VENUE_NAME,
+                    evt.name.substring(0, 200),
+                    venue.id,
                     timestamp,
                     'Indie'.substring(0, 50),
                     (evt.priceText || '12.00').substring(0, 50),
