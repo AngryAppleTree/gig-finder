@@ -47,17 +47,21 @@ export async function findOrCreateVenue(
     const client = await pool.connect();
 
     try {
-        // 1. Check if venue already exists (case-insensitive name match)
+        // 1. Normalize the venue name for duplicate detection
+        const normalized = normalizeVenueName(venueData.name);
+
+        // 2. Check if venue already exists using normalized name + city
         const existingVenue = await client.query(
             `SELECT id, name, capacity, latitude, longitude, city 
              FROM venues 
-             WHERE LOWER(name) = LOWER($1)`,
-            [venueData.name]
+             WHERE normalized_name = $1 AND (city = $2 OR $2 IS NULL)`,
+            [normalized, venueData.city || null]
         );
 
         if (existingVenue.rows.length > 0) {
             // Venue exists - return it
             const venue = existingVenue.rows[0];
+            console.log(`♻️  Using existing venue: "${venue.name}" (ID: ${venue.id})`);
             return {
                 id: venue.id,
                 name: venue.name,
@@ -69,15 +73,16 @@ export async function findOrCreateVenue(
             };
         }
 
-        // 2. Venue doesn't exist - create it
+        // 3. Venue doesn't exist - create it with normalized_name
         console.log(`🆕 Creating new venue from ${source}:`, venueData.name);
 
         const newVenue = await client.query(
-            `INSERT INTO venues (name, address, city, postcode, latitude, longitude, capacity, website)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `INSERT INTO venues (name, normalized_name, address, city, postcode, latitude, longitude, capacity, website)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
              RETURNING id, name, capacity, latitude, longitude, city`,
             [
                 venueData.name,
+                normalized,
                 venueData.address || null,
                 venueData.city || null,
                 venueData.postcode || null,
@@ -209,4 +214,43 @@ export async function updateVenueData(
     } finally {
         client.release();
     }
+}
+
+/**
+ * Normalizes a venue name for duplicate detection
+ * 
+ * Rules:
+ * - Convert to lowercase
+ * - Remove leading "The" (case insensitive)
+ * - Remove all punctuation and special characters
+ * - Normalize whitespace to single spaces
+ * - Trim leading/trailing whitespace
+ * 
+ * Examples:
+ * - "The Banshee Labyrinth" → "banshee labyrinth"
+ * - "Sneaky Pete's" → "sneaky petes"
+ * - "Blue Dog" → "blue dog"
+ * - "The Blue Dog" → "blue dog"
+ * 
+ * @param name - The venue name to normalize
+ * @returns The normalized venue name
+ */
+export function normalizeVenueName(name: string): string {
+    return name
+        .toLowerCase()
+        .replace(/^the\s+/i, '')                    // Remove leading "The"
+        .replace(/[^a-z0-9\s]/g, '')                 // Remove punctuation (matches PostgreSQL)
+        .replace(/\s+/g, ' ')               // Normalize whitespace
+        .trim();
+}
+
+/**
+ * Check if two venue names are equivalent after normalization
+ * 
+ * @param name1 - First venue name
+ * @param name2 - Second venue name
+ * @returns True if the names are equivalent
+ */
+export function areVenueNamesEquivalent(name1: string, name2: string): boolean {
+    return normalizeVenueName(name1) === normalizeVenueName(name2);
 }
