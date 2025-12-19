@@ -96,27 +96,38 @@ Use these Stripe test cards (TEST MODE ONLY):
 
 ## 📝 TESTING SCENARIOS
 
-### **Scenario 1: Basic Ticket Purchase**
 
-1. **Find a paid event** (ticket_price > 0)
-2. **Click "Buy Tickets"**
-3. **Fill in booking form:**
-   - Name: Test User
-   - Email: your-email@example.com
-   - Quantity: 2 tickets
-4. **Click "Proceed to Payment"**
-5. **On Stripe checkout:**
-   - Card: `4242 4242 4242 4242`
-   - Expiry: `12/34`
-   - CVC: `123`
-   - Postal code: Any
-6. **Click "Pay"**
-7. **Verify:**
-   - ✅ Redirected to success page
-   - ✅ Booking created in database
-   - ✅ QR code generated
-   - ✅ Confirmation email sent
-   - ✅ tickets_sold incremented
+### 1. End-to-End Purchase Flow (The "Happy Path")
+**Goal:** Verify a user can create an event, have it approved, and buy a ticket.
+
+1.  **Create a Gig (Unauthenticated):**
+    *   Go to `/gigfinder/add-event`.
+    *   Fill out the form (Name: "Beta Test Gig").
+    *   Click "Submit".
+    *   **Verify:** You are redirected to Sign Up.
+    *   Create a new account.
+    *   **Verify:** You are redirected back, form is restored, click "Submit" again.
+    *   **Verify:** Success message shows "Requires Approval".
+
+2.  **Approve the Gig (Admin):**
+    *   Log in as Admin at `/admin/login`.
+    *   Go to Dashboard (`/admin`).
+    *   **Verify:** You see the "Approvals Required" warning card.
+    *   Click "Review Now".
+    *   Find "Beta Test Gig" and click **APPROVE**.
+    *   **Verify:** Status changes to "Agreed".
+
+3.  **Buy a Ticket:**
+    *   Go to `/gigfinder` (Public Site).
+    *   Find "Beta Test Gig" (refresh if needed).
+    *   Click "Get Tickets" -> Checkout.
+    *   Pay with Test Card (`4242 4242 4242 4242`).
+    *   **Verify:** Success page shown.
+
+4.  **Check Confirmation:**
+    *   Check email inbox for QR Code.
+    *   Check Admin -> Bookings to see the sale.
+ed
 
 ---
 
