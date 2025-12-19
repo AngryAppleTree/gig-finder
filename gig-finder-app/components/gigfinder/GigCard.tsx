@@ -79,7 +79,7 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                                 fontSize: '0.9rem',
                                 margin: '0 0 0.25rem 0'
                             }}>
-                                💿 Presale: £{gig.presale_price.toFixed(2)}
+                                💿 Presale: £{typeof gig.presale_price === 'number' ? gig.presale_price.toFixed(2) : parseFloat(gig.presale_price).toFixed(2)}
                             </p>
                             {gig.presale_caption && (
                                 <p style={{
