@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         // Extract metadata
-        const { eventId, quantity, customerName, customerEmail } = session.metadata!;
+        const { eventId, quantity, recordsQuantity, recordsPrice, platformFee, customerName, customerEmail } = session.metadata!;
 
         const client = await pool.connect();
 
@@ -69,12 +69,17 @@ export async function POST(req: NextRequest) {
 
             const eventData = eventRes.rows[0];
 
-            // Create booking
+            // Parse records data
+            const recordsQty = recordsQuantity ? parseInt(recordsQuantity) : 0;
+            const recordsPriceNum = recordsPrice ? parseFloat(recordsPrice) : 0;
+            const platformFeeNum = platformFee ? parseFloat(platformFee) : 0;
+
+            // Create booking with records data
             const bookingRes = await client.query(
-                `INSERT INTO bookings (event_id, customer_name, customer_email, quantity, status, payment_intent_id)
-                 VALUES ($1, $2, $3, $4, $5, $6)
+                `INSERT INTO bookings (event_id, customer_name, customer_email, quantity, records_quantity, records_price, platform_fee, status, payment_intent_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                  RETURNING id`,
-                [eventId, customerName, customerEmail, parseInt(quantity), 'confirmed', session.payment_intent]
+                [eventId, customerName, customerEmail, parseInt(quantity), recordsQty, recordsPriceNum, platformFeeNum, 'confirmed', session.payment_intent]
             );
 
             const bookingId = bookingRes.rows[0].id;
@@ -96,7 +101,11 @@ export async function POST(req: NextRequest) {
 
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
                 const dateStr = new Date(eventData.date).toLocaleDateString();
-                const totalPaid = (eventData.ticket_price * parseInt(quantity)).toFixed(2);
+
+                // Calculate totals
+                const ticketsSubtotal = eventData.ticket_price * parseInt(quantity);
+                const recordsSubtotal = recordsPriceNum * recordsQty;
+                const totalPaid = (ticketsSubtotal + recordsSubtotal + platformFeeNum).toFixed(2);
 
                 await resend.emails.send({
                     from: fromAddress,
@@ -107,10 +116,24 @@ export async function POST(req: NextRequest) {
                             <h1 style="color: #000;">Payment Successful! 🎉</h1>
                             <p>Hi ${customerName},</p>
                             <p>Your payment of <strong>£${totalPaid}</strong> has been confirmed.</p>
+                            
+                            <h2 style="color: #000; font-size: 18px;">Event Details</h2>
                             <p><strong>Event:</strong> ${eventData.name}<br>
-                            <strong>Venue:</strong> ${eventData.venue_name || 'TBA'}<br>>
+                            <strong>Venue:</strong> ${eventData.venue_name || 'TBA'}<br>
                             <strong>Date:</strong> ${dateStr}<br>
                             <strong>Tickets:</strong> ${quantity}</p>
+                            
+                            ${recordsQty > 0 ? `
+                            <h2 style="color: #000; font-size: 18px;">Presale Records</h2>
+                            <p>💿 <strong>${recordsQty} vinyl record${recordsQty > 1 ? 's' : ''}</strong> - £${recordsSubtotal.toFixed(2)}<br>
+                            <em style="color: #666; font-size: 14px;">Your record${recordsQty > 1 ? 's' : ''} will be available for collection at the venue.</em></p>
+                            ` : ''}
+                            
+                            <h2 style="color: #000; font-size: 18px;">Payment Breakdown</h2>
+                            <p>Tickets: £${ticketsSubtotal.toFixed(2)}<br>
+                            ${recordsQty > 0 ? `Records: £${recordsSubtotal.toFixed(2)}<br>` : ''}
+                            Platform Fee: £${platformFeeNum.toFixed(2)}<br>
+                            <strong>Total: £${totalPaid}</strong></p>
                             
                             <div style="text-align: center; margin: 20px 0;">
                                 <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
