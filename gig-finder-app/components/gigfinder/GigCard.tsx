@@ -9,6 +9,19 @@ interface GigCardProps {
 
 export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
 
+    // Debug logging for ERTYU event
+    if (gig.name.toLowerCase().includes('ertyu')) {
+        console.log('🔍 ERTYU Event Debug:', {
+            name: gig.name,
+            source: gig.source,
+            isInternalTicketing: gig.isInternalTicketing,
+            sellTickets: gig.sellTickets,
+            ticketUrl: gig.ticketUrl,
+            priceVal: gig.priceVal,
+            shouldShowButton: (gig.isInternalTicketing || gig.sellTickets) && gig.source === 'manual'
+        });
+    }
+
     // Legacy Script Logic for Location
     const locationText = gig.town ? `${gig.location}, ${gig.town}` : gig.location;
 

@@ -63,10 +63,15 @@ function ResultsPageContent() {
                 imageUrl: e.imageUrl || e.imageurl,
                 ticketUrl: e.ticketUrl || e.link,
                 isInternalTicketing: e.isInternalTicketing,
+                sellTickets: e.sellTickets,
+                source: e.source,
                 price: e.price || e.entryprice,
+                priceVal: e.priceVal || e.ticketPrice || 0,
                 vibe: e.vibe,
                 capacity: e.capacity,
-                distance: e.distance
+                distance: e.distance,
+                presale_price: e.presale_price,
+                presale_caption: e.presale_caption
             }));
 
             // Apply client-side filters
