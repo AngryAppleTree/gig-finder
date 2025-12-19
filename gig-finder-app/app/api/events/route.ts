@@ -124,7 +124,10 @@ export async function GET(request: NextRequest) {
             isInternalTicketing: e.is_internal_ticketing || false,
             ticketsSold: e.tickets_sold || 0,
             maxCapacity: e.max_capacity || venueCapacity || 100,
-            ticketPrice: e.ticket_price || 0  // Add numeric price for modal
+            ticketPrice: e.ticket_price || 0,  // Add numeric price for modal
+            // Presale Fields
+            presale_price: e.presale_price || null,
+            presale_caption: e.presale_caption || null
         };
     });
 
