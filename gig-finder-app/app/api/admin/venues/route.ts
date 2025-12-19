@@ -58,17 +58,17 @@ export async function POST(req: Request) {
     const client = await pool.connect();
     try {
         const body = await req.json();
-        const { name, address, city, postcode, latitude, longitude, capacity } = body;
+        const { name, address, city, postcode, latitude, longitude, capacity, email, website, phone } = body;
 
         if (!name) {
             return NextResponse.json({ error: 'Venue name is required' }, { status: 400 });
         }
 
         const result = await client.query(`
-            INSERT INTO venues (name, address, city, postcode, latitude, longitude, capacity)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO venues (name, address, city, postcode, latitude, longitude, capacity, email, website, phone)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
-        `, [name, address, city, postcode, latitude, longitude, capacity]);
+        `, [name, address, city, postcode, latitude, longitude, capacity, email, website, phone]);
 
         return NextResponse.json({ venue: result.rows[0] });
     } catch (error: any) {
@@ -92,9 +92,9 @@ export async function PUT(req: Request) {
     const client = await pool.connect();
     try {
         const body = await req.json();
-        const { id, name, address, city, postcode, latitude, longitude, capacity } = body;
+        const { id, name, address, city, postcode, latitude, longitude, capacity, email, website, phone } = body;
 
-        console.log('Update venue request:', { id, name, address, city, postcode, latitude, longitude, capacity });
+        console.log('Update venue request:', { id, name, address, city, postcode, latitude, longitude, capacity, email, website, phone });
 
         if (!id || !name) {
             return NextResponse.json({ error: 'Venue ID and name are required' }, { status: 400 });
@@ -103,8 +103,8 @@ export async function PUT(req: Request) {
         const result = await client.query(`
             UPDATE venues 
             SET name = $1, address = $2, city = $3, postcode = $4, 
-                latitude = $5, longitude = $6, capacity = $7
-            WHERE id = $8
+                latitude = $5, longitude = $6, capacity = $7, email = $8, website = $9, phone = $10
+            WHERE id = $11
             RETURNING *
         `, [
             name,
@@ -114,6 +114,9 @@ export async function PUT(req: Request) {
             latitude || null,
             longitude || null,
             capacity || null,
+            email || null,
+            website || null,
+            phone || null,
             id
         ]);
 
