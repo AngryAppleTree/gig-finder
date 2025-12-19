@@ -1,6 +1,6 @@
 # 🔒 LOCKED FILES - Require Approval Before Modification
 
-**Last Updated:** 2025-12-18
+**Last Updated:** 2025-12-19
 
 ## Rules:
 1. Files listed here **CANNOT** be modified without explicit approval from Alexander
@@ -105,6 +105,8 @@
 ### **✅ Stable Pages & Components**
 
 #### Event Management Pages
+- `/app/gigfinder/add-event/page.tsx` - Add new event form
+- `/app/gigfinder/edit/[id]/page.tsx` - Edit event form (includes presale fields)
 - `/app/gigfinder/gig-added/page.tsx` - Event creation success page
 - `/app/gigfinder/my-gigs/page.tsx` - View my created events
 - `/app/gigfinder/my-gigs/guestlist/[id]/page.tsx` - View guest list
