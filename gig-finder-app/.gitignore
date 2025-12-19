@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Venue data exports
+venue-scrape-results.json
+venues-export.csv
