@@ -139,23 +139,72 @@ export async function POST(request: NextRequest) {
                 }
             }
 
+            // Check if this is user's first event (requires approval)
+            const userEventsCheck = await client.query(
+                'SELECT COUNT(*) FROM events WHERE user_id = $1 AND approved = true',
+                [userId]
+            );
+            const isFirstEvent = parseInt(userEventsCheck.rows[0].count) === 0;
+            const needsApproval = isFirstEvent;
+
             // Insert event with venue_id
             const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
 
             const result = await client.query(
-                `INSERT INTO events (name, venue_id, date, genre, description, price, ticket_price, price_currency, presale_price, presale_caption, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                `INSERT INTO events (name, venue_id, date, genre, description, price, ticket_price, price_currency, presale_price, presale_caption, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url, approved)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
        RETURNING id`,
-                [name, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', presalePriceValue, presaleCaption || null, userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl]
+                [name, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', presalePriceValue, presaleCaption || null, userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl, !needsApproval]
             );
+
+            const eventId = result.rows[0].id;
+
+            // Send notification if first event (needs approval)
+            if (needsApproval) {
+                try {
+                    // Get venue name for notification
+                    const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [venueId]);
+                    const venueName = venueResult.rows[0]?.name || 'Unknown Venue';
+
+                    // Get user email
+                    const userEmail = await client.query(
+                        'SELECT email FROM users WHERE clerk_id = $1',
+                        [userId]
+                    );
+
+                    await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/notify-first-event`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            eventId,
+                            eventName: name,
+                            venueName,
+                            date: timestamp,
+                            userId,
+                            userEmail: userEmail.rows[0]?.email || 'Unknown'
+                        })
+                    });
+                } catch (notifError) {
+                    console.error('Failed to send first event notification:', notifError);
+                    // Don't fail the event creation if notification fails
+                }
+            }
 
             client.release();
 
             if (isJson) {
-                return NextResponse.json({ success: true, id: result.rows[0].id });
+                return NextResponse.json({
+                    success: true,
+                    id: eventId,
+                    needsApproval: needsApproval
+                });
             } else {
                 // For form submission, redirect with 303 to force GET method (Post/Redirect/Get pattern)
-                return NextResponse.json({ success: true, id: result.rows[0].id });
+                return NextResponse.json({
+                    success: true,
+                    id: eventId,
+                    needsApproval: needsApproval
+                });
             }
 
         } catch (error: any) {

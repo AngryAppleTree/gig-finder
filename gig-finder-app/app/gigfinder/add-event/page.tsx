@@ -181,12 +181,18 @@ function AddEventForm() {
             });
 
             if (res.ok) {
+                const data = await res.json();
+
                 if (isNewVenue) {
                     // Redirect with new venue message
                     router.push(`/gigfinder/add-event?newVenue=${encodeURIComponent(venueInput)}`);
                 } else {
-                    // Normal success
-                    setStatusMessage('✅ Event Added Successfully!');
+                    // Check if approval is needed
+                    if (data.needsApproval) {
+                        setStatusMessage('✅ Event Submitted! Your first event requires admin approval. You\'ll be notified once it\'s live.');
+                    } else {
+                        setStatusMessage('✅ Event Added Successfully!');
+                    }
                     setPosterPreview('');
                     setPosterBase64('');
                     setVenueInput('');
