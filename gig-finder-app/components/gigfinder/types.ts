@@ -22,3 +22,17 @@ export interface Gig {
     presale_price?: number; // Discounted price for record buyers
     presale_caption?: string; // Explanation of presale offer
 }
+
+export interface Booking {
+    id: number;
+    event_id: number;
+    name: string;
+    email: string;
+    quantity: number;
+    records_quantity?: number;
+    records_price?: number;
+    platform_fee?: number;
+    qr_code?: string;
+    created_at: string;
+    stripe_session_id?: string;
+}
