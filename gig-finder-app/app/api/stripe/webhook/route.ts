@@ -74,12 +74,15 @@ export async function POST(req: NextRequest) {
             const recordsPriceNum = recordsPrice ? parseFloat(recordsPrice) : 0;
             const platformFeeNum = platformFee ? parseFloat(platformFee) : 0;
 
-            // Create booking with records data
+            // Generate QR code data
+            const qrCodeData = `GF-TICKET:${eventId}-${Date.now()}`;
+
+            // Create booking with records data and QR code
             const bookingRes = await client.query(
-                `INSERT INTO bookings (event_id, customer_name, customer_email, quantity, records_quantity, records_price, platform_fee, status, payment_intent_id)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                `INSERT INTO bookings (event_id, customer_name, customer_email, quantity, records_quantity, records_price, platform_fee, status, payment_intent_id, qr_code)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                  RETURNING id`,
-                [eventId, customerName, customerEmail, parseInt(quantity), recordsQty, recordsPriceNum, platformFeeNum, 'confirmed', session.payment_intent]
+                [eventId, customerName, customerEmail, parseInt(quantity), recordsQty, recordsPriceNum, platformFeeNum, 'confirmed', session.payment_intent, qrCodeData]
             );
 
             const bookingId = bookingRes.rows[0].id;
@@ -94,8 +97,9 @@ export async function POST(req: NextRequest) {
 
             // Send confirmation email
             if (process.env.RESEND_API_KEY && resend) {
+                // Generate QR code image from saved data
                 const qrBuffer = await QRCode.toBuffer(
-                    `GF-TICKET:${bookingId}-${eventId}`,
+                    qrCodeData,
                     { width: 300, margin: 2 }
                 );
 
@@ -107,51 +111,59 @@ export async function POST(req: NextRequest) {
                 const recordsSubtotal = recordsPriceNum * recordsQty;
                 const totalPaid = (ticketsSubtotal + recordsSubtotal + platformFeeNum).toFixed(2);
 
-                await resend.emails.send({
-                    from: fromAddress,
-                    to: customerEmail,
-                    subject: `Ticket Confirmed: ${eventData.name}`,
-                    html: `
-                        <div style="font-family: sans-serif; color: #333;">
-                            <h1 style="color: #000;">Payment Successful! 🎉</h1>
-                            <p>Hi ${customerName},</p>
-                            <p>Your payment of <strong>£${totalPaid}</strong> has been confirmed.</p>
-                            
-                            <h2 style="color: #000; font-size: 18px;">Event Details</h2>
-                            <p><strong>Event:</strong> ${eventData.name}<br>
-                            <strong>Venue:</strong> ${eventData.venue_name || 'TBA'}<br>
-                            <strong>Date:</strong> ${dateStr}<br>
-                            <strong>Tickets:</strong> ${quantity}</p>
-                            
-                            ${recordsQty > 0 ? `
-                            <h2 style="color: #000; font-size: 18px;">Presale Records</h2>
-                            <p>💿 <strong>${recordsQty} vinyl record${recordsQty > 1 ? 's' : ''}</strong> - £${recordsSubtotal.toFixed(2)}<br>
-                            <em style="color: #666; font-size: 14px;">Your record${recordsQty > 1 ? 's' : ''} will be available for collection at the venue.</em></p>
-                            ` : ''}
-                            
-                            <h2 style="color: #000; font-size: 18px;">Payment Breakdown</h2>
-                            <p>Tickets: £${ticketsSubtotal.toFixed(2)}<br>
-                            ${recordsQty > 0 ? `Records: £${recordsSubtotal.toFixed(2)}<br>` : ''}
-                            Platform Fee: £${platformFeeNum.toFixed(2)}<br>
-                            <strong>Total: £${totalPaid}</strong></p>
-                            
-                            <div style="text-align: center; margin: 20px 0;">
-                                <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
+                try {
+                    await resend.emails.send({
+                        from: fromAddress,
+                        to: customerEmail,
+                        subject: `Ticket Confirmed: ${eventData.name}`,
+                        html: `
+                            <div style="font-family: sans-serif; color: #333;">
+                                <h1 style="color: #000;">Payment Successful! 🎉</h1>
+                                <p>Hi ${customerName},</p>
+                                <p>Your payment of <strong>£${totalPaid}</strong> has been confirmed.</p>
+                                
+                                <h2 style="color: #000; font-size: 18px;">Event Details</h2>
+                                <p><strong>Event:</strong> ${eventData.name}<br>
+                                <strong>Venue:</strong> ${eventData.venue_name || 'TBA'}<br>
+                                <strong>Date:</strong> ${dateStr}<br>
+                                <strong>Tickets:</strong> ${quantity}</p>
+                                
+                                ${recordsQty > 0 ? `
+                                <h2 style="color: #000; font-size: 18px;">Presale Records</h2>
+                                <p>💿 <strong>${recordsQty} vinyl record${recordsQty > 1 ? 's' : ''}</strong> - £${recordsSubtotal.toFixed(2)}<br>
+                                <em style="color: #666; font-size: 14px;">Your record${recordsQty > 1 ? 's' : ''} will be available for collection at the venue.</em></p>
+                                ` : ''}
+                                
+                                <h2 style="color: #000; font-size: 18px;">Payment Breakdown</h2>
+                                <p>Tickets: £${ticketsSubtotal.toFixed(2)}<br>
+                                ${recordsQty > 0 ? `Records: £${recordsSubtotal.toFixed(2)}<br>` : ''}
+                                Platform Fee: £${platformFeeNum.toFixed(2)}<br>
+                                <strong>Total: £${totalPaid}</strong></p>
+                                
+                                <div style="text-align: center; margin: 20px 0;">
+                                    <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
+                                </div>
+                                
+                                <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
+                                <p style="font-size: 12px; color: #888;">Show this QR code at the venue for entry.</p>
                             </div>
-                            
-                            <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
-                            <p style="font-size: 12px; color: #888;">Show this QR code at the venue for entry.</p>
-                        </div>
-                    `,
-                    attachments: [
-                        {
-                            filename: `ticket-${bookingId}.png`,
-                            content: qrBuffer,
-                            // @ts-ignore
-                            content_id: 'ticket-qr'
-                        }
-                    ]
-                });
+                        `,
+                        attachments: [
+                            {
+                                filename: `ticket-${bookingId}.png`,
+                                content: qrBuffer,
+                                // @ts-ignore
+                                content_id: 'ticket-qr'
+                            }
+                        ]
+                    });
+                    console.log(`✅ Confirmation email sent to ${customerEmail} for booking #${bookingId}`);
+                } catch (emailError) {
+                    console.error('❌ Failed to send confirmation email:', emailError);
+                    // Don't throw - booking is already saved
+                }
+            } else {
+                console.warn('⚠️ Email not sent - RESEND_API_KEY not configured');
             }
 
             client.release();

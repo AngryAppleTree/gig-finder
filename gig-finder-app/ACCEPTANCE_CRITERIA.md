@@ -418,3 +418,4 @@
 **Given** a venue has lat/lon coordinates  
 **When** I calculate distance from a postcode  
 **Then** the distance is accurate (within 1 mile margin of error)
+
