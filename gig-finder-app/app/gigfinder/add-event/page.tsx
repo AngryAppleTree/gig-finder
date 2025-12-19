@@ -329,16 +329,15 @@ function AddEventForm() {
 
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
-                                Venue Capacity *
+                                Venue Capacity (Optional)
                             </label>
                             <input
                                 type="number"
                                 value={newVenueCapacity}
                                 onChange={(e) => setNewVenueCapacity(e.target.value)}
-                                required={isNewVenue}
                                 className="text-input"
                                 style={{ width: '100%' }}
-                                placeholder="e.g. 200"
+                                placeholder="e.g. 200 (leave blank if unknown)"
                                 min="1"
                                 max="10000"
                             />
@@ -346,7 +345,7 @@ function AddEventForm() {
                     </div>
 
                     <p style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '0.5rem' }}>
-                        💡 This information helps us categorize the venue correctly
+                        💡 If you don't know the capacity, leave it blank - admin will update it
                     </p>
                 </div>
             )}

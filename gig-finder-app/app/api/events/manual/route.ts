@@ -100,15 +100,14 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // If no venue capacity and no provided capacity, require it
-            if (!eventCapacity && !maxCapacity) {
-                client.release();
-                return NextResponse.json({ error: 'Venue capacity is required' }, { status: 400 });
-            }
-
-            // Use provided capacity if venue doesn't have one
-            if (!eventCapacity && maxCapacity) {
-                eventCapacity = Math.max(1, Math.min(10000, parseInt(maxCapacity)));
+            // Use provided capacity if venue doesn't have one, otherwise default to 100
+            if (!eventCapacity) {
+                if (maxCapacity) {
+                    eventCapacity = Math.max(1, Math.min(10000, parseInt(maxCapacity)));
+                } else {
+                    // Default capacity if not provided - admin can update later
+                    eventCapacity = 100;
+                }
             }
 
             // Create fingerprint (e.g., date|venue|name)
