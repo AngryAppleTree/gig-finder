@@ -21,7 +21,9 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
             detail: {
                 id: gig.id,
                 name: gig.name,
-                price: gig.priceVal || 0
+                price: gig.priceVal || 0,
+                presale_price: gig.presale_price,
+                presale_caption: gig.presale_caption
             }
         }));
     };
