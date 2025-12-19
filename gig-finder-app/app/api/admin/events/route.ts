@@ -137,14 +137,18 @@ export async function PATCH(req: Request) {
 
     try {
         const body = await req.json();
-        const { id, isInternalTicketing } = body;
+        const { id, isInternalTicketing, approved } = body;
 
         const client = await pool.connect();
         try {
-            // If toggling internal ticketing, we might want to default capacity if null?
-            // But for now just set flag.
+            // Update Internal Ticketing
             if (isInternalTicketing !== undefined) {
                 await client.query('UPDATE events SET is_internal_ticketing = $1 WHERE id = $2', [isInternalTicketing, id]);
+            }
+
+            // Update Approved Status
+            if (approved !== undefined) {
+                await client.query('UPDATE events SET approved = $1 WHERE id = $2', [approved, id]);
             }
             return NextResponse.json({ success: true, message: 'Updated' });
         } finally {

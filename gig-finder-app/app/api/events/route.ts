@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
                 v.address as venue_address
             FROM events e
             LEFT JOIN venues v ON e.venue_id = v.id
-            WHERE e.date >= CURRENT_DATE
+            WHERE e.date >= CURRENT_DATE AND e.approved = true
         `;
         const params: any[] = [];
 

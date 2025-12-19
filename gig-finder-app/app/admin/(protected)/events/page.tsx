@@ -8,6 +8,7 @@ interface Event {
     venue: string;
     user_id: string;
     is_internal_ticketing?: boolean;
+    approved?: boolean;
 }
 
 export default function AdminEvents() {
@@ -67,6 +68,19 @@ export default function AdminEvents() {
         }
     };
 
+    const toggleApproval = async (id: number, currentApproved: boolean) => {
+        const res = await fetch('/api/admin/events', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, approved: !currentApproved })
+        });
+        if (res.ok) {
+            fetchEvents();
+        } else {
+            alert('Approval update failed');
+        }
+    };
+
     return (
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
             <div className="flex justify-between items-center mb-6">
@@ -95,22 +109,36 @@ export default function AdminEvents() {
                                 <th className="px-4 py-3 text-left">Date</th>
                                 <th className="px-4 py-3 text-left">Event</th>
                                 <th className="px-4 py-3 text-left">Venue</th>
+                                <th className="px-4 py-3 text-center">Status</th>
                                 <th className="px-4 py-3 text-center">Ticketing</th>
                                 <th className="px-4 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
                             {events.map((evt) => (
-                                <tr key={evt.id} className="hover:bg-gray-700/50">
+                                <tr key={evt.id} className={`hover:bg-gray-700/50 ${!evt.approved ? 'bg-yellow-900/10' : ''}`}>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                                         {new Date(evt.date).toLocaleDateString()}
                                     </td>
-                                    <td className="px-4 py-3 text-sm font-medium">{evt.name}</td>
+                                    <td className="px-4 py-3 text-sm font-medium">
+                                        {evt.name}
+                                        {!evt.approved && <span className="ml-2 text-xs bg-yellow-600 text-black px-1 rounded">PENDING</span>}
+                                    </td>
                                     <td className="px-4 py-3 text-sm text-gray-400">{evt.venue}</td>
                                     <td className="px-4 py-3 text-center">
                                         <button
+                                            onClick={() => toggleApproval(evt.id, !!evt.approved)}
+                                            className={`px-2 py-1 text-xs rounded border ${evt.approved
+                                                ? 'bg-green-900/30 border-green-700 text-green-400'
+                                                : 'bg-yellow-600 border-yellow-500 text-black font-bold animate-pulse'}`}
+                                        >
+                                            {evt.approved ? 'Agreed' : 'APPROVE'}
+                                        </button>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <button
                                             onClick={() => toggleTicketing(evt.id, !!evt.is_internal_ticketing)}
-                                            className={`px-2 py-1 text-xs rounded border ${evt.is_internal_ticketing ? 'bg-green-600 border-green-500 text-white' : 'bg-transparent border-gray-600 text-gray-400'}`}
+                                            className={`px-2 py-1 text-xs rounded border ${evt.is_internal_ticketing ? 'bg-blue-600 border-blue-500 text-white' : 'bg-transparent border-gray-600 text-gray-400'}`}
                                         >
                                             {evt.is_internal_ticketing ? 'Active' : 'Enable'}
                                         </button>
@@ -126,7 +154,7 @@ export default function AdminEvents() {
                                 </tr>
                             ))}
                             {events.length === 0 && (
-                                <tr><td colSpan={5} className="text-center py-4">No events found.</td></tr>
+                                <tr><td colSpan={6} className="text-center py-4">No events found.</td></tr>
                             )}
                         </tbody>
                     </table>

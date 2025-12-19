@@ -32,18 +32,78 @@ function AddEventForm() {
     const [newVenueCity, setNewVenueCity] = useState('');
     const [newVenueCapacity, setNewVenueCapacity] = useState('');
 
-    useEffect(() => {
-        if (isLoaded && !isSignedIn) {
-            router.push('/sign-in');
-        }
-    }, [isLoaded, isSignedIn, router]);
+    // State for restoring draft
+    const [isRestoring, setIsRestoring] = useState(true);
 
-    // Show success message for new venue
+    // Restore draft functionality
     useEffect(() => {
-        if (newVenueParam) {
-            setStatusMessage(`✅ Thanks for submitting a gig! We have notified the admin so they can add the new venue as "${newVenueParam}" was not yet on our radar.`);
-        }
-    }, [newVenueParam]);
+        const checkRestore = async () => {
+            if (isLoaded) {
+                const savedDraft = sessionStorage.getItem('GIGFINDER_DRAFT_EVENT');
+                if (savedDraft) {
+                    try {
+                        const draft = JSON.parse(savedDraft);
+                        console.log("Restoring draft...", draft);
+
+                        // Restore fields
+                        if (draft.name) (document.getElementById('name') as HTMLInputElement).value = draft.name;
+                        if (draft.date) (document.getElementById('date') as HTMLInputElement).value = draft.date;
+                        if (draft.time) (document.getElementById('time') as HTMLInputElement).value = draft.time;
+                        if (draft.genre) (document.getElementById('genre') as HTMLSelectElement).value = draft.genre;
+                        if (draft.description) (document.getElementById('description') as HTMLTextAreaElement).value = draft.description;
+                        if (draft.price) (document.getElementById('price') as HTMLInputElement).value = draft.price;
+
+                        // Restore optional fields
+                        if (draft.presale_price) (document.getElementById('presale_price') as HTMLInputElement).value = draft.presale_price;
+                        if (draft.presale_caption) (document.getElementById('presale_caption') as HTMLInputElement).value = draft.presale_caption;
+
+                        // Restore checkboxes (a bit hacky with DOM but works for standard uncontrolled inputs)
+                        if (draft.is_internal_ticketing) {
+                            const el = document.querySelector('input[name="is_internal_ticketing"]') as HTMLInputElement;
+                            if (el) el.checked = true;
+                        }
+                        if (draft.sell_tickets) {
+                            const el = document.querySelector('input[name="sell_tickets"]') as HTMLInputElement;
+                            if (el) el.checked = true;
+                        }
+
+                        // Restore Venue State
+                        if (draft.venueInput) {
+                            setVenueInput(draft.venueInput);
+                            // Re-trigger logic? Ideally we'd just set the state if we had creating the venue logic fully controllable
+                            // matching venue logic:
+                            if (draft.selectedVenue) {
+                                setSelectedVenue(draft.selectedVenue);
+                                setIsNewVenue(false);
+                            } else {
+                                setIsNewVenue(true);
+                                // Restore new venue details
+                                if (draft.newVenueCity) setNewVenueCity(draft.newVenueCity);
+                                if (draft.newVenueCapacity) setNewVenueCapacity(draft.newVenueCapacity);
+                            }
+                        }
+
+                        // Restore Image
+                        if (draft.imageUrl) {
+                            setPosterBase64(draft.imageUrl);
+                            setPosterPreview(draft.imageUrl);
+                        }
+
+                        if (isSignedIn) {
+                            setStatusMessage("📝 Retrieved your saved gig details. Ready to submit!");
+                        }
+
+                    } catch (e) {
+                        console.error("Failed to restore draft", e);
+                    }
+                }
+                setIsRestoring(false);
+            }
+        };
+
+        checkRestore();
+    }, [isLoaded, isSignedIn]);
+
 
     // Fetch venues on mount
     useEffect(() => {
@@ -159,18 +219,44 @@ function AddEventForm() {
             // Existing venue
             payload.venue_id = selectedVenue.id;
             payload.venue = selectedVenue.name; // For backward compatibility
+            payload.selectedVenue = selectedVenue; // Save full obj for restore
         } else if (isNewVenue && venueInput) {
             // New venue - create it
             payload.venue = venueInput;
+            payload.venueInput = venueInput;
             payload.new_venue = {
                 name: venueInput,
                 city: newVenueCity,
                 capacity: parseInt(newVenueCapacity) || null
             };
+            // Save state for restore
+            payload.newVenueCity = newVenueCity;
+            payload.newVenueCapacity = newVenueCapacity;
         } else {
             setStatusMessage('❌ Please select or enter a venue');
             setIsSubmitting(false);
             return;
+        }
+
+        // 🛑 AUTH CHECK: If not signed in, save state and redirect
+        if (!isSignedIn) {
+            try {
+                // Add venue input explicitly if not captured above
+                if (!payload.venueInput) payload.venueInput = venueInput;
+
+                console.log("User not signed in. Saving draft:", payload);
+                sessionStorage.setItem('GIGFINDER_DRAFT_EVENT', JSON.stringify(payload));
+
+                // Redirect to sign up, then back here
+                const returnUrl = '/gigfinder/add-event';
+                router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`);
+                return;
+            } catch (err) {
+                console.error("Failed to save draft", err);
+                setStatusMessage('❌ Error: Could not save draft. Please try again or sign in first.');
+                setIsSubmitting(false);
+                return;
+            }
         }
 
         try {
@@ -182,6 +268,9 @@ function AddEventForm() {
 
             if (res.ok) {
                 const data = await res.json();
+
+                // ✅ Success - Clear draft
+                sessionStorage.removeItem('GIGFINDER_DRAFT_EVENT');
 
                 if (isNewVenue) {
                     // Redirect with new venue message
@@ -198,6 +287,9 @@ function AddEventForm() {
                     setVenueInput('');
                     setSelectedVenue(null);
                     setIsNewVenue(false);
+                    // Reset fields
+                    setNewVenueCity('');
+                    setNewVenueCapacity('');
                     (e.target as HTMLFormElement).reset();
                 }
             } else {
@@ -211,7 +303,9 @@ function AddEventForm() {
         }
     };
 
-    if (!isLoaded || !isSignedIn) {
+    // If still checking auth/restoring, show loading? 
+    // Actually, we want to show form immediately for anon users, so we just wait for isLoaded
+    if (!isLoaded) {
         return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
     }
 
