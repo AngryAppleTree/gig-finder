@@ -78,8 +78,9 @@ export function calculatePlatformFee(input: FeeCalculationInput): FeeCalculation
 /**
  * Format currency for display
  */
-export function formatCurrency(amount: number): string {
-    return `£${amount.toFixed(2)}`;
+export function formatCurrency(amount: number | string): string {
+    const numAmount = typeof amount === 'number' ? amount : parseFloat(amount);
+    return `£${numAmount.toFixed(2)}`;
 }
 
 /**
