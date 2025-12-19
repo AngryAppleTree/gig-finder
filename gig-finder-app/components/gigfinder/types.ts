@@ -11,6 +11,7 @@ export interface Gig {
     image?: string;     // Fallback?
     ticketUrl?: string | null;
     isInternalTicketing?: boolean;
+    sellTickets?: boolean; // Enable paid ticket sales
     town?: string;
     postcode?: string;
     price?: string;

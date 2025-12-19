@@ -122,6 +122,7 @@ export async function GET(request: NextRequest) {
             priority: 1,
             // Ticketing Fields
             isInternalTicketing: e.is_internal_ticketing || false,
+            sellTickets: e.sell_tickets || false,
             ticketsSold: e.tickets_sold || 0,
             maxCapacity: e.max_capacity || venueCapacity || 100,
             ticketPrice: e.ticket_price || 0,  // Add numeric price for modal

@@ -82,14 +82,14 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                     )}
                 </div>
                 <div style={{ marginTop: '1rem' }}>
-                    {/* Only allow internal ticketing for manually created events */}
-                    {gig.isInternalTicketing && gig.source === 'manual' ? (
+                    {/* Show booking button for manual events with ticketing enabled */}
+                    {(gig.isInternalTicketing || gig.sellTickets) && gig.source === 'manual' ? (
                         <button
                             className="btn-buy"
                             style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%' }}
                             onClick={handleBooking}
                         >
-                            Book Now
+                            {gig.sellTickets ? 'Buy Tickets' : 'Book Now'}
                         </button>
                     ) : (gig.ticketUrl && gig.ticketUrl !== '#' ? (
                         <a
