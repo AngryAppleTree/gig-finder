@@ -94,6 +94,8 @@ export async function PUT(req: Request) {
         const body = await req.json();
         const { id, name, address, city, postcode, latitude, longitude, capacity, website, phone } = body;
 
+        console.log('Update venue request:', { id, name, address, city, postcode, latitude, longitude, capacity, website, phone });
+
         if (!id || !name) {
             return NextResponse.json({ error: 'Venue ID and name are required' }, { status: 400 });
         }
@@ -104,19 +106,32 @@ export async function PUT(req: Request) {
                 latitude = $5, longitude = $6, capacity = $7, website = $8, phone = $9
             WHERE id = $10
             RETURNING *
-        `, [name, address, city, postcode, latitude, longitude, capacity, website, phone, id]);
+        `, [
+            name,
+            address || null,
+            city || null,
+            postcode || null,
+            latitude || null,
+            longitude || null,
+            capacity || null,
+            website || null,
+            phone || null,
+            id
+        ]);
 
         if (result.rowCount === 0) {
             return NextResponse.json({ error: 'Venue not found' }, { status: 404 });
         }
 
+        console.log('Venue updated successfully:', result.rows[0]);
         return NextResponse.json({ venue: result.rows[0] });
     } catch (error: any) {
         console.error('Update Venue Error:', error);
+        console.error('Error details:', error.message, error.code, error.detail);
         if (error.code === '23505') {
             return NextResponse.json({ error: 'Venue name already exists' }, { status: 409 });
         }
-        return NextResponse.json({ error: 'Failed to update venue' }, { status: 500 });
+        return NextResponse.json({ error: `Failed to update venue: ${error.message}` }, { status: 500 });
     } finally {
         client.release();
     }
