@@ -29,26 +29,29 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <style>{`
+            .skip-link {
+              position: absolute;
+              left: -9999px;
+              z-index: 999;
+              padding: 1rem;
+              background: var(--color-primary);
+              color: var(--color-bg);
+              text-decoration: none;
+              font-weight: bold;
+            }
+            .skip-link:focus {
+              left: 0;
+              top: 0;
+            }
+          `}</style>
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           {/* Skip to main content link for keyboard users */}
-          <a
-            href="#main-content"
-            className="skip-link"
-            style={{
-              position: 'absolute',
-              left: '-9999px',
-              zIndex: 999,
-              padding: '1rem',
-              background: 'var(--color-primary)',
-              color: 'var(--color-bg)',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}
-            onFocus={(e) => e.currentTarget.style.left = '0'}
-            onBlur={(e) => e.currentTarget.style.left = '-9999px'}
-          >
+          <a href="#main-content" className="skip-link">
             Skip to main content
           </a>
           {children}
