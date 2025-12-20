@@ -1,6 +1,18 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export default clerkMiddleware();
+const isPublicRoute = createRouteMatcher([
+    '/api/stripe/webhook(.*)',
+    '/api/events(.*)',
+    '/api/venues(.*)',
+    '/api/debug(.*)',
+]);
+
+export default clerkMiddleware((auth, request) => {
+    if (!isPublicRoute(request)) {
+        // Only protect routes that aren't public
+        // This allows Stripe webhooks and public API endpoints to work
+    }
+});
 
 export const config = {
     matcher: [
