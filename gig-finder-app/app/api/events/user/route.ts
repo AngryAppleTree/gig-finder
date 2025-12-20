@@ -1,11 +1,8 @@
-import { Pool } from 'pg';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
+import { getPool } from '@/lib/db';
+import { logAudit, AuditAction } from '@/lib/audit';
+import { getClientIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +16,7 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams;
         const eventId = searchParams.get('id');
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         if (eventId) {
             // Fetch single event
@@ -64,14 +61,10 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Fingerprint update is optional/tricky. If they change name/venue/date, fingerprint needs update?
-        // We will update fingerprint to match new data to avoid stale deduplication.
         const fingerprint = `${date}|${venue.toLowerCase().trim()}|${name.toLowerCase().trim()}`;
-
-        // Combine date + time
         const timestamp = time ? `${date} ${time}` : `${date} 00:00:00`;
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         const result = await client.query(
             `UPDATE events SET 
@@ -93,6 +86,17 @@ export async function PUT(request: NextRequest) {
         if (result.rowCount === 0) {
             return NextResponse.json({ error: 'Event not found or unauthorized' }, { status: 404 });
         }
+
+        // Audit log
+        await logAudit({
+            action: AuditAction.EVENT_UPDATED,
+            userId,
+            ipAddress: getClientIp(request),
+            resourceType: 'event',
+            resourceId: id,
+            details: { name, venue, date },
+            success: true
+        });
 
         return NextResponse.json({ success: true, id });
 
@@ -116,7 +120,13 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'Missing event ID' }, { status: 400 });
         }
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
+
+        // Get event details before deletion for audit log
+        const eventResult = await client.query(
+            `SELECT name, venue, date FROM events WHERE id = $1 AND user_id = $2`,
+            [eventId, userId]
+        );
 
         // Security: ONLY delete if id matches AND user_id matches
         const result = await client.query(
@@ -127,8 +137,28 @@ export async function DELETE(request: NextRequest) {
         client.release();
 
         if (result.rowCount === 0) {
+            await logAudit({
+                action: AuditAction.EVENT_DELETED,
+                userId,
+                ipAddress: getClientIp(request),
+                resourceType: 'event',
+                resourceId: eventId,
+                success: false,
+                errorMessage: 'Event not found or unauthorized'
+            });
             return NextResponse.json({ error: 'Event not found or unauthorized' }, { status: 404 });
         }
+
+        // Audit log successful deletion
+        await logAudit({
+            action: AuditAction.EVENT_DELETED,
+            userId,
+            ipAddress: getClientIp(request),
+            resourceType: 'event',
+            resourceId: eventId,
+            details: eventResult.rows[0] || {},
+            success: true
+        });
 
         return NextResponse.json({ success: true, deletedId: eventId });
 
