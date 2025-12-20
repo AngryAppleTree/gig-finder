@@ -15,6 +15,7 @@ interface Booking {
     platform_fee?: number;
     status: string;
     created_at: string;
+    checked_in_at?: string | null;
 }
 
 export default function GuestListPage({ params }: { params: Promise<{ id: string }> }) {
@@ -174,7 +175,8 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                                     background: '#111',
                                     padding: '1rem',
                                     borderRadius: '8px',
-                                    border: '1px solid #333'
+                                    border: b.checked_in_at ? '2px solid #44ff44' : '1px solid #333',
+                                    opacity: b.checked_in_at ? 0.7 : 1
                                 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
                                         <div style={{ flex: 1 }}>
@@ -188,14 +190,14 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                                         <span style={{
                                             padding: '0.25rem 0.75rem',
                                             borderRadius: '4px',
-                                            background: '#113311',
-                                            color: '#44ff44',
+                                            background: b.checked_in_at ? '#113311' : '#333',
+                                            color: b.checked_in_at ? '#44ff44' : '#888',
                                             fontSize: '0.75rem',
                                             textTransform: 'uppercase',
                                             fontWeight: 'bold',
                                             whiteSpace: 'nowrap'
                                         }}>
-                                            {b.status}
+                                            {b.checked_in_at ? '✓ CHECKED IN' : 'NOT SCANNED'}
                                         </span>
                                     </div>
 
@@ -211,6 +213,14 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                                                 <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Records</div>
                                                 <div style={{ color: '#ff69b4', fontWeight: 'bold' }}>
                                                     💿 {b.records_quantity}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {b.checked_in_at && (
+                                            <div>
+                                                <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Checked In</div>
+                                                <div style={{ color: '#44ff44', fontSize: '0.85rem' }}>
+                                                    {new Date(b.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
                                         )}
