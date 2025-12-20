@@ -26,12 +26,13 @@ export interface FeeCalculationResult {
 /**
  * Calculate platform fee based on order details
  * 
- * Current implementation: Fixed £1 fee
+ * Current implementation: 5% + £0.30 per transaction
+ * This covers Stripe fees (2.9% + 30p) plus a small platform margin
  * 
- * Future extensions could include:
- * - Percentage: fee = subtotal * feePercentage
- * - Tiered: different fees based on total amount
- * - Event-specific: different fees per event type
+ * Examples:
+ * - £10 ticket → £0.80 fee (£0.50 + £0.30)
+ * - £20 ticket → £1.30 fee (£1.00 + £0.30)
+ * - £50 ticket → £2.80 fee (£2.50 + £0.30)
  * 
  * @param input - Order details
  * @returns Fee calculation breakdown
@@ -40,38 +41,23 @@ export function calculatePlatformFee(input: FeeCalculationInput): FeeCalculation
     const { ticketsSubtotal, recordsSubtotal } = input;
     const subtotal = ticketsSubtotal + recordsSubtotal;
 
-    // Current implementation: Fixed £1 platform fee
-    const platformFee = 1.00;
+    // Platform fee: 5% + £0.30
+    const feePercentage = 0.05; // 5%
+    const fixedFee = 0.30; // £0.30
+    const platformFee = (subtotal * feePercentage) + fixedFee;
 
-    // Future implementation examples (commented out):
+    // Round to 2 decimal places
+    const roundedFee = Math.round(platformFee * 100) / 100;
 
-    // Percentage-based fee (e.g., 5%):
-    // const feePercentage = 0.05;
-    // const platformFee = subtotal * feePercentage;
-
-    // Tiered fee based on total:
-    // let platformFee;
-    // if (subtotal < 10) {
-    //     platformFee = 0.50;
-    // } else if (subtotal < 50) {
-    //     platformFee = 1.00;
-    // } else {
-    //     platformFee = subtotal * 0.03; // 3% for orders over £50
-    // }
-
-    // Minimum fee with percentage:
-    // const percentageFee = subtotal * 0.03;
-    // const platformFee = Math.max(1.00, percentageFee);
-
-    const total = subtotal + platformFee;
+    const total = subtotal + roundedFee;
 
     return {
-        platformFee,
+        platformFee: roundedFee,
         ticketsSubtotal,
         recordsSubtotal,
         subtotal,
         total,
-        feeType: 'fixed'
+        feeType: 'percentage'
     };
 }
 
@@ -87,9 +73,5 @@ export function formatCurrency(amount: number | string): string {
  * Get platform fee description for display
  */
 export function getPlatformFeeDescription(): string {
-    return 'Platform Fee';
-
-    // Future: Could return different descriptions based on fee type
-    // if (feeType === 'percentage') return 'Service Fee (5%)';
-    // if (feeType === 'tiered') return 'Processing Fee';
+    return 'Service Fee (5% + £0.30)';
 }
