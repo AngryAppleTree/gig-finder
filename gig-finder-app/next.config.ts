@@ -64,6 +64,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // API route body size limits
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb', // Limit request body size to 2MB
+    },
+  },
 };
 
 export default nextConfig;
