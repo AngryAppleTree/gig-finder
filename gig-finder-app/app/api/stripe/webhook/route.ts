@@ -1,19 +1,15 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
 import { Resend } from 'resend';
 import QRCode from 'qrcode';
+import { getPool } from '@/lib/db';
+import { safeLog, redactEmail } from '@/lib/logger';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
         apiVersion: '2025-11-17.clover',
     })
     : null;
-
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -49,7 +45,7 @@ export async function POST(req: NextRequest) {
         // Extract metadata
         const { eventId, quantity, recordsQuantity, recordsPrice, platformFee, customerName, customerEmail } = session.metadata!;
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         try {
             await client.query('BEGIN');
@@ -165,7 +161,7 @@ export async function POST(req: NextRequest) {
                             }
                         ]
                     });
-                    console.log(`✅ Confirmation email sent to ${customerEmail} for booking #${bookingId}`);
+                    safeLog(`✅ Confirmation email sent to ${redactEmail(customerEmail)} for booking #${bookingId}`);
                 } catch (emailError) {
                     console.error('❌ Failed to send confirmation email:', emailError);
                     // Don't throw - booking is already saved
