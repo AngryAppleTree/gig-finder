@@ -1,11 +1,7 @@
 import { currentUser } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
+import { NextRequest, NextResponse } from 'next/server';
+import { getPool } from '@/lib/db';
+import { adminIpRestriction } from '@/lib/admin-ip';
 
 async function checkAdmin() {
     const user = await currentUser();
@@ -21,13 +17,17 @@ async function checkAdmin() {
 }
 
 // GET - List all venues
-export async function GET() {
+export async function GET(request: NextRequest) {
+    // IP restriction
+    const ipCheck = adminIpRestriction(request);
+    if (ipCheck) return ipCheck;
+
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const client = await pool.connect();
+    const client = await getPool().connect();
     try {
         const result = await client.query(`
             SELECT 
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const client = await pool.connect();
+    const client = await getPool().connect();
     try {
         const body = await req.json();
         const { name, address, city, postcode, latitude, longitude, capacity, email, website, phone } = body;
@@ -89,7 +89,7 @@ export async function PUT(req: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const client = await pool.connect();
+    const client = await getPool().connect();
     try {
         const body = await req.json();
         const { id, name, address, city, postcode, latitude, longitude, capacity, email, website, phone } = body;
@@ -152,7 +152,7 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: 'Venue ID is required' }, { status: 400 });
     }
 
-    const client = await pool.connect();
+    const client = await getPool().connect();
     try {
         // Check if venue has events
         const eventCheck = await client.query(
