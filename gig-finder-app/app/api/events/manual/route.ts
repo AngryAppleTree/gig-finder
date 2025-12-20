@@ -3,6 +3,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { sendNewVenueNotification } from '@/lib/notifications';
 
+/**
+ * Normalizes a venue name for duplicate detection
+ * Must match the normalization logic in scraper/venue-helper.js
+ */
+function normalizeVenueName(name: string): string {
+    const cities = ['edinburgh', 'glasgow', 'aberdeen', 'dundee', 'inverness', 'perth', 'stirling', 'kirkcaldy', 'dunfermline'];
+
+    let normalized = name
+        .toLowerCase()
+        .replace(/^upstairs\s+(at\s+)?/i, '')
+        .replace(/^the\s+/i, '')
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+and\s+/g, ' ')
+        .replace(/\s+n\s+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    normalized = normalized.replace(/\s+(bar|pub|club|venue|hall|hotel|theatre|theater|lounge|room|warehouse)(\s+(bar|pub|club|venue|hall|hotel|theatre|theater|lounge|room|warehouse))*$/i, '');
+    normalized = normalized.split(' ').map(word => word.replace(/s$/, '')).join(' ').trim();
+
+    cities.forEach(city => {
+        const regex = new RegExp(`\\s+${city}$`, 'i');
+        normalized = normalized.replace(regex, '');
+    });
+
+    return normalized.trim();
+}
+
 
 export async function POST(request: NextRequest) {
     try {
@@ -54,30 +82,45 @@ export async function POST(request: NextRequest) {
             // Handle new venue creation
             if (newVenue && !venueId) {
                 console.log('Creating new venue:', newVenue);
-                const venueResult = await client.query(
-                    `INSERT INTO venues (name, city, capacity) 
-                     VALUES ($1, $2, $3) 
-                     ON CONFLICT (name) DO UPDATE SET city = EXCLUDED.city, capacity = EXCLUDED.capacity
-                     RETURNING id, name`,
-                    [newVenue.name, newVenue.city || null, newVenue.capacity || null]
-                );
-                venueId = venueResult.rows[0].id;
-                venue = venueResult.rows[0].name; // For fingerprint
-                console.log('New venue created with ID:', venueId);
+                const normalized = normalizeVenueName(newVenue.name);
 
-                // Notify admin about new venue (direct function call - more reliable than fetch)
-                sendNewVenueNotification(
-                    newVenue.name,
-                    newVenue.city,
-                    newVenue.capacity,
-                    userId
-                ).then(result => {
-                    if (result.success) {
-                        console.log('✅ Admin notification sent successfully');
-                    } else {
-                        console.error('❌ Admin notification failed:', result.error);
-                    }
-                }).catch(err => console.error('❌ Failed to notify admin:', err));
+                // Check if venue already exists using normalized name
+                const existingVenue = await client.query(
+                    'SELECT id, name FROM venues WHERE normalized_name = $1 AND (city = $2 OR $2 IS NULL OR city IS NULL)',
+                    [normalized, newVenue.city || null]
+                );
+
+                if (existingVenue.rows.length > 0) {
+                    // Use existing venue
+                    venueId = existingVenue.rows[0].id;
+                    venue = existingVenue.rows[0].name;
+                    console.log(`♻️  Using existing venue: "${venue}" (ID: ${venueId})`);
+                } else {
+                    // Create new venue with normalized_name
+                    const venueResult = await client.query(
+                        `INSERT INTO venues (name, normalized_name, city, capacity) 
+                         VALUES ($1, $2, $3, $4) 
+                         RETURNING id, name`,
+                        [newVenue.name, normalized, newVenue.city || null, newVenue.capacity || null]
+                    );
+                    venueId = venueResult.rows[0].id;
+                    venue = venueResult.rows[0].name;
+                    console.log(`🆕 Created new venue: "${venue}" (normalized: "${normalized}")`);
+
+                    // Notify admin about new venue
+                    sendNewVenueNotification(
+                        newVenue.name,
+                        newVenue.city,
+                        newVenue.capacity,
+                        userId
+                    ).then(result => {
+                        if (result.success) {
+                            console.log('✅ Admin notification sent successfully');
+                        } else {
+                            console.error('❌ Admin notification failed:', result.error);
+                        }
+                    }).catch(err => console.error('❌ Failed to notify admin:', err));
+                }
             } else if (venueId && !venue) {
                 // Get venue name for fingerprint
                 const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [venueId]);
