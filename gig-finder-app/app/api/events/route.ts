@@ -1,20 +1,15 @@
 // Skiddle API Route
 // Fetches events from Skiddle API and transforms them to GigFinder format
 
-import { Pool } from 'pg';
 import { NextRequest, NextResponse } from 'next/server';
 import { getVenueCapacity } from './venue-capacities';
 import { mapGenreToVibe } from './genre-mapping';
 import { findOrCreateVenue, type VenueData } from '@/lib/venue-utils';
 import { findOrCreateEvent, type EventData } from '@/lib/event-utils';
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { getPool } from '@/lib/db';
 
 const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
-
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 interface SkiddleEvent {
     id: string;
@@ -69,7 +64,7 @@ export async function GET(request: NextRequest) {
     // 1. Fetch Manual Gigs (Level 1 Data) with Venue Info
     let manualEvents: any[] = [];
     try {
-        const client = await pool.connect();
+        const client = await getPool().connect();
         // JOIN with venues table to get rich venue data
         let query = `
             SELECT 
@@ -276,7 +271,7 @@ export async function GET(request: NextRequest) {
                 // Get venue capacity for display
                 let venueCapacity: number | null = null;
                 try {
-                    const client = await pool.connect();
+                    const client = await getPool().connect();
                     const venueResult = await client.query('SELECT capacity FROM venues WHERE id = $1', [venueId]);
                     if (venueResult.rows[0]?.capacity) {
                         venueCapacity = venueResult.rows[0].capacity;

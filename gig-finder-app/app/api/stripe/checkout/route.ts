@@ -1,20 +1,15 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
 import { calculatePlatformFee } from '@/lib/platform-fee';
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit';
 import { bookingSchema, validateAndSanitize } from '@/lib/validation';
+import { getPool } from '@/lib/db';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
         apiVersion: '2025-11-17.clover',
     })
     : null;
-
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 export async function POST(req: NextRequest) {
     try {
@@ -50,7 +45,7 @@ export async function POST(req: NextRequest) {
 
         const { eventId, quantity, recordsQuantity, recordsPrice, customerName, customerEmail } = validation.data;
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         try {
             // Get event details
