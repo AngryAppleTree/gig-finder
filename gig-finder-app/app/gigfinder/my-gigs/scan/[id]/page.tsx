@@ -53,7 +53,14 @@ export default function ScanPage({ params }: { params: Promise<{ id: string }> }
         setLastScanned(decodedText);
         setScanResult({ loading: true });
 
-        // Pause scanning logic implicitly by overlaying result
+        // Pause scanner to prevent re-scanning during result display
+        if (scannerRef.current) {
+            try {
+                await scannerRef.current.pause(true);
+            } catch (e) {
+                console.error('Failed to pause scanner', e);
+            }
+        }
 
         try {
             const res = await fetch('/api/bookings/scan', {
@@ -94,6 +101,15 @@ export default function ScanPage({ params }: { params: Promise<{ id: string }> }
     const nextScan = () => {
         setScanResult(null);
         setLastScanned(''); // Allow scanning same code again if they want to re-verify
+
+        // Resume scanner
+        if (scannerRef.current) {
+            try {
+                scannerRef.current.resume();
+            } catch (e) {
+                console.error('Failed to resume scanner', e);
+            }
+        }
     };
 
     return (
