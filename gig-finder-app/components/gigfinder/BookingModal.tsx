@@ -187,8 +187,9 @@ export function BookingModal() {
 
                         <form onSubmit={handleSubmit}>
                             <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Your Full Name</label>
+                                <label htmlFor="booking-name" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Your Full Name</label>
                                 <input
+                                    id="booking-name"
                                     type="text"
                                     required
                                     value={formData.name}
@@ -197,15 +198,17 @@ export function BookingModal() {
                                 />
                             </div>
                             <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Email Address</label>
+                                <label htmlFor="booking-email" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Email Address</label>
                                 <input
+                                    id="booking-email"
                                     type="email"
                                     required
                                     value={formData.email}
                                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                    aria-describedby="email-help"
                                     style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid #333', background: '#000', color: 'white', fontFamily: 'inherit' }}
                                 />
-                                <p style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem' }}>We'll email your ticket instantly.</p>
+                                <p id="email-help" style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem' }}>We'll email your ticket instantly.</p>
                             </div>
 
                             {/* Tickets Quantity Selector */}
@@ -216,6 +219,7 @@ export function BookingModal() {
                                         type="button"
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                         disabled={quantity <= 1}
+                                        aria-label="Decrease ticket quantity"
                                         style={{
                                             width: '40px',
                                             height: '40px',
@@ -247,6 +251,7 @@ export function BookingModal() {
                                         type="button"
                                         onClick={() => setQuantity(Math.min(10, quantity + 1))}
                                         disabled={quantity >= 10}
+                                        aria-label="Increase ticket quantity"
                                         style={{
                                             width: '40px',
                                             height: '40px',
