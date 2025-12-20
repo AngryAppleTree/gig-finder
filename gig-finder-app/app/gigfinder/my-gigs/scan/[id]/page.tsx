@@ -75,6 +75,13 @@ export default function ScanPage({ params }: { params: Promise<{ id: string }> }
             // Optional: Haptic feedback if on mobile
             if (window.navigator.vibrate) window.navigator.vibrate(isSuccess ? 50 : 200);
 
+            // Auto-dismiss successful scans after 2 seconds
+            if (isSuccess && !isDuplicate) {
+                setTimeout(() => {
+                    nextScan();
+                }, 2000);
+            }
+
         } catch (e) {
             setScanResult({ success: false, error: 'Network Error' });
         }
