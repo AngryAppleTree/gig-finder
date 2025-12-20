@@ -1,3 +1,5 @@
 {
-    "framework": "nextjs"
+    "deploymentProtection": {
+        "preview": "vercel-authentication"
+    }
 }
