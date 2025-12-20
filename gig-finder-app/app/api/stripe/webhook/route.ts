@@ -74,24 +74,31 @@ export async function POST(req: NextRequest) {
             const recordsPriceNum = recordsPrice ? parseFloat(recordsPrice) : 0;
             const platformFeeNum = platformFee ? parseFloat(platformFee) : 0;
 
-            // Generate QR code data
-            const qrCodeData = `GF-TICKET:${eventId}-${Date.now()}`;
-
-            // Create booking with records data and QR code
+            // Create booking with records data (QR code will be added after we have the booking ID)
             const bookingRes = await client.query(
-                `INSERT INTO bookings (event_id, customer_name, customer_email, quantity, records_quantity, records_price, platform_fee, status, payment_intent_id, qr_code)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                `INSERT INTO bookings (event_id, customer_name, customer_email, quantity, records_quantity, records_price, platform_fee, status, payment_intent_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                  RETURNING id`,
-                [eventId, customerName, customerEmail, parseInt(quantity), recordsQty, recordsPriceNum, platformFeeNum, 'confirmed', session.payment_intent, qrCodeData]
+                [eventId, customerName, customerEmail, parseInt(quantity), recordsQty, recordsPriceNum, platformFeeNum, 'confirmed', session.payment_intent]
             );
 
             const bookingId = bookingRes.rows[0].id;
+
+            // Generate QR code data with correct format: GF-TICKET:{bookingId}-{eventId}
+            const qrCodeData = `GF-TICKET:${bookingId}-${eventId}`;
+
+            // Update booking with QR code
+            await client.query(
+                'UPDATE bookings SET qr_code = $1 WHERE id = $2',
+                [qrCodeData, bookingId]
+            );
 
             // Update tickets sold
             await client.query(
                 'UPDATE events SET tickets_sold = COALESCE(tickets_sold, 0) + $1 WHERE id = $2',
                 [parseInt(quantity), eventId]
             );
+
 
             await client.query('COMMIT');
 
