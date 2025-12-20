@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import { calculatePlatformFee } from '@/lib/platform-fee';
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit';
+import { bookingSchema, validateAndSanitize } from '@/lib/validation';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -36,15 +37,18 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { eventId, quantity, recordsQuantity, recordsPrice, customerName, customerEmail } = await req.json();
+        const body = await req.json();
 
-        // Validate inputs
-        if (!eventId || !quantity || !customerName || !customerEmail) {
+        // Validate and sanitize inputs
+        const validation = validateAndSanitize(bookingSchema, body);
+        if (!validation.success) {
             return NextResponse.json(
-                { error: 'Missing required fields' },
+                { error: validation.error },
                 { status: 400 }
             );
         }
+
+        const { eventId, quantity, recordsQuantity, recordsPrice, customerName, customerEmail } = validation.data;
 
         const client = await pool.connect();
 
