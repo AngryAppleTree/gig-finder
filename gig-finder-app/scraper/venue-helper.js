@@ -9,12 +9,32 @@
  * Must match the normalization logic in lib/venue-utils.ts
  */
 function normalizeVenueName(name) {
-    return name
+    // Common Scottish cities to remove from venue names
+    const cities = ['edinburgh', 'glasgow', 'aberdeen', 'dundee', 'inverness', 'perth', 'stirling', 'kirkcaldy', 'dunfermline'];
+
+    let normalized = name
         .toLowerCase()
-        .replace(/^the\s+/i, '')                    // Remove leading "The"
-        .replace(/[^a-z0-9\s]/g, '')                 // Remove punctuation (matches PostgreSQL)
+        .replace(/^upstairs\s+(at\s+)?/i, '')       // Remove "Upstairs" or "Upstairs at" first
+        .replace(/^the\s+/i, '')                    // Then remove leading "The"
+        .replace(/[^a-z0-9\s]/g, '')                 // Remove punctuation (including apostrophes)
+        .replace(/\s+and\s+/g, ' ')                  // Normalize "and" to space
+        .replace(/\s+n\s+/g, ' ')                    // Normalize "n" to space
         .replace(/\s+/g, ' ')                        // Normalize whitespace
         .trim();
+
+    // Remove common venue type suffixes
+    normalized = normalized.replace(/\s+(bar|pub|club|venue|hall|hotel|theatre|theater|lounge|room|warehouse)(\s+(bar|pub|club|venue|hall|hotel|theatre|theater|lounge|room|warehouse))*$/i, '');
+
+    // Remove trailing 's' from each word to normalize possessives and plurals
+    normalized = normalized.split(' ').map(word => word.replace(/s$/, '')).join(' ').trim();
+
+    // Remove city names from the end
+    cities.forEach(city => {
+        const regex = new RegExp(`\\s+${city}$`, 'i');
+        normalized = normalized.replace(regex, '');
+    });
+
+    return normalized.trim();
 }
 
 export async function getOrCreateVenue(client, venueName, city = null) {
