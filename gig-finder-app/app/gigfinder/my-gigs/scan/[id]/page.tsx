@@ -18,14 +18,19 @@ export default function ScanPage({ params }: { params: Promise<{ id: string }> }
     useEffect(() => {
         // Initialize Scanner on mount
         const timeout = setTimeout(() => {
-            // Basic config
             const scanner = new Html5QrcodeScanner(
                 "reader",
                 {
                     fps: 10,
                     qrbox: { width: 250, height: 250 },
                     aspectRatio: 1.0,
-                    rememberLastUsedCamera: true
+                    // Force back camera
+                    videoConstraints: {
+                        facingMode: { exact: "environment" }
+                    },
+                    // Hide camera selection UI since we're forcing back camera
+                    showTorchButtonIfSupported: true,
+                    showZoomSliderIfSupported: false
                 },
                 /* verbose= */ false
             );
