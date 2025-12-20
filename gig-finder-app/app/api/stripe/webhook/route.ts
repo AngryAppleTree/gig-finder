@@ -103,6 +103,9 @@ export async function POST(req: NextRequest) {
                     { width: 300, margin: 2 }
                 );
 
+                // Convert to base64 for inline embedding
+                const qrBase64 = qrBuffer.toString('base64');
+
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
                 const dateStr = new Date(eventData.date).toLocaleDateString();
 
@@ -141,7 +144,7 @@ export async function POST(req: NextRequest) {
                                 <strong>Total: £${totalPaid}</strong></p>
                                 
                                 <div style="text-align: center; margin: 20px 0;">
-                                    <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
+                                    <img src="data:image/png;base64,${qrBase64}" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
                                 </div>
                                 
                                 <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
@@ -151,9 +154,7 @@ export async function POST(req: NextRequest) {
                         attachments: [
                             {
                                 filename: `ticket-${bookingId}.png`,
-                                content: qrBuffer,
-                                // @ts-ignore
-                                content_id: 'ticket-qr'
+                                content: qrBuffer
                             }
                         ]
                     });
