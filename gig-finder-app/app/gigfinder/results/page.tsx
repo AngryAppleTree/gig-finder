@@ -202,7 +202,24 @@ function ResultsPageContent() {
     return (
         <>
             <h1 className="main-title">GIG<br />FINDER</h1>
-            <main className="container" style={{ paddingTop: '120px' }}>
+
+            {/* Sticky Navigation Header */}
+            <div style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 100,
+                background: 'var(--color-bg)',
+                borderBottom: '2px solid var(--color-border)',
+                padding: '1rem',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
+            }}>
+                <div className="nav-buttons" style={{ margin: 0, maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
+                    <button className="btn-back" onClick={handleBack}>← Back</button>
+                    <button className="btn-primary" onClick={handleStartOver}>Start Over</button>
+                </div>
+            </div>
+
+            <main className="container" style={{ paddingTop: '2rem' }}>
                 <section className="step active">
                     <h2 className="step-title">Your Gigs 🎸</h2>
 
@@ -229,6 +246,7 @@ function ResultsPageContent() {
                         </>
                     )}
 
+                    {/* Bottom navigation for convenience */}
                     <div className="nav-buttons" style={{ marginTop: 'var(--spacing-xl)' }}>
                         <button className="btn-back" onClick={handleBack}>← Back</button>
                         <button className="btn-primary" onClick={handleStartOver}>Start Over</button>
