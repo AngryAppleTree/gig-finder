@@ -168,48 +168,55 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                     {bookings.length === 0 ? (
                         <p style={{ color: '#888', fontStyle: 'italic' }}>No names on the list yet.</p>
                     ) : (
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ textAlign: 'left', borderBottom: '1px solid #555' }}>
-                                        <th style={{ padding: '1rem' }}>Name</th>
-                                        <th style={{ padding: '1rem' }}>Email</th>
-                                        <th style={{ padding: '1rem' }}>Tickets</th>
-                                        <th style={{ padding: '1rem' }}>Records</th>
-                                        <th style={{ padding: '1rem' }}>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {bookings.map(b => (
-                                        <tr key={b.id} style={{ borderBottom: '1px solid #222' }}>
-                                            <td style={{ padding: '1rem' }}>{b.customer_name}</td>
-                                            <td style={{ padding: '1rem', color: '#aaa' }}>{b.customer_email}</td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <span style={{ color: 'var(--color-secondary)' }}>🎟️ {b.quantity || 1}</span>
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>
-                                                {b.records_quantity && b.records_quantity > 0 ? (
-                                                    <span style={{ color: '#ff69b4' }}>💿 {b.records_quantity}</span>
-                                                ) : (
-                                                    <span style={{ color: '#555' }}>-</span>
-                                                )}
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <span style={{
-                                                    padding: '0.2rem 0.5rem',
-                                                    borderRadius: '4px',
-                                                    background: '#113311',
-                                                    color: '#44ff44',
-                                                    fontSize: '0.8rem',
-                                                    textTransform: 'uppercase'
-                                                }}>
-                                                    {b.status}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {bookings.map(b => (
+                                <div key={b.id} style={{
+                                    background: '#111',
+                                    padding: '1rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid #333'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                                                {b.customer_name}
+                                            </div>
+                                            <div style={{ fontSize: '0.85rem', color: '#888' }}>
+                                                {b.customer_email}
+                                            </div>
+                                        </div>
+                                        <span style={{
+                                            padding: '0.25rem 0.75rem',
+                                            borderRadius: '4px',
+                                            background: '#113311',
+                                            color: '#44ff44',
+                                            fontSize: '0.75rem',
+                                            textTransform: 'uppercase',
+                                            fontWeight: 'bold',
+                                            whiteSpace: 'nowrap'
+                                        }}>
+                                            {b.status}
+                                        </span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #222' }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Tickets</div>
+                                            <div style={{ color: 'var(--color-secondary)', fontWeight: 'bold' }}>
+                                                🎟️ {b.quantity || 1}
+                                            </div>
+                                        </div>
+                                        {b.records_quantity && b.records_quantity > 0 && (
+                                            <div>
+                                                <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Records</div>
+                                                <div style={{ color: '#ff69b4', fontWeight: 'bold' }}>
+                                                    💿 {b.records_quantity}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
