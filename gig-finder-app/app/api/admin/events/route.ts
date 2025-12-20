@@ -1,11 +1,7 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { getPool } from '@/lib/db';
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 async function checkAdmin() {
     const user = await currentUser();
@@ -25,7 +21,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const client = await pool.connect();
+    const client = await getPool().connect();
     try {
         // Fetch all future events + recent past with venue names
         const res = await client.query(`
@@ -60,7 +56,7 @@ export async function DELETE(req: Request) {
         const body = await req.json();
         const { id } = body;
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
         try {
             // Delete associated bookings first to prevent Foreign Key violation
             await client.query('DELETE FROM bookings WHERE event_id = $1', [id]);
@@ -87,7 +83,7 @@ export async function POST(req: Request) {
         const dateTimeStr = `${date}T${time}:00`;
         const dateObj = new Date(dateTimeStr);
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
         try {
             // If venueId provided, use it; otherwise try to find venue by name
             let finalVenueId = venueId;
@@ -139,7 +135,7 @@ export async function PATCH(req: Request) {
         const body = await req.json();
         const { id, isInternalTicketing, approved } = body;
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
         try {
             // Update Internal Ticketing
             if (isInternalTicketing !== undefined) {

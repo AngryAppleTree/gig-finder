@@ -1,12 +1,8 @@
-import { Pool } from 'pg';
+import { getPool } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { sendNewVenueNotification } from '@/lib/notifications';
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 export async function POST(request: NextRequest) {
     try {
@@ -52,7 +48,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Venue is required' }, { status: 400 });
         }
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         try {
             // Handle new venue creation

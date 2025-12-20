@@ -1,14 +1,10 @@
-import { Pool } from 'pg';
+import { getPool } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false } // Required for Supabase/Vercel connection
-});
 
 export async function GET() {
     try {
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         // Reset table (DROP) for development consistency
         // DANGER: DISABLED FOR SAFETY

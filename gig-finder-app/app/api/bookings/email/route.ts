@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { getPool } from '@/lib/db';
 import { auth } from '@clerk/nextjs/server';
 import { Resend } from 'resend';
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -21,7 +17,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         try {
             // Verify ownership

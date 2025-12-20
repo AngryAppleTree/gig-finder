@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { getPool } from '@/lib/db';
 import { auth } from '@clerk/nextjs/server';
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 export async function POST(req: Request) {
     try {
@@ -30,7 +26,7 @@ export async function POST(req: Request) {
         const bookingId = match[1];
         const ticketEventId = match[2];
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
         try {
             // 1. Verify Event Owner
             const eventRes = await client.query('SELECT user_id, name FROM events WHERE id = $1', [ticketEventId]);

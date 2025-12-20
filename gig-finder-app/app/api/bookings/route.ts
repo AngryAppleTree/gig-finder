@@ -1,10 +1,6 @@
-import { Pool } from 'pg';
+import { getPool } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 import { auth } from '@clerk/nextjs/server';
 
@@ -17,7 +13,7 @@ export async function GET(req: Request) {
 
     if (!eventId) return NextResponse.json({ error: 'Missing eventId' }, { status: 400 });
 
-    const client = await pool.connect();
+    const client = await getPool().connect();
     try {
         // Verify ownership (or if event is public? No, bookings are private PII)
         const eventRes = await client.query('SELECT user_id FROM events WHERE id = $1', [eventId]);
@@ -60,7 +56,7 @@ export async function POST(req: Request) {
     // Validate quantity
     const ticketQuantity = Math.max(1, Math.min(10, parseInt(String(quantity)) || 1));
 
-    const client = await pool.connect();
+    const client = await getPool().connect();
 
     try {
         await client.query('BEGIN');

@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { getPool } from '@/lib/db';
 import { Resend } from 'resend';
 import { auth } from '@clerk/nextjs/server';
 
@@ -10,10 +10,6 @@ const stripe = process.env.STRIPE_SECRET_KEY
     })
     : null;
 
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
-});
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -39,7 +35,7 @@ export async function POST(req: NextRequest) {
         // Get authenticated user (for admin check)
         const { userId } = await auth();
 
-        const client = await pool.connect();
+        const client = await getPool().connect();
 
         try {
             await client.query('BEGIN');
