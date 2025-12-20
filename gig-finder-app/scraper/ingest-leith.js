@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
-import { getOrCreateVenue } from './venue-helper.js';
+import { getVenueOnly } from './venue-helper.js';
 
 export async function scrapeLeith() {
     console.log('🎸 Initiating Leith Depot Ingestion (Cheerio Selectors)...');
@@ -97,8 +97,14 @@ export async function scrapeLeith() {
 
             const fingerprint = `${dateStr}|leith depot|${evt.name.toLowerCase().trim()}`;
 
-            // Get venue ID
-            const venueId = await getOrCreateVenue(client, 'Leith Depot');
+            // Get venue ID from MASTER database
+            const venueId = await getVenueOnly(client, 'Leith Depot');
+
+            // Skip event if venue doesn't exist in MASTER database
+            if (!venueId) {
+                skippedCount++;
+                continue;
+            }
 
             // Check existence
             const checkRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);

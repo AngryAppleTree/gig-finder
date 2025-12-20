@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
-import { getOrCreateVenue } from './venue-helper.js';
+import { getVenueOnly } from './venue-helper.js';
 
 export async function scrapeSneaky() {
     console.log('🎸 Initiating Sneaky Pete\'s Ingestion (RSS Mode)...');
@@ -82,7 +82,13 @@ export async function scrapeSneaky() {
             const fingerprint = `${dateStr}|sneaky petes|${item.name.toLowerCase().trim()}`;
 
             // Get venue ID
-            const venueId = await getOrCreateVenue(client, 'Sneaky Pete\'s');
+            const venueId = await getVenueOnly(client, 'Sneaky Pete\'s');
+            
+            // Skip event if venue doesn't exist in MASTER database
+            if (!venueId) {
+                skippedCount++;
+                continue;
+            }
 
             // Upsert
             const checkRes = await client.query('SELECT id FROM events WHERE fingerprint = $1', [fingerprint]);

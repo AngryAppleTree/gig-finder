@@ -1,12 +1,12 @@
 /**
  * Venue lookup helper for scrapers
- * Finds venue by normalized name or creates it if it doesn't exist
- * Uses normalized_name column to prevent duplicates
+ * MASTER VENUES DATABASE: Scrapers can ONLY use existing venues, never create new ones
+ * New venues must be added manually by users and approved by admin
  */
 
 /**
  * Normalizes a venue name for duplicate detection
- * Must match the normalization logic in lib/venue-utils.ts
+ * Must match the normalization logic in app/api/events/manual/route.ts
  */
 function normalizeVenueName(name) {
     // Common Scottish cities to remove from venue names
@@ -37,7 +37,12 @@ function normalizeVenueName(name) {
     return normalized.trim();
 }
 
-export async function getOrCreateVenue(client, venueName, city = null) {
+/**
+ * Get venue from MASTER database - NEVER creates new venues
+ * Returns venue ID if found, null if not found
+ * Scrapers should skip events with unknown venues
+ */
+export async function getVenueOnly(client, venueName, city = null) {
     // Normalize the venue name
     const normalized = normalizeVenueName(venueName);
 
@@ -53,12 +58,8 @@ export async function getOrCreateVenue(client, venueName, city = null) {
         return venue.id;
     }
 
-    // Venue doesn't exist - create it with normalized_name
-    const newVenue = await client.query(
-        'INSERT INTO venues (name, normalized_name, city) VALUES ($1, $2, $3) RETURNING id',
-        [venueName, normalized, city]
-    );
-
-    console.log(`  🆕 Created new venue: "${venueName}" (normalized: "${normalized}")`);
-    return newVenue.rows[0].id;
+    // Venue doesn't exist - DO NOT CREATE IT
+    console.log(`  ⚠️  Venue not found in MASTER database: "${venueName}" (normalized: "${normalized}") - SKIPPING EVENT`);
+    return null;
 }
+
