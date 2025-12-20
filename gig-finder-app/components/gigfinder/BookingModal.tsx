@@ -122,6 +122,7 @@ export function BookingModal() {
             }}>
                 <button
                     onClick={() => setIsOpen(false)}
+                    aria-label="Close booking modal"
                     style={{ position: 'absolute', top: '10px', right: '15px', background: 'none', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer' }}
                 >
                     &times;
