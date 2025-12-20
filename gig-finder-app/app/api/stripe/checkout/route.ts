@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import { calculatePlatformFee } from '@/lib/platform-fee';
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -16,6 +17,17 @@ const pool = new Pool({
 
 export async function POST(req: NextRequest) {
     try {
+        // Rate limiting for payment endpoints (stricter)
+        const clientIp = getClientIp(req);
+        const rateLimitResult = checkRateLimit(clientIp, RATE_LIMITS.booking);
+
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: 'Too many booking attempts. Please try again later.' },
+                { status: 429 }
+            );
+        }
+
         // Check if Stripe is configured
         if (!stripe) {
             return NextResponse.json(

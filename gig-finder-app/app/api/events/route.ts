@@ -7,6 +7,7 @@ import { getVenueCapacity } from './venue-capacities';
 import { mapGenreToVibe } from './genre-mapping';
 import { findOrCreateVenue, type VenueData } from '@/lib/venue-utils';
 import { findOrCreateEvent, type EventData } from '@/lib/event-utils';
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit';
 
 const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
 
@@ -37,6 +38,25 @@ interface SkiddleEvent {
 }
 
 export async function GET(request: NextRequest) {
+    // Rate limiting
+    const clientIp = getClientIp(request);
+    const rateLimitResult = checkRateLimit(clientIp, RATE_LIMITS.api);
+
+    if (!rateLimitResult.success) {
+        return NextResponse.json(
+            { error: 'Too many requests. Please try again later.' },
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
+                    'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
+                }
+            }
+        );
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const location = searchParams.get('location') || 'Edinburgh';
     const genre = searchParams.get('genre');
