@@ -54,7 +54,7 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
             <div className="gig-image">
                 <img
                     src={gig.imageUrl || '/no-photo.png'}
-                    alt={gig.name}
+                    alt={`${gig.name} at ${gig.venue} on ${gig.date}`}
                     onError={(e) => e.currentTarget.src = '/no-photo.png'}
                     style={{ height: '200px', width: '100%', objectFit: 'cover' }}
                 />
