@@ -22,8 +22,8 @@ export const eventSchema = z.object({
 export const bookingSchema = z.object({
     eventId: z.number().int().positive(),
     quantity: z.number().int().min(1).max(10),
-    recordsQuantity: z.number().int().min(0).max(10).optional().default(0),
-    recordsPrice: z.number().min(0).max(1000).optional().default(0),
+    recordsQuantity: z.number().int().min(0).max(10).nullable().optional().default(0).transform(val => val ?? 0),
+    recordsPrice: z.number().min(0).max(1000).nullable().optional().default(0).transform(val => val ?? 0),
     customerName: z.string().min(1).max(100),
     customerEmail: emailSchema,
 });
