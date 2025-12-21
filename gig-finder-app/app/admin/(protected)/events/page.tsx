@@ -14,17 +14,20 @@ interface Event {
 export default function AdminEvents() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 0 });
 
-    const fetchEvents = async () => {
+    const fetchEvents = async (pageNum: number = page) => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/admin/events');
+            const res = await fetch(`/api/admin/events?page=${pageNum}&limit=50`);
             if (res.ok) {
                 const data = await res.json();
                 setEvents(data.events);
+                setPagination(data.pagination);
+                setPage(pageNum);
             } else {
                 const err = await res.json();
                 setError(err.error || `Error ${res.status}: ${res.statusText}`);
@@ -37,7 +40,7 @@ export default function AdminEvents() {
     };
 
     useEffect(() => {
-        fetchEvents();
+        fetchEvents(1);
     }, []);
 
     const deleteEvent = async (id: number) => {
@@ -89,7 +92,7 @@ export default function AdminEvents() {
                     <a href="/admin/events/new" className="text-sm bg-purple-600 px-3 py-1 rounded hover:bg-purple-500 text-white flex items-center">
                         + New Event
                     </a>
-                    <button onClick={fetchEvents} className="text-sm bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">Refresh</button>
+                    <button onClick={() => fetchEvents(page)} className="text-sm bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">Refresh</button>
                 </div>
             </div>
 
@@ -158,6 +161,31 @@ export default function AdminEvents() {
                             )}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!loading && pagination.totalPages > 1 && (
+                <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-700">
+                    <div className="text-sm text-gray-400">
+                        Showing {events.length} of {pagination.total} events (Page {pagination.page} of {pagination.totalPages})
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => fetchEvents(page - 1)}
+                            disabled={page === 1}
+                            className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => fetchEvents(page + 1)}
+                            disabled={page >= pagination.totalPages}
+                            className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

@@ -21,9 +21,22 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = (page - 1) * limit;
+
     const client = await getPool().connect();
     try {
-        // Fetch all future events + recent past with venue names
+        // Get total count
+        const countRes = await client.query(`
+            SELECT COUNT(*) 
+            FROM events e
+            WHERE e.date >= NOW() - INTERVAL '7 days'
+        `);
+        const totalCount = parseInt(countRes.rows[0].count);
+
+        // Fetch events with unapproved first, then by date
         const res = await client.query(`
             SELECT 
                 e.*,
@@ -31,9 +44,11 @@ export async function GET(req: Request) {
             FROM events e
             LEFT JOIN venues v ON e.venue_id = v.id
             WHERE e.date >= NOW() - INTERVAL '7 days'
-            ORDER BY e.date ASC
-            LIMIT 200
-        `);
+            ORDER BY 
+                CASE WHEN e.approved = false THEN 0 ELSE 1 END,
+                e.date ASC
+            LIMIT $1 OFFSET $2
+        `, [limit, offset]);
 
         // Map venue_name to venue for frontend compatibility
         const eventsWithVenue = res.rows.map(event => ({
@@ -41,7 +56,15 @@ export async function GET(req: Request) {
             venue: event.venue_name || 'Unknown Venue'
         }));
 
-        return NextResponse.json({ events: eventsWithVenue });
+        return NextResponse.json({
+            events: eventsWithVenue,
+            pagination: {
+                page,
+                limit,
+                total: totalCount,
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        });
     } finally {
         client.release();
     }
