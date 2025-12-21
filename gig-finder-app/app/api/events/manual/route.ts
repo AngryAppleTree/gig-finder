@@ -98,14 +98,14 @@ export async function POST(request: NextRequest) {
                 } else {
                     // Create new venue with normalized_name
                     const venueResult = await client.query(
-                        `INSERT INTO venues (name, normalized_name, city, capacity) 
-                         VALUES ($1, $2, $3, $4) 
+                        `INSERT INTO venues (name, normalized_name, city, capacity, approved) 
+                         VALUES ($1, $2, $3, $4, false) 
                          RETURNING id, name`,
                         [newVenue.name, normalized, newVenue.city || null, newVenue.capacity || null]
                     );
                     venueId = venueResult.rows[0].id;
                     venue = venueResult.rows[0].name;
-                    console.log(`🆕 Created new venue: "${venue}" (normalized: "${normalized}")`);
+                    console.log(`🆕 Created new venue (PENDING APPROVAL): "${venue}" (normalized: "${normalized}")`);
 
                     // Notify admin about new venue
                     sendNewVenueNotification(
