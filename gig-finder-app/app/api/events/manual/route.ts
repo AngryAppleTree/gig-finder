@@ -79,6 +79,9 @@ export async function POST(request: NextRequest) {
         const client = await getPool().connect();
 
         try {
+            // Track if we created a new venue (requires event approval too)
+            let createdNewVenue = false;
+
             // Handle new venue creation
             if (newVenue && !venueId) {
                 console.log('Creating new venue:', newVenue);
@@ -96,7 +99,7 @@ export async function POST(request: NextRequest) {
                     venue = existingVenue.rows[0].name;
                     console.log(`♻️  Using existing venue: "${venue}" (ID: ${venueId})`);
                 } else {
-                    // Create new venue with normalized_name
+                    // Create new venue with normalized_name - requires admin approval
                     const venueResult = await client.query(
                         `INSERT INTO venues (name, normalized_name, city, capacity, approved) 
                          VALUES ($1, $2, $3, $4, false) 
@@ -105,6 +108,7 @@ export async function POST(request: NextRequest) {
                     );
                     venueId = venueResult.rows[0].id;
                     venue = venueResult.rows[0].name;
+                    createdNewVenue = true;
                     console.log(`🆕 Created new venue (PENDING APPROVAL): "${venue}" (normalized: "${normalized}")`);
 
                     // Notify admin about new venue
@@ -178,13 +182,19 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // Check if this is user's first event (requires approval)
+            // Event needs approval if:
+            // 1. It's user's first event, OR
+            // 2. A new venue was created (venue needs approval)
             const userEventsCheck = await client.query(
                 'SELECT COUNT(*) FROM events WHERE user_id = $1 AND approved = true',
                 [userId]
             );
             const isFirstEvent = parseInt(userEventsCheck.rows[0].count) === 0;
-            const needsApproval = isFirstEvent;
+            const needsApproval = isFirstEvent || createdNewVenue;
+
+            if (createdNewVenue) {
+                console.log('⚠️  Event requires approval because new venue was created');
+            }
 
             // Insert event with venue_id
             const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;

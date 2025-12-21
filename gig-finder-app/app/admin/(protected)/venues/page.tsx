@@ -98,14 +98,30 @@ export default function VenuesPage() {
                                 <td className="px-4 py-3 text-sm text-center">{venue.capacity || '-'}</td>
                                 <td className="px-4 py-3 text-sm text-center">{venue.event_count || 0}</td>
                                 <td className="px-4 py-3 text-center">
-                                    <button
-                                        onClick={() => toggleApproval(venue.id, !!venue.approved)}
-                                        className={`px-2 py-1 text-xs rounded border ${venue.approved
-                                            ? 'bg-green-900/30 border-green-700 text-green-400'
-                                            : 'bg-yellow-600 border-yellow-500 text-black font-bold animate-pulse'}`}
-                                    >
-                                        {venue.approved ? 'Approved' : 'APPROVE'}
-                                    </button>
+                                    {!venue.approved ? (
+                                        <div className="flex gap-1 justify-center">
+                                            <button
+                                                onClick={() => toggleApproval(venue.id, false)}
+                                                className="px-2 py-1 text-xs rounded border bg-green-600 border-green-500 text-white font-bold hover:bg-green-500"
+                                            >
+                                                APPROVE
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm('Reject this venue? This will also delete any unapproved events at this venue.')) {
+                                                        toggleApproval(venue.id, true);
+                                                    }
+                                                }}
+                                                className="px-2 py-1 text-xs rounded border bg-red-600 border-red-500 text-white hover:bg-red-500"
+                                            >
+                                                REJECT
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <span className="px-2 py-1 text-xs rounded border bg-green-900/30 border-green-700 text-green-400">
+                                            Approved
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3 text-right text-sm">
                                     <a href={`/admin/venues/${venue.id}`} className="text-blue-400 hover:text-blue-300 mr-3">

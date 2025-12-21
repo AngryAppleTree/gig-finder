@@ -218,6 +218,39 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Venue ID and approved status are required' }, { status: 400 });
         }
 
+        // If rejecting a venue (approved=false), delete associated unapproved events
+        if (approved === false) {
+            const deletedEvents = await client.query(
+                'DELETE FROM events WHERE venue_id = $1 AND approved = false RETURNING id, name',
+                [id]
+            );
+
+            if (deletedEvents.rows.length > 0) {
+                console.log(`🗑️  Deleted ${deletedEvents.rows.length} unapproved events associated with rejected venue ${id}`);
+                deletedEvents.rows.forEach(evt => {
+                    console.log(`   - Event ${evt.id}: "${evt.name}"`);
+                });
+            }
+
+            // Also delete the venue itself when rejected
+            const deletedVenue = await client.query(
+                'DELETE FROM venues WHERE id = $1 RETURNING *',
+                [id]
+            );
+
+            if (deletedVenue.rowCount === 0) {
+                return NextResponse.json({ error: 'Venue not found' }, { status: 404 });
+            }
+
+            return NextResponse.json({
+                success: true,
+                venue: deletedVenue.rows[0],
+                deletedEvents: deletedEvents.rows.length,
+                message: `Venue rejected and deleted along with ${deletedEvents.rows.length} unapproved event(s)`
+            });
+        }
+
+        // Approving venue (approved=true)
         const result = await client.query(
             'UPDATE venues SET approved = $1 WHERE id = $2 RETURNING *',
             [approved, id]
@@ -235,3 +268,4 @@ export async function PATCH(req: Request) {
         client.release();
     }
 }
+
