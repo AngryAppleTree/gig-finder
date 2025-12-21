@@ -149,6 +149,9 @@ export async function GET(request: NextRequest) {
     });
 
     // 2. Fetch Skiddle Gigs (Level 3 Data)
+    // TODO: After Beta - decide whether to keep or remove Skiddle integration
+    //       If not using Skiddle, remove this entire section (lines 151-343) to reduce complexity
+    //       If keeping Skiddle, properly test venue deduplication and enable DISABLE_SKIDDLE=false
     // Skip Skiddle if disabled via environment variable (e.g., during Beta)
     if (skiddleDisabled) {
         console.log('⏸️  Skiddle scraper disabled (DISABLE_SKIDDLE=true)');
