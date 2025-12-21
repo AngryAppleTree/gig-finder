@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
     const keyword = searchParams.get('keyword');
 
     const apiKey = process.env.SKIDDLE_API_KEY || '';
+    const skiddleDisabled = process.env.DISABLE_SKIDDLE === 'true';
 
     // 1. Fetch Manual Gigs (Level 1 Data) with Venue Info
     let manualEvents: any[] = [];
@@ -148,6 +149,18 @@ export async function GET(request: NextRequest) {
     });
 
     // 2. Fetch Skiddle Gigs (Level 3 Data)
+    // Skip Skiddle if disabled via environment variable (e.g., during Beta)
+    if (skiddleDisabled) {
+        console.log('⏸️  Skiddle scraper disabled (DISABLE_SKIDDLE=true)');
+        return NextResponse.json({
+            success: true,
+            count: manualEvents.length,
+            events: formattedManualEvents,
+            source: 'manual_only',
+            message: 'Skiddle disabled during Beta'
+        });
+    }
+
     if (!apiKey || apiKey === 'your_skiddle_api_key_here') {
         // Should usually return error, but if we have manual gigs, maybe return those?
         if (manualEvents.length > 0) {
