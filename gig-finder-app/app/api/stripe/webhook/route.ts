@@ -162,8 +162,15 @@ export async function POST(req: NextRequest) {
                         ]
                     });
                     safeLog(`✅ Confirmation email sent to ${redactEmail(customerEmail)} for booking #${bookingId}`);
-                } catch (emailError) {
+                } catch (emailError: any) {
                     console.error('❌ Failed to send confirmation email:', emailError);
+                    console.error('Email error details:', {
+                        message: emailError.message,
+                        statusCode: emailError.statusCode,
+                        name: emailError.name,
+                        bookingId,
+                        customerEmail: redactEmail(customerEmail)
+                    });
                     // Don't throw - booking is already saved
                 }
             } else {
