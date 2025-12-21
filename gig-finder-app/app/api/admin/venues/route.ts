@@ -16,7 +16,7 @@ async function checkAdmin() {
     return isAdminRole || isAdminEmail;
 }
 
-// GET - List all venues
+// GET - List all venues with pagination
 export async function GET(request: NextRequest) {
     // IP restriction
     const ipCheck = adminIpRestriction(request);
@@ -27,8 +27,18 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = (page - 1) * limit;
+
     const client = await getPool().connect();
     try {
+        // Get total count
+        const countRes = await client.query('SELECT COUNT(*) FROM venues');
+        const totalCount = parseInt(countRes.rows[0].count);
+
+        // Fetch venues with unapproved first, then by name
         const result = await client.query(`
             SELECT 
                 v.*,
@@ -36,10 +46,21 @@ export async function GET(request: NextRequest) {
             FROM venues v
             LEFT JOIN events e ON e.venue_id = v.id
             GROUP BY v.id
-            ORDER BY v.name ASC
-        `);
+            ORDER BY 
+                CASE WHEN v.approved = false THEN 0 ELSE 1 END,
+                v.name ASC
+            LIMIT $1 OFFSET $2
+        `, [limit, offset]);
 
-        return NextResponse.json({ venues: result.rows });
+        return NextResponse.json({
+            venues: result.rows,
+            pagination: {
+                page,
+                limit,
+                total: totalCount,
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        });
     } catch (error) {
         console.error('Get Venues Error:', error);
         return NextResponse.json({ error: 'Failed to fetch venues' }, { status: 500 });
@@ -176,6 +197,40 @@ export async function DELETE(req: Request) {
     } catch (error) {
         console.error('Delete Venue Error:', error);
         return NextResponse.json({ error: 'Failed to delete venue' }, { status: 500 });
+    } finally {
+        client.release();
+    }
+}
+
+// PATCH - Update venue approval status
+export async function PATCH(req: Request) {
+    const isAdmin = await checkAdmin();
+    if (!isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const client = await getPool().connect();
+    try {
+        const body = await req.json();
+        const { id, approved } = body;
+
+        if (!id || approved === undefined) {
+            return NextResponse.json({ error: 'Venue ID and approved status are required' }, { status: 400 });
+        }
+
+        const result = await client.query(
+            'UPDATE venues SET approved = $1 WHERE id = $2 RETURNING *',
+            [approved, id]
+        );
+
+        if (result.rowCount === 0) {
+            return NextResponse.json({ error: 'Venue not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ success: true, venue: result.rows[0] });
+    } catch (error) {
+        console.error('Update Venue Approval Error:', error);
+        return NextResponse.json({ error: 'Failed to update venue approval' }, { status: 500 });
     } finally {
         client.release();
     }
