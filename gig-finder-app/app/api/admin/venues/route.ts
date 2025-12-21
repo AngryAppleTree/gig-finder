@@ -260,7 +260,40 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Venue not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, venue: result.rows[0] });
+        // When approving a venue, check if associated unapproved events should be auto-approved
+        // Auto-approve events for users who have previously created approved events
+        const autoApprovedEvents = await client.query(`
+            UPDATE events e
+            SET approved = true
+            FROM (
+                SELECT DISTINCT e2.user_id
+                FROM events e2
+                WHERE e2.venue_id = $1 
+                  AND e2.approved = false
+                  AND EXISTS (
+                    SELECT 1 FROM events e3 
+                    WHERE e3.user_id = e2.user_id 
+                      AND e3.approved = true
+                  )
+            ) experienced_users
+            WHERE e.venue_id = $1 
+              AND e.approved = false 
+              AND e.user_id = experienced_users.user_id
+            RETURNING e.id, e.name, e.user_id
+        `, [id]);
+
+        if (autoApprovedEvents.rows.length > 0) {
+            console.log(`✅ Auto-approved ${autoApprovedEvents.rows.length} events from experienced users`);
+            autoApprovedEvents.rows.forEach(evt => {
+                console.log(`   - Event ${evt.id}: "${evt.name}" (user: ${evt.user_id})`);
+            });
+        }
+
+        return NextResponse.json({
+            success: true,
+            venue: result.rows[0],
+            autoApprovedEvents: autoApprovedEvents.rows.length
+        });
     } catch (error) {
         console.error('Update Venue Approval Error:', error);
         return NextResponse.json({ error: 'Failed to update venue approval' }, { status: 500 });
