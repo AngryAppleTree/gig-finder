@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
                                 <strong>Total: £${totalPaid}</strong></p>
                                 
                                 <div style="text-align: center; margin: 20px 0;">
-                                    <img src="data:image/png;base64,${qrBase64}" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
+                                    <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
                                 </div>
                                 
                                 <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
@@ -157,7 +157,8 @@ export async function POST(req: NextRequest) {
                         attachments: [
                             {
                                 filename: `ticket-${bookingId}.png`,
-                                content: qrBuffer
+                                content: qrBuffer,
+                                contentId: 'ticket-qr'
                             }
                         ]
                     });
