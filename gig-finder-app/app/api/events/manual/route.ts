@@ -62,6 +62,12 @@ export async function POST(request: NextRequest) {
             priceBody = formData.get('price')?.toString();
             isInternalTicketing = formData.get('is_internal_ticketing') === 'true';
             sellTickets = formData.get('sell_tickets') === 'true';
+
+            // Enable internal ticketing if EITHER guest list OR sell tickets is checked
+            if (sellTickets || isInternalTicketing) {
+                isInternalTicketing = true;
+            }
+
             maxCapacity = formData.get('max_capacity')?.toString();
             imageUrl = formData.get('imageUrl')?.toString();
         }
