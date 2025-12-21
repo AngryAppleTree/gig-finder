@@ -261,7 +261,9 @@ export async function PATCH(req: Request) {
         }
 
         // When approving a venue, check if associated unapproved events should be auto-approved
-        // Auto-approve events for users who have previously created approved events
+        // Auto-approve events for:
+        // 1. Users who have previously created approved events
+        // 2. Scrapers (user_id starts with 'scraper_')
         const autoApprovedEvents = await client.query(`
             UPDATE events e
             SET approved = true
@@ -270,10 +272,15 @@ export async function PATCH(req: Request) {
                 FROM events e2
                 WHERE e2.venue_id = $1 
                   AND e2.approved = false
-                  AND EXISTS (
-                    SELECT 1 FROM events e3 
-                    WHERE e3.user_id = e2.user_id 
-                      AND e3.approved = true
+                  AND (
+                    -- Experienced users with previous approved events
+                    EXISTS (
+                        SELECT 1 FROM events e3 
+                        WHERE e3.user_id = e2.user_id 
+                          AND e3.approved = true
+                    )
+                    -- OR scrapers
+                    OR e2.user_id LIKE 'scraper_%'
                   )
             ) experienced_users
             WHERE e.venue_id = $1 
