@@ -11,7 +11,9 @@ export const viewport: Viewport = {
 };
 
 import { currentUser } from '@clerk/nextjs/server';
-import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+export const dynamic = 'force-dynamic';
+
+import { AuthHeader } from '../../components/gigfinder/AuthHeader';
 import { Wizard } from '../../components/gigfinder/Wizard';
 import { Footer } from '../../components/gigfinder/Footer';
 import { BookingModal } from '../../components/gigfinder/BookingModal';
@@ -22,17 +24,7 @@ export default async function GigFinderPage() {
 
     return (
         <>
-            {/* Auth Header Overlay */}
-            <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 1000 }}>
-                <SignedIn>
-                    <UserButton />
-                </SignedIn>
-                <SignedOut>
-                    <SignInButton mode="modal">
-                        <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Sign In</button>
-                    </SignInButton>
-                </SignedOut>
-            </div>
+            <AuthHeader />
 
             <Wizard isAdmin={isAdmin} />
 
