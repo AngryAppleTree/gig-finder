@@ -31,10 +31,15 @@ export async function POST(req: Request) {
 
         const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
 
-        // Fetch events from both Edinburgh and Glasgow (like the real-time search)
+        // Fetch events from all major Scottish cities
         const locations = [
             { name: 'Edinburgh', lat: '55.9533', lng: '-3.1883' },
-            { name: 'Glasgow', lat: '55.8642', lng: '-4.2518' }
+            { name: 'Glasgow', lat: '55.8642', lng: '-4.2518' },
+            { name: 'Aberdeen', lat: '57.1497', lng: '-2.0943' },
+            { name: 'Dundee', lat: '56.4620', lng: '-2.9707' },
+            { name: 'Inverness', lat: '57.4778', lng: '-4.2247' },
+            { name: 'Stirling', lat: '56.1165', lng: '-3.9369' },
+            { name: 'Perth', lat: '56.3959', lng: '-3.4370' }
         ];
 
         let allEvents: any[] = [];
@@ -87,7 +92,7 @@ export async function POST(req: Request) {
                     city: event.venue.town || 'Edinburgh',
                     latitude: event.venue.latitude ? parseFloat(event.venue.latitude) : undefined,
                     longitude: event.venue.longitude ? parseFloat(event.venue.longitude) : undefined,
-                }, 'skiddle');
+                }, 'skiddle', false); // Require admin approval for Skiddle venues
 
                 venueMap.set(venueName.toLowerCase(), venueResult.id);
 
@@ -134,7 +139,7 @@ export async function POST(req: Request) {
                     ticketUrl: event.link,
                     imageUrl: event.imageurl,
                     source: 'skiddle'
-                });
+                }, false); // Require admin approval for Skiddle events
 
                 if (eventResult.isNew) {
                     eventsCreated++;

@@ -38,11 +38,13 @@ export interface VenueResult {
  * 
  * @param venueData - Venue information from API
  * @param source - Source of the venue data (e.g., 'skiddle', 'ticketmaster')
+ * @param approved - Whether the venue should be auto-approved (default: true)
  * @returns Venue record with id and metadata
  */
 export async function findOrCreateVenue(
     venueData: VenueData,
-    source: string = 'api'
+    source: string = 'api',
+    approved: boolean = true
 ): Promise<VenueResult> {
     const client = await pool.connect();
 
@@ -74,11 +76,12 @@ export async function findOrCreateVenue(
         }
 
         // 3. Venue doesn't exist - create it with normalized_name
-        console.log(`🆕 Creating new venue from ${source}:`, venueData.name);
+        const approvalStatus = approved ? 'approved' : 'pending approval';
+        console.log(`🆕 Creating new venue from ${source} (${approvalStatus}):`, venueData.name);
 
         const newVenue = await client.query(
-            `INSERT INTO venues (name, normalized_name, address, city, postcode, latitude, longitude, capacity, website)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `INSERT INTO venues (name, normalized_name, address, city, postcode, latitude, longitude, capacity, website, approved)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
              RETURNING id, name, capacity, latitude, longitude, city`,
             [
                 venueData.name,
@@ -89,7 +92,8 @@ export async function findOrCreateVenue(
                 venueData.latitude || null,
                 venueData.longitude || null,
                 venueData.capacity || null,
-                venueData.website || null
+                venueData.website || null,
+                approved
             ]
         );
 

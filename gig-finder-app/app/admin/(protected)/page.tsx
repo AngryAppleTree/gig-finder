@@ -126,7 +126,7 @@ export default function AdminDashboard() {
                             disabled={loading}
                             className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white py-2 px-4 rounded disabled:opacity-50 font-semibold shadow-lg"
                         >
-                            🎸 Scrape Skiddle API (Edinburgh + Glasgow)
+                            🎸 Scrape Skiddle API (Scotland)
                         </button>
                     </div>
                     {message && <div className="mt-4 p-3 bg-black/50 rounded text-sm font-mono">{message}</div>}

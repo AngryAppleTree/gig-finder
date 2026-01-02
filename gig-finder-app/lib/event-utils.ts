@@ -37,10 +37,12 @@ export interface EventResult {
  * Used by API scrapers to ensure events exist before displaying
  * 
  * @param eventData - Event information from API
+ * @param approved - Whether the event should be auto-approved (default: true)
  * @returns Event record with id and metadata
  */
 export async function findOrCreateEvent(
-    eventData: EventData
+    eventData: EventData,
+    approved: boolean = true
 ): Promise<EventResult> {
     const client = await pool.connect();
 
@@ -70,7 +72,8 @@ export async function findOrCreateEvent(
         }
 
         // 2. Event doesn't exist - create it
-        console.log(`🆕 Creating new event from ${eventData.source}:`, eventData.name);
+        const approvalStatus = approved ? 'approved' : 'pending approval';
+        console.log(`🆕 Creating new event from ${eventData.source} (${approvalStatus}):`, eventData.name);
 
         // Build timestamp
         const timestamp = eventData.time
@@ -112,7 +115,7 @@ export async function findOrCreateEvent(
                 eventData.imageUrl || null,
                 `scraper_${eventData.source}`, // Mark as scraped event
                 fingerprint,
-                true // Auto-approve scraped events
+                approved // Use the approved parameter
             ]
         );
 
