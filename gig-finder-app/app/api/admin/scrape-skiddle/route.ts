@@ -31,29 +31,41 @@ export async function POST(req: Request) {
 
         const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
 
-        // Fetch events from Edinburgh area
-        const params = new URLSearchParams({
-            api_key: apiKey,
-            latitude: '55.9533',  // Edinburgh
-            longitude: '-3.1883',
-            radius: '20',
-            order: 'date',
-            limit: '100',
-            eventcode: 'LIVE',
-        });
+        // Fetch events from both Edinburgh and Glasgow (like the real-time search)
+        const locations = [
+            { name: 'Edinburgh', lat: '55.9533', lng: '-3.1883' },
+            { name: 'Glasgow', lat: '55.8642', lng: '-4.2518' }
+        ];
 
-        const skiddleUrl = `${SKIDDLE_API_BASE}/events/search/?${params.toString()}`;
-        console.log('🎸 Fetching from Skiddle API...');
+        let allEvents: any[] = [];
 
-        const response = await fetch(skiddleUrl);
-        if (!response.ok) {
-            throw new Error(`Skiddle API error: ${response.status}`);
+        for (const loc of locations) {
+            const params = new URLSearchParams({
+                api_key: apiKey,
+                latitude: loc.lat,
+                longitude: loc.lng,
+                radius: '20',
+                order: 'date',
+                limit: '100',
+                eventcode: 'LIVE',
+            });
+
+            const skiddleUrl = `${SKIDDLE_API_BASE}/events/search/?${params.toString()}`;
+            console.log(`🎸 Fetching from Skiddle API (${loc.name})...`);
+
+            const response = await fetch(skiddleUrl);
+            if (!response.ok) {
+                console.error(`Skiddle API error for ${loc.name}: ${response.status}`);
+                continue;
+            }
+
+            const data = await response.json();
+            const results = data.results || [];
+            console.log(`  Found ${results.length} events in ${loc.name}`);
+            allEvents = allEvents.concat(results);
         }
 
-        const data = await response.json();
-        const skiddleResults = data.results || [];
-
-        console.log(`📍 Processing ${skiddleResults.length} events from Skiddle...`);
+        console.log(`📍 Processing ${allEvents.length} total events from Skiddle...`);
 
         let venuesCreated = 0;
         let venuesExisting = 0;
@@ -63,7 +75,7 @@ export async function POST(req: Request) {
         // Process venues first
         const venueMap = new Map<string, number>();
 
-        for (const event of skiddleResults) {
+        for (const event of allEvents) {
             const venueName = event.venue?.name;
             if (!venueName || venueMap.has(venueName.toLowerCase())) {
                 continue;
@@ -90,7 +102,7 @@ export async function POST(req: Request) {
         }
 
         // Process events
-        for (const event of skiddleResults) {
+        for (const event of allEvents) {
             try {
                 const venueName = event.venue?.name;
                 const venueId = venueMap.get(venueName?.toLowerCase());
@@ -141,7 +153,7 @@ export async function POST(req: Request) {
                 venuesExisting,
                 eventsCreated,
                 eventsExisting,
-                totalProcessed: skiddleResults.length
+                totalProcessed: allEvents.length
             }
         });
 
