@@ -152,6 +152,9 @@ export async function POST(req: NextRequest) {
                                 
                                 <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
                                 <p style="font-size: 12px; color: #888;">Show this QR code at the venue for entry.</p>
+                                
+                                <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+                                <p style="font-size: 11px; color: #999; text-align: center;">Ticket sold by Gig-finder.co.uk as agent for the artists performing at the event.</p>
                             </div>
                         `,
                         attachments: [

@@ -26,13 +26,13 @@ export interface FeeCalculationResult {
 /**
  * Calculate platform fee based on order details
  * 
- * Current implementation: 5% + £0.30 per transaction
- * This covers Stripe fees (2.9% + 30p) plus a small platform margin
+ * Current implementation: (5% + £0.30) + 20% VAT
+ * This covers Stripe fees (2.9% + 30p) plus a small platform margin, with VAT added
  * 
  * Examples:
- * - £10 ticket → £0.80 fee (£0.50 + £0.30)
- * - £20 ticket → £1.30 fee (£1.00 + £0.30)
- * - £50 ticket → £2.80 fee (£2.50 + £0.30)
+ * - £10 ticket → £0.96 fee ((£0.50 + £0.30) × 1.2)
+ * - £20 ticket → £1.56 fee ((£1.00 + £0.30) × 1.2)
+ * - £50 ticket → £3.36 fee ((£2.50 + £0.30) × 1.2)
  * 
  * @param input - Order details
  * @returns Fee calculation breakdown
@@ -41,10 +41,11 @@ export function calculatePlatformFee(input: FeeCalculationInput): FeeCalculation
     const { ticketsSubtotal, recordsSubtotal } = input;
     const subtotal = ticketsSubtotal + recordsSubtotal;
 
-    // Platform fee: 5% + £0.30
+    // Platform fee: (5% + £0.30) × 1.2 (to include 20% VAT)
     const feePercentage = 0.05; // 5%
     const fixedFee = 0.30; // £0.30
-    const platformFee = (subtotal * feePercentage) + fixedFee;
+    const vatMultiplier = 1.2; // 20% VAT
+    const platformFee = ((subtotal * feePercentage) + fixedFee) * vatMultiplier;
 
     // Round to 2 decimal places
     const roundedFee = Math.round(platformFee * 100) / 100;
@@ -73,5 +74,5 @@ export function formatCurrency(amount: number | string): string {
  * Get platform fee description for display
  */
 export function getPlatformFeeDescription(): string {
-    return 'Service Fee (5% + £0.30)';
+    return 'Service Fee (5% + £0.30) + 20% VAT';
 }
