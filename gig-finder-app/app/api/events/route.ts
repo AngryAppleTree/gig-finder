@@ -216,7 +216,7 @@ export async function GET(request: NextRequest) {
                     // Skiddle doesn't provide capacity, address, postcode, or website in event data
                 };
 
-                const venueResult = await findOrCreateVenue(venueData, 'skiddle');
+                const venueResult = await findOrCreateVenue(venueData, 'skiddle', false);
                 venueMap.set(venueName.toLowerCase(), venueResult.id);
 
                 if (venueResult.isNew) {
@@ -282,7 +282,7 @@ export async function GET(request: NextRequest) {
                     source: 'skiddle'
                 };
 
-                const persistedEvent = await findOrCreateEvent(eventData);
+                const persistedEvent = await findOrCreateEvent(eventData, false);
 
                 // Get venue capacity for display
                 let venueCapacity: number | null = null;
