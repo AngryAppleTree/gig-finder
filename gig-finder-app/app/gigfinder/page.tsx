@@ -13,7 +13,7 @@ export const viewport: Viewport = {
 import { currentUser } from '@clerk/nextjs/server';
 export const dynamic = 'force-dynamic';
 
-import { AuthHeader } from '../../components/gigfinder/AuthHeader';
+import { AuthHeader } from '@/components/gigfinder/AuthHeader';
 import { Wizard } from '../../components/gigfinder/Wizard';
 import { Footer } from '../../components/gigfinder/Footer';
 import { BookingModal } from '../../components/gigfinder/BookingModal';
