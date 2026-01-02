@@ -167,7 +167,59 @@ export async function PATCH(req: Request) {
 
             // Update Approved Status
             if (approved !== undefined) {
-                await client.query('UPDATE events SET approved = $1 WHERE id = $2', [approved, id]);
+                // Check if this is the user's first event being approved
+                if (approved === true) {
+                    // Get event details and user info
+                    const eventResult = await client.query(
+                        'SELECT user_id, name FROM events WHERE id = $1',
+                        [id]
+                    );
+
+                    if (eventResult.rows.length > 0) {
+                        const userId = eventResult.rows[0].user_id;
+                        const eventName = eventResult.rows[0].name;
+
+                        // Check if user has any other approved events
+                        const approvedCount = await client.query(
+                            'SELECT COUNT(*) FROM events WHERE user_id = $1 AND approved = true',
+                            [userId]
+                        );
+
+                        const isFirstApproval = parseInt(approvedCount.rows[0].count) === 0;
+
+                        // Update the event
+                        await client.query('UPDATE events SET approved = $1 WHERE id = $2', [approved, id]);
+
+                        // Send email if this is their first approved event
+                        if (isFirstApproval && userId.startsWith('user_')) {
+                            try {
+                                // Get user email from Clerk
+                                const { clerkClient } = await import('@clerk/nextjs/server');
+                                const clerk = await clerkClient();
+                                const user = await clerk.users.getUser(userId);
+                                const userEmail = user.emailAddresses[0]?.emailAddress;
+
+                                if (userEmail) {
+                                    await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/notify-event-approved`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            userEmail,
+                                            eventName,
+                                            userId
+                                        })
+                                    });
+                                }
+                            } catch (emailError) {
+                                console.error('Failed to send approval email:', emailError);
+                                // Don't fail the approval if email fails
+                            }
+                        }
+                    }
+                } else {
+                    // Just update if not approving
+                    await client.query('UPDATE events SET approved = $1 WHERE id = $2', [approved, id]);
+                }
             }
             return NextResponse.json({ success: true, message: 'Updated' });
         } finally {
