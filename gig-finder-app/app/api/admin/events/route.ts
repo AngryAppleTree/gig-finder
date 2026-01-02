@@ -22,12 +22,30 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const offset = (page - 1) * limit;
+    const id = searchParams.get('id');
 
     const client = await getPool().connect();
     try {
+        if (id) {
+            const res = await client.query(`
+                SELECT 
+                    e.*,
+                    v.name as venue_name
+                FROM events e
+                LEFT JOIN venues v ON e.venue_id = v.id
+                WHERE e.id = $1
+            `, [id]);
+
+            if (res.rows.length === 0) {
+                return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+            }
+
+            return NextResponse.json({ event: res.rows[0] });
+        }
+
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '50');
+        const offset = (page - 1) * limit;
         // Get total count
         const countRes = await client.query(`
             SELECT COUNT(*) 
@@ -67,6 +85,47 @@ export async function GET(req: Request) {
         });
     } finally {
         client.release();
+    }
+}
+
+export async function PUT(req: Request) {
+    if (!await checkAdmin()) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    try {
+        const body = await req.json();
+        const { id, name, venueId, date, time, price, ticket_url, description, genre, approved } = body;
+
+        const dateTimeStr = `${date}T${time}:00`;
+        const dateObj = new Date(dateTimeStr);
+
+        const client = await getPool().connect();
+        try {
+            // Get venue name for fingerprint update
+            const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [venueId]);
+            const venueName = venueResult.rows[0]?.name || 'unknown';
+            const fingerprint = `${date}|${venueName.toLowerCase()}|${name.toLowerCase().trim()}`;
+
+            await client.query(`
+                UPDATE events 
+                SET name = $1, venue_id = $2, date = $3, price = $4, 
+                    ticket_url = $5, description = $6, genre = $7, 
+                    fingerprint = $8, approved = $9
+                WHERE id = $10
+            `, [
+                name, venueId, dateObj, price,
+                ticket_url, description, genre,
+                fingerprint, approved, id
+            ]);
+
+            return NextResponse.json({ message: 'Updated' });
+        } finally {
+            client.release();
+        }
+    } catch (e: any) {
+        console.error('Update error:', e);
+        return NextResponse.json({ error: 'Failed to update event: ' + e.message }, { status: 500 });
     }
 }
 

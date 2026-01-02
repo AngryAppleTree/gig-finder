@@ -147,6 +147,12 @@ export default function AdminEvents() {
                                         </button>
                                     </td>
                                     <td className="px-4 py-3 text-right text-sm">
+                                        <a
+                                            href={`/admin/events/${evt.id}`}
+                                            className="text-blue-400 hover:text-blue-300 mr-3"
+                                        >
+                                            Edit
+                                        </a>
                                         <button
                                             onClick={() => deleteEvent(evt.id)}
                                             className="text-red-400 hover:text-red-300"
