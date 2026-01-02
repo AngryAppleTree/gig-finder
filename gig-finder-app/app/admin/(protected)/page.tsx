@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                         <button
                             onClick={async () => {
                                 setLoading(true);
-                                setMessage('Running Skiddle API...');
+                                setMessage('Running Skiddle API (Scotland)...');
                                 try {
                                     const res = await fetch('/api/admin/scrape-skiddle', {
                                         method: 'POST',

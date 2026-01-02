@@ -58,16 +58,20 @@ export async function POST(req: Request) {
             const skiddleUrl = `${SKIDDLE_API_BASE}/events/search/?${params.toString()}`;
             console.log(`🎸 Fetching from Skiddle API (${loc.name})...`);
 
-            const response = await fetch(skiddleUrl);
-            if (!response.ok) {
-                console.error(`Skiddle API error for ${loc.name}: ${response.status}`);
-                continue;
-            }
+            try {
+                const response = await fetch(skiddleUrl);
+                if (!response.ok) {
+                    console.error(`Skiddle API error for ${loc.name}: ${response.status}`);
+                    continue;
+                }
 
-            const data = await response.json();
-            const results = data.results || [];
-            console.log(`  Found ${results.length} events in ${loc.name}`);
-            allEvents = allEvents.concat(results);
+                const data = await response.json();
+                const results = data.results || [];
+                console.log(`  Found ${results.length} events in ${loc.name}`);
+                allEvents = allEvents.concat(results);
+            } catch (err) {
+                console.error(`Fetch error for ${loc.name}:`, err);
+            }
         }
 
         console.log(`📍 Processing ${allEvents.length} total events from Skiddle...`);
@@ -87,12 +91,13 @@ export async function POST(req: Request) {
             }
 
             try {
+                // New venues from Skiddle require admin approved = false
                 const venueResult = await findOrCreateVenue({
                     name: venueName,
                     city: event.venue.town || 'Edinburgh',
                     latitude: event.venue.latitude ? parseFloat(event.venue.latitude) : undefined,
                     longitude: event.venue.longitude ? parseFloat(event.venue.longitude) : undefined,
-                }, 'skiddle', false); // Require admin approval for Skiddle venues
+                }, 'skiddle', false);
 
                 venueMap.set(venueName.toLowerCase(), venueResult.id);
 
@@ -127,6 +132,7 @@ export async function POST(req: Request) {
                     }
                 }
 
+                // New events from Skiddle require admin approved = false
                 const eventResult = await findOrCreateEvent({
                     name: event.eventname,
                     venueId: venueId,
@@ -139,7 +145,7 @@ export async function POST(req: Request) {
                     ticketUrl: event.link,
                     imageUrl: event.imageurl,
                     source: 'skiddle'
-                }, false); // Require admin approval for Skiddle events
+                }, false);
 
                 if (eventResult.isNew) {
                     eventsCreated++;

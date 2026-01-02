@@ -158,7 +158,12 @@ export async function PATCH(req: Request) {
         const body = await req.json();
         const { id, isInternalTicketing, approved } = body;
 
-        const client = await getPool().connect();
+        const pool = getPool();
+        const client = await pool.connect();
+
+        let shouldNotifyUser = false;
+        let userData: { eventName: string; userId: string } | null = null;
+
         try {
             // Update Internal Ticketing
             if (isInternalTicketing !== undefined) {
@@ -167,6 +172,26 @@ export async function PATCH(req: Request) {
 
             // Update Approved Status
             if (approved !== undefined) {
+                if (approved === true) {
+                    const eventRes = await client.query('SELECT user_id, name FROM events WHERE id = $1', [id]);
+                    if (eventRes.rows[0]) {
+                        const { user_id, name } = eventRes.rows[0];
+
+                        // Check if user has any other approved events
+                        const countRes = await client.query(
+                            'SELECT COUNT(*) FROM events WHERE user_id = $1 AND approved = true AND id != $2',
+                            [user_id, id]
+                        );
+
+                        const isFirst = parseInt(countRes.rows[0].count) === 0;
+
+                        if (isFirst && user_id && user_id.startsWith('user_')) {
+                            shouldNotifyUser = true;
+                            userData = { userId: user_id, eventName: name };
+                        }
+                    }
+                }
+
                 await client.query('UPDATE events SET approved = $1 WHERE id = $2', [approved, id]);
 
                 // TODO: Re-enable first event approval email once Clerk client issue is resolved
@@ -227,10 +252,42 @@ export async function PATCH(req: Request) {
                 }
                 */
             }
-            return NextResponse.json({ success: true, message: 'Updated' });
         } finally {
+            // CRITICAL: Release the client before moving on to async/external calls
             client.release();
         }
+
+        // Side effect: Notify user if first approval
+        if (shouldNotifyUser && userData) {
+            // Run in background, don't await to keep Admin UI snappy
+            (async () => {
+                try {
+                    const { clerkClient } = await import('@clerk/nextjs/server');
+                    const clerk = await clerkClient();
+                    const user = await clerk.users.getUser(userData!.userId);
+                    const email = user.emailAddresses[0]?.emailAddress;
+
+                    if (email) {
+                        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+                        await fetch(`${appUrl}/api/admin/notify-event-approved`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userEmail: email,
+                                eventName: userData!.eventName,
+                                userId: userData!.userId
+                            })
+                        });
+                        console.log(`✅ Triggered notification for ${email}`);
+                    }
+                } catch (err) {
+                    console.error('Background notification error:', err);
+                }
+            })();
+        }
+
+        return NextResponse.json({ success: true, message: 'Updated' });
+
     } catch (e: any) {
         console.error('Update error:', e);
         return NextResponse.json({ error: 'Update failed' }, { status: 500 });

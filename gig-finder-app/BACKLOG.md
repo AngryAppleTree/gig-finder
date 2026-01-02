@@ -2,7 +2,34 @@
 
 ## High Priority
 
-### 1. Refund System
+### 1. Direct Event Links & Detail Pages
+**Status:** Post-Beta - Requires automated testing first  
+**Description:** Add ability to link directly to a specific event for sharing
+
+**Features:**
+- Event detail page at `/gigfinder/event/[id]`
+- Support `?eventId=993` parameter in results page
+- Shareable links for social media/marketing
+- Deep linking support
+
+**Current Workaround:**
+- Use keyword search: `?keyword=screamin`
+
+**Prerequisites:**
+- ✅ Implement automated testing (Playwright)
+- ✅ Test coverage for event display logic
+
+**Technical Requirements:**
+- New route: `app/gigfinder/event/[id]/page.tsx`
+- Update results page to support `eventId` param
+- SEO meta tags for event pages
+- Social sharing preview cards
+
+**Estimated Effort:** 2-3 hours (after testing in place)
+
+---
+
+### 2. Refund System
 **Status:** Blocked - Requires Stripe integration to be live  
 **Description:** Allow users and admins to cancel bookings and issue refunds
 
@@ -98,3 +125,23 @@ CREATE TABLE booking_merchandise (
 
 ## Low Priority
 
+### WORM Protection for Bookings Table
+**Status:** Post-Beta  
+**Description:** Implement Write-Once-Read-Many (WORM) logic for the bookings table to ensure immutability of payment/ticket records
+
+**Rationale:**
+- Financial/legal compliance
+- Audit trail integrity
+- Prevent accidental deletion of payment records
+- Enable Stripe reconciliation
+
+**Implementation Options:**
+1. Database-level triggers (prevent UPDATE/DELETE)
+2. Application-level guards in API routes
+3. Audit table pattern for modifications
+
+**Recommended:** Combination of DB triggers + audit table for cancellations/refunds
+
+**Estimated Effort:** 2-4 hours
+
+---

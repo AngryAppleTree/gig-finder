@@ -1,44 +1,45 @@
 const { Pool } = require('pg');
 
-async function findSimilarVenues() {
+async function findSimilarAddresses() {
     const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
     });
 
     try {
-        // Get all venues
+        // Get all venues with addresses
         const result = await pool.query(`
       SELECT id, name, address, city
       FROM venues
-      ORDER BY name
+      WHERE address IS NOT NULL AND address != ''
+      ORDER BY address
     `);
 
         const venues = result.rows;
         const similarGroups = [];
         const processed = new Set();
 
-        // Find venues with similar names
+        // Find venues with similar addresses
         for (let i = 0; i < venues.length; i++) {
             if (processed.has(venues[i].id)) continue;
 
             const group = [venues[i]];
-            const baseName = venues[i].name.toLowerCase()
-                .replace(/^the\s+/i, '')  // Remove "The" prefix
+            const baseAddress = venues[i].address.toLowerCase()
                 .replace(/\s+/g, ' ')      // Normalize spaces
+                .replace(/[,.-]/g, '')     // Remove punctuation
                 .trim();
 
             for (let j = i + 1; j < venues.length; j++) {
                 if (processed.has(venues[j].id)) continue;
 
-                const compareName = venues[j].name.toLowerCase()
-                    .replace(/^the\s+/i, '')
+                const compareAddress = venues[j].address.toLowerCase()
                     .replace(/\s+/g, ' ')
+                    .replace(/[,.-]/g, '')
                     .trim();
 
-                // Check if names are very similar
-                if (baseName === compareName ||
-                    baseName.includes(compareName) ||
-                    compareName.includes(baseName)) {
+                // Check if addresses are very similar or one contains the other
+                if (baseAddress === compareAddress ||
+                    baseAddress.includes(compareAddress) ||
+                    compareAddress.includes(baseAddress)) {
                     group.push(venues[j]);
                     processed.add(venues[j].id);
                 }
@@ -51,23 +52,24 @@ async function findSimilarVenues() {
         }
 
         if (similarGroups.length > 0) {
-            console.log(`Found ${similarGroups.length} groups of similar venues:\n`);
+            console.log(`Found ${similarGroups.length} groups of venues with similar addresses:\n`);
             similarGroups.forEach((group, idx) => {
                 console.log(`Group ${idx + 1}:`);
                 group.forEach(venue => {
-                    console.log(`  ID ${venue.id}: "${venue.name}" - ${venue.address}, ${venue.city || 'N/A'}`);
+                    console.log(`  ID ${venue.id}: "${venue.name}"`);
+                    console.log(`       Address: ${venue.address}, ${venue.city || 'N/A'}`);
                 });
                 console.log();
             });
         } else {
-            console.log('No similar venues found.\n');
+            console.log('No venues with similar addresses found.\n');
         }
 
     } catch (error) {
-        console.error('Error finding similar venues:', error);
+        console.error('Error finding similar addresses:', error);
     } finally {
         await pool.end();
     }
 }
 
-findSimilarVenues();
+findSimilarAddresses();
