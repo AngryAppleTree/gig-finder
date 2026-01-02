@@ -28,12 +28,30 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const offset = (page - 1) * limit;
+    const id = searchParams.get('id');
 
     const client = await getPool().connect();
     try {
+        if (id) {
+            const result = await client.query(`
+                SELECT 
+                    v.*,
+                    COUNT(e.id) as event_count
+                FROM venues v
+                LEFT JOIN events e ON e.venue_id = v.id
+                WHERE v.id = $1
+                GROUP BY v.id
+            `, [id]);
+
+            if (result.rows.length === 0) {
+                return NextResponse.json({ error: 'Venue not found' }, { status: 404 });
+            }
+            return NextResponse.json({ venue: result.rows[0] });
+        }
+
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '50');
+        const offset = (page - 1) * limit;
         // Get total count
         const countRes = await client.query('SELECT COUNT(*) FROM venues');
         const totalCount = parseInt(countRes.rows[0].count);
