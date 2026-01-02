@@ -40,7 +40,8 @@ export interface EventResult {
  * @returns Event record with id and metadata
  */
 export async function findOrCreateEvent(
-    eventData: EventData
+    eventData: EventData,
+    approved: boolean = true
 ): Promise<EventResult> {
     const client = await pool.connect();
 
@@ -112,7 +113,7 @@ export async function findOrCreateEvent(
                 eventData.imageUrl || null,
                 `scraper_${eventData.source}`, // Mark as scraped event
                 fingerprint,
-                true // Auto-approve scraped events
+                approved
             ]
         );
 

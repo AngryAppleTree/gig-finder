@@ -42,7 +42,8 @@ export interface VenueResult {
  */
 export async function findOrCreateVenue(
     venueData: VenueData,
-    source: string = 'api'
+    source: string = 'api',
+    approved: boolean = true
 ): Promise<VenueResult> {
     const client = await pool.connect();
 
@@ -77,8 +78,8 @@ export async function findOrCreateVenue(
         console.log(`🆕 Creating new venue from ${source}:`, venueData.name);
 
         const newVenue = await client.query(
-            `INSERT INTO venues (name, normalized_name, address, city, postcode, latitude, longitude, capacity, website)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `INSERT INTO venues (name, normalized_name, address, city, postcode, latitude, longitude, capacity, website, approved)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
              RETURNING id, name, capacity, latitude, longitude, city`,
             [
                 venueData.name,
@@ -89,7 +90,8 @@ export async function findOrCreateVenue(
                 venueData.latitude || null,
                 venueData.longitude || null,
                 venueData.capacity || null,
-                venueData.website || null
+                venueData.website || null,
+                approved
             ]
         );
 

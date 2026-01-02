@@ -101,6 +101,33 @@ export default function AdminDashboard() {
                         >
                             Scrape Leith Depot
                         </button>
+                        <button
+                            onClick={async () => {
+                                setLoading(true);
+                                setMessage('Running Skiddle API (Scotland)...');
+                                try {
+                                    const res = await fetch('/api/admin/scrape-skiddle', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' }
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                        const { stats } = data;
+                                        setMessage(`✅ Skiddle Complete! Venues: ${stats.venuesCreated} new, ${stats.venuesExisting} existing | Events: ${stats.eventsCreated} new, ${stats.eventsExisting} existing`);
+                                    } else {
+                                        setMessage(`❌ Error: ${data.error}`);
+                                    }
+                                } catch (error: any) {
+                                    setMessage(`❌ Error: ${error.message || 'Unknown error'}`);
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                            disabled={loading}
+                            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white py-2 px-4 rounded disabled:opacity-50 font-semibold shadow-lg"
+                        >
+                            🎸 Scrape Skiddle API (Scotland)
+                        </button>
                     </div>
                     {message && <div className="mt-4 p-3 bg-black/50 rounded text-sm font-mono">{message}</div>}
                 </div>
