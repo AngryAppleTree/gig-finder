@@ -52,23 +52,37 @@ export async function GET(request: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = (page - 1) * limit;
-        // Get total count
-        const countRes = await client.query('SELECT COUNT(*) FROM venues');
-        const totalCount = parseInt(countRes.rows[0].count);
+        const approvedOnly = searchParams.get('approvedOnly') === 'true';
 
-        // Fetch venues with unapproved first, then by name
-        const result = await client.query(`
+        // Build query
+        let query = `
             SELECT 
                 v.*,
                 COUNT(e.id) as event_count
             FROM venues v
             LEFT JOIN events e ON e.venue_id = v.id
+        `;
+        let countQuery = 'SELECT COUNT(*) FROM venues';
+        let params: any[] = [limit, offset];
+
+        if (approvedOnly) {
+            query += ' WHERE v.approved = true';
+            countQuery += ' WHERE approved = true';
+        }
+
+        query += `
             GROUP BY v.id
             ORDER BY 
                 CASE WHEN v.approved = false THEN 0 ELSE 1 END,
                 v.name ASC
             LIMIT $1 OFFSET $2
-        `, [limit, offset]);
+        `;
+
+        // Get total count
+        const countRes = await client.query(countQuery);
+        const totalCount = parseInt(countRes.rows[0].count);
+
+        const result = await client.query(query, params);
 
         return NextResponse.json({
             venues: result.rows,

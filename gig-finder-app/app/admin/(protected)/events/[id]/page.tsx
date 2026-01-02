@@ -56,7 +56,7 @@ export default function EditEventPage() {
 
     const fetchVenues = async () => {
         try {
-            const res = await fetch('/api/admin/venues?limit=500'); // Get all for dropdown
+            const res = await fetch('/api/admin/venues?limit=500&approvedOnly=true'); // Get all approved for dropdown
             if (!res.ok) throw new Error('Failed to fetch venues');
             const data = await res.json();
             setVenues(data.venues || []);
@@ -168,7 +168,7 @@ export default function EditEventPage() {
                             ))}
                         </select>
                         <p className="text-xs text-gray-400 mt-1">
-                            Can't find the venue? <a href="/admin/venues/new" target="_blank" className="text-purple-400 hover:underline">Add it first</a>.
+                            Only <strong>approved</strong> venues are shown. If a venue is missing, <a href="/admin/venues" target="_blank" className="text-purple-400 hover:underline">approve it here</a> first.
                         </p>
                     </div>
 
