@@ -106,8 +106,8 @@ function EditEventForm({ eventId }: { eventId: string }) {
                     time: timeStr,
                     genre: event.genre || 'rock_blues_punk',
                     description: event.description || '',
-                    price: event.price || '',
-                    presale_price: event.presale_price?.toString() || '',
+                    price: (event.price || '').replace(/£/g, '').trim(),
+                    presale_price: (event.presale_price?.toString() || '').replace(/£/g, '').trim(),
                     presale_caption: event.presale_caption || '',
                     is_internal_ticketing: event.is_internal_ticketing || false,
                     sell_tickets: event.sell_tickets || false

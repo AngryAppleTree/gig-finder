@@ -117,23 +117,21 @@ export async function PUT(request: NextRequest) {
             const result = await client.query(
                 `UPDATE events SET 
                     name = $1, 
-                    venue = $2,
-                    venue_id = $3,
-                    date = $4, 
-                    genre = $5, 
-                    description = $6, 
-                    price = $7,
-                    presale_price = $8,
-                    presale_caption = $9,
-                    fingerprint = $10,
-                    is_internal_ticketing = $11,
-                    sell_tickets = $12,
-                    image_url = $13
-                 WHERE id = $14 AND user_id = $15
+                    venue_id = $2,
+                    date = $3, 
+                    genre = $4, 
+                    description = $5, 
+                    price = $6,
+                    presale_price = $7,
+                    presale_caption = $8,
+                    fingerprint = $9,
+                    is_internal_ticketing = $10,
+                    sell_tickets = $11,
+                    image_url = $12
+                 WHERE id = $13 AND user_id = $14
                  RETURNING id`,
                 [
                     name,
-                    venue,
                     finalVenueId,
                     timestamp,
                     genre,
