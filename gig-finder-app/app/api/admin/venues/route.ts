@@ -111,17 +111,17 @@ export async function POST(req: Request) {
     const client = await getPool().connect();
     try {
         const body = await req.json();
-        const { name, address, city, postcode, latitude, longitude, capacity, email, website, phone } = body;
+        const { name, address, city, postcode, latitude, longitude, capacity, email, website, phone, approved, verified } = body;
 
         if (!name) {
             return NextResponse.json({ error: 'Venue name is required' }, { status: 400 });
         }
 
         const result = await client.query(`
-            INSERT INTO venues (name, address, city, postcode, latitude, longitude, capacity, email, website, phone)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            INSERT INTO venues (name, address, city, postcode, latitude, longitude, capacity, email, website, phone, approved, verified)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING *
-        `, [name, address, city, postcode, latitude, longitude, capacity, email, website, phone]);
+        `, [name, address, city, postcode, latitude, longitude, capacity, email, website, phone, approved ?? true, verified ?? true]);
 
         return NextResponse.json({ venue: result.rows[0] });
     } catch (error: any) {
@@ -145,7 +145,7 @@ export async function PUT(req: Request) {
     const client = await getPool().connect();
     try {
         const body = await req.json();
-        const { id, name, address, city, postcode, latitude, longitude, capacity, email, website, phone } = body;
+        const { id, name, address, city, postcode, latitude, longitude, capacity, email, website, phone, approved, verified } = body;
 
         console.log('Update venue request:', { id, name, address, city, postcode, latitude, longitude, capacity, email, website, phone });
 
@@ -156,8 +156,9 @@ export async function PUT(req: Request) {
         const result = await client.query(`
             UPDATE venues 
             SET name = $1, address = $2, city = $3, postcode = $4, 
-                latitude = $5, longitude = $6, capacity = $7, email = $8, website = $9, phone = $10
-            WHERE id = $11
+                latitude = $5, longitude = $6, capacity = $7, email = $8, website = $9, phone = $10,
+                approved = $11, verified = $12
+            WHERE id = $13
             RETURNING *
         `, [
             name,
@@ -170,6 +171,8 @@ export async function PUT(req: Request) {
             email || null,
             website || null,
             phone || null,
+            approved ?? true,
+            verified ?? true,
             id
         ]);
 
@@ -244,7 +247,7 @@ export async function PATCH(req: Request) {
     const client = await getPool().connect();
     try {
         const body = await req.json();
-        const { id, approved } = body;
+        const { id, approved, verified } = body;
 
         if (!id || approved === undefined) {
             return NextResponse.json({ error: 'Venue ID and approved status are required' }, { status: 400 });
@@ -282,10 +285,18 @@ export async function PATCH(req: Request) {
             });
         }
 
+        // Update Verified Status if provided
+        if (verified !== undefined) {
+            await client.query(
+                'UPDATE venues SET verified = $1 WHERE id = $2',
+                [verified, id]
+            );
+        }
+
         // Approving venue (approved=true)
         const result = await client.query(
             'UPDATE venues SET approved = $1 WHERE id = $2 RETURNING *',
-            [approved, id]
+            [approved ?? true, id]
         );
 
         if (result.rowCount === 0) {

@@ -30,12 +30,12 @@ export async function POST(req: NextRequest) {
         await resend.emails.send({
             from: fromAddress,
             to: adminEmail,
-            subject: `🆕 First Event Submission - Requires Approval`,
+            subject: `🆕 New Community Post - Verification Required`,
             html: `
                 <div style="font-family: sans-serif; color: #333; max-width: 600px;">
-                    <h1 style="color: #ff3366;">New User - First Event Submission</h1>
+                    <h1 style="color: #ff3366;">Community Event Posted</h1>
                     
-                    <p>A user has submitted their <strong>first event</strong> and it requires your approval.</p>
+                    <p>A user has submitted a new event. It is <strong>LIVE</strong> but currently marked as <strong>UNVERIFIED</strong>.</p>
                     
                     <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
                         <h2 style="margin-top: 0; color: #000;">Event Details</h2>
@@ -52,14 +52,13 @@ export async function POST(req: NextRequest) {
                         <a href="${appUrl}/admin/events" 
                            style="display: inline-block; background: #ff3366; color: white; padding: 12px 24px; 
                                   text-decoration: none; border-radius: 6px; font-weight: bold;">
-                            Review in Admin Panel
+                            Review & Verify in Admin Panel
                         </a>
                     </div>
                     
                     <p style="color: #666; font-size: 14px; margin-top: 2rem;">
                         <strong>Why this notification?</strong><br>
-                        First-time event submissions require manual approval to prevent spam and ensure quality.
-                        Once approved, this user's future events will be auto-approved.
+                        New community posts are visible immediately but display a "Community Post" badge until you verify them.
                     </p>
                 </div>
             `

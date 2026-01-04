@@ -2,7 +2,19 @@
 
 ## High Priority
 
-### 1. Direct Event Links & Detail Pages
+### 1. Adding Guardrails 🛡️
+**Status:** Urgent  
+**Description:** Implement technical boundaries to prevent unauthorized database mutations by AI agents.
+
+**Objectives:**
+- Move production credentials (`.env.production.local`) out of the active workspace.
+- Implement Neon Database Branching for development work.
+- Create a Read-Only database role for AI analysis tasks.
+- Establish a "Safe Command" checklist for migrations.
+
+---
+
+### 2. Direct Event Links & Detail Pages
 **Status:** Post-Beta - Requires automated testing first  
 **Description:** Add ability to link directly to a specific event for sharing
 
@@ -29,7 +41,7 @@
 
 ---
 
-### 2. Refund System
+### 3. Refund System
 **Status:** Blocked - Requires Stripe integration to be live  
 **Description:** Allow users and admins to cancel bookings and issue refunds
 
@@ -53,7 +65,7 @@
 
 ---
 
-### 2. Merchandise Bundling
+### 4. Merchandise Bundling
 **Status:** New Feature  
 **Description:** Allow users to pre-purchase merchandise (e.g., albums) with their ticket at a discounted price
 

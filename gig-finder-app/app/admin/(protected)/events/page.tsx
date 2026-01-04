@@ -9,6 +9,7 @@ interface Event {
     user_id: string;
     is_internal_ticketing?: boolean;
     approved?: boolean;
+    verified?: boolean;
 }
 
 export default function AdminEvents() {
@@ -84,6 +85,19 @@ export default function AdminEvents() {
         }
     };
 
+    const toggleVerified = async (id: number, currentVerified: boolean) => {
+        const res = await fetch('/api/admin/events', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, verified: !currentVerified })
+        });
+        if (res.ok) {
+            fetchEvents();
+        } else {
+            alert('Verification update failed');
+        }
+    };
+
     return (
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
             <div className="flex justify-between items-center mb-6">
@@ -113,6 +127,7 @@ export default function AdminEvents() {
                                 <th className="px-4 py-3 text-left">Event</th>
                                 <th className="px-4 py-3 text-left">Venue</th>
                                 <th className="px-4 py-3 text-center">Status</th>
+                                <th className="px-4 py-3 text-center">Verified</th>
                                 <th className="px-4 py-3 text-center">Ticketing</th>
                                 <th className="px-4 py-3 text-right">Actions</th>
                             </tr>
@@ -135,7 +150,17 @@ export default function AdminEvents() {
                                                 ? 'bg-green-900/30 border-green-700 text-green-400'
                                                 : 'bg-yellow-600 border-yellow-500 text-black font-bold animate-pulse'}`}
                                         >
-                                            {evt.approved ? 'Agreed' : 'APPROVE'}
+                                            {evt.approved ? 'Live' : 'Hidden'}
+                                        </button>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <button
+                                            onClick={() => toggleVerified(evt.id, !!evt.verified)}
+                                            className={`px-2 py-1 text-xs rounded border ${evt.verified
+                                                ? 'bg-blue-900/30 border-blue-700 text-blue-400'
+                                                : 'bg-orange-600 border-orange-500 text-black font-bold'}`}
+                                        >
+                                            {evt.verified ? 'Verified' : 'VERIFY'}
                                         </button>
                                     </td>
                                     <td className="px-4 py-3 text-center">

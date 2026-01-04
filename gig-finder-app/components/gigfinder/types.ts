@@ -22,6 +22,7 @@ export interface Gig {
     source?: string; // 'manual' or 'skiddle' - determines if internal ticketing is allowed
     presale_price?: number; // Discounted price for record buyers
     presale_caption?: string; // Explanation of presale offer
+    isVerified?: boolean; // Whether both event and venue are admin-verified
 }
 
 export interface Booking {

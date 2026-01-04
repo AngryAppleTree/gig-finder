@@ -60,6 +60,11 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                 />
             </div>
             <div className="gig-details">
+                {gig.source !== 'manual' || gig.isVerified ? (
+                    <div className="badge-verified">✓ Verified</div>
+                ) : (
+                    <div className="badge-unverified" title="This gig was posted by the community and is awaiting admin verification.">⚠ Community Post</div>
+                )}
                 <h3 className="gig-name">{gig.name}</h3>
                 <div className="gig-info">
                     <p className="gig-location">📍 {locationText} {distanceHtml}</p>

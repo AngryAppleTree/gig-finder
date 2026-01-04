@@ -95,7 +95,7 @@ export async function PUT(req: Request) {
 
     try {
         const body = await req.json();
-        const { id, name, venueId, date, time, price, ticket_url, description, genre, approved } = body;
+        const { id, name, venueId, date, time, price, ticket_url, description, genre, approved, verified } = body;
 
         const dateTimeStr = `${date}T${time}:00`;
         const dateObj = new Date(dateTimeStr);
@@ -111,12 +111,12 @@ export async function PUT(req: Request) {
                 UPDATE events 
                 SET name = $1, venue_id = $2, date = $3, price = $4, 
                     ticket_url = $5, description = $6, genre = $7, 
-                    fingerprint = $8, approved = $9
-                WHERE id = $10
+                    fingerprint = $8, approved = $9, verified = $10
+                WHERE id = $11
             `, [
                 name, venueId, dateObj, price,
                 ticket_url, description, genre,
-                fingerprint, approved, id
+                fingerprint, approved, verified ?? true, id
             ]);
 
             return NextResponse.json({ message: 'Updated' });
@@ -191,12 +191,12 @@ export async function POST(req: Request) {
             const res = await client.query(`
                 INSERT INTO events (
                     name, venue_id, date, price, ticket_url, description, 
-                    fingerprint, user_id, approved, created_at, genre
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)
+                    fingerprint, user_id, approved, verified, created_at, genre
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), $11)
                 RETURNING id
             `, [
                 name, finalVenueId || null, dateObj, price, ticket_url, description,
-                fingerprint, 'admin', true, genre
+                fingerprint, 'admin', true, true, genre
             ]);
             return NextResponse.json({ message: 'Created', id: res.rows[0].id });
         } finally {
@@ -215,7 +215,7 @@ export async function PATCH(req: Request) {
 
     try {
         const body = await req.json();
-        const { id, isInternalTicketing, approved } = body;
+        const { id, isInternalTicketing, approved, verified } = body;
 
         const pool = getPool();
         const client = await pool.connect();
@@ -252,6 +252,11 @@ export async function PATCH(req: Request) {
                 }
 
                 await client.query('UPDATE events SET approved = $1 WHERE id = $2', [approved, id]);
+            }
+
+            // Update Verified Status
+            if (verified !== undefined) {
+                await client.query('UPDATE events SET verified = $1 WHERE id = $2', [verified, id]);
             }
         } finally {
             // CRITICAL: Release the client before moving on to async/external calls

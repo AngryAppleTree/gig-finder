@@ -70,13 +70,15 @@ export async function GET(request: NextRequest) {
         let query = `
             SELECT 
                 e.*,
+                e.verified as event_verified,
                 v.name as venue_name,
                 v.capacity as venue_capacity,
                 v.latitude as venue_latitude,
                 v.longitude as venue_longitude,
                 v.city as venue_city,
                 v.postcode as venue_postcode,
-                v.address as venue_address
+                v.address as venue_address,
+                v.verified as venue_verified
             FROM events e
             LEFT JOIN venues v ON e.venue_id = v.id
             WHERE e.date >= CURRENT_DATE AND e.approved = true
@@ -144,7 +146,9 @@ export async function GET(request: NextRequest) {
             ticketPrice: e.ticket_price || 0,  // Add numeric price for modal
             // Presale Fields
             presale_price: e.presale_price || null,
-            presale_caption: e.presale_caption || null
+            presale_caption: e.presale_caption || null,
+            // Verification status
+            isVerified: e.event_verified && e.venue_verified
         };
     });
 

@@ -96,9 +96,9 @@ export async function findOrCreateEvent(
             `INSERT INTO events (
                 name, venue_id, date, genre, description, 
                 price, ticket_price, price_currency, ticket_url, image_url,
-                user_id, fingerprint, approved, created_at
+                user_id, fingerprint, approved, verified, created_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
             RETURNING id, name, venue_id, date`,
             [
                 eventData.name,
@@ -113,7 +113,8 @@ export async function findOrCreateEvent(
                 eventData.imageUrl || null,
                 `scraper_${eventData.source}`, // Mark as scraped event
                 fingerprint,
-                approved
+                approved,
+                true // verified
             ]
         );
 

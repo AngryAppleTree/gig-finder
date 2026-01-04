@@ -15,6 +15,7 @@ interface Venue {
     phone?: string;
     event_count?: number;
     approved?: boolean;
+    verified?: boolean;
 }
 
 export default function VenuesPage() {
@@ -62,6 +63,24 @@ export default function VenuesPage() {
         }
     };
 
+    const toggleVerified = async (id: number, currentVerified: boolean) => {
+        try {
+            const res = await fetch('/api/admin/venues', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, verified: !currentVerified })
+            });
+            if (res.ok) {
+                fetchVenues(page);
+            } else {
+                alert('Failed to update verification status');
+            }
+        } catch (error) {
+            console.error('Verification error:', error);
+            alert('Failed to update verification status');
+        }
+    };
+
     if (loading) {
         return <div className="text-white p-8">Loading venues...</div>;
     }
@@ -84,6 +103,7 @@ export default function VenuesPage() {
                             <th className="px-4 py-3 text-center">Capacity</th>
                             <th className="px-4 py-3 text-center">Events</th>
                             <th className="px-4 py-3 text-center">Status</th>
+                            <th className="px-4 py-3 text-center">Verified</th>
                             <th className="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -122,6 +142,16 @@ export default function VenuesPage() {
                                             Approved
                                         </span>
                                     )}
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                    <button
+                                        onClick={() => toggleVerified(venue.id, !!venue.verified)}
+                                        className={`px-2 py-1 text-xs rounded border ${venue.verified
+                                            ? 'bg-blue-900/30 border-blue-700 text-blue-400'
+                                            : 'bg-orange-600 border-orange-500 text-black font-bold'}`}
+                                    >
+                                        {venue.verified ? 'Verified' : 'VERIFY'}
+                                    </button>
                                 </td>
                                 <td className="px-4 py-3 text-right text-sm">
                                     <a href={`/admin/venues/${venue.id}`} className="text-blue-400 hover:text-blue-300 mr-3">

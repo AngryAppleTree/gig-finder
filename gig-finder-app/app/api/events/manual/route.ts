@@ -105,10 +105,10 @@ export async function POST(request: NextRequest) {
                     venue = existingVenue.rows[0].name;
                     console.log(`♻️  Using existing venue: "${venue}" (ID: ${venueId})`);
                 } else {
-                    // Create new venue with normalized_name - requires admin approval
+                    // Create new venue with normalized_name - approved immediately but unverified
                     const venueResult = await client.query(
-                        `INSERT INTO venues (name, normalized_name, city, capacity, approved) 
-                         VALUES ($1, $2, $3, $4, false) 
+                        `INSERT INTO venues (name, normalized_name, city, capacity, approved, verified) 
+                         VALUES ($1, $2, $3, $4, true, false) 
                          RETURNING id, name`,
                         [newVenue.name, normalized, newVenue.city || null, newVenue.capacity || null]
                     );
@@ -188,61 +188,50 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // Event needs approval if:
-            // 1. It's user's first event, OR
-            // 2. A new venue was created (venue needs approval)
-            const userEventsCheck = await client.query(
-                'SELECT COUNT(*) FROM events WHERE user_id = $1 AND approved = true',
-                [userId]
-            );
-            const isFirstEvent = parseInt(userEventsCheck.rows[0].count) === 0;
-            const needsApproval = isFirstEvent || createdNewVenue;
-
-            if (createdNewVenue) {
-                console.log('⚠️  Event requires approval because new venue was created');
-            }
+            // NEW RULE: All manual submissions are approved (live) immediately
+            // but marked as 'verified = false' until an admin reviews them.
+            const needsApproval = false;
+            const isVerified = false;
 
             // Insert event with venue_id
             const timestamp = time ? `${date} ${time}:00` : `${date} 00:00:00`;
 
             const result = await client.query(
-                `INSERT INTO events (name, venue_id, date, genre, description, price, ticket_price, price_currency, presale_price, presale_caption, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url, approved)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-       RETURNING id`,
-                [name, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', presalePriceValue, presaleCaption || null, userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl, !needsApproval]
+                `INSERT INTO events (name, venue_id, date, genre, description, price, ticket_price, price_currency, presale_price, presale_caption, user_id, fingerprint, is_internal_ticketing, sell_tickets, max_capacity, image_url, approved, verified)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+                 RETURNING id`,
+                [name, venueId || null, timestamp, genre, description, displayPrice, ticketPrice, 'GBP', presalePriceValue, presaleCaption || null, userId, fingerprint, isInternalTicketing || false, sellTickets || false, eventCapacity, imageUrl, true, isVerified]
             );
 
             const eventId = result.rows[0].id;
 
-            // Send notification if first event (needs approval)
-            if (needsApproval) {
-                try {
-                    // Get venue name for notification
-                    const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [venueId]);
-                    const venueName = venueResult.rows[0]?.name || 'Unknown Venue';
+            // Send notification for every manual submission
+            try {
+                // Get venue name for notification
+                const venueResult = await client.query('SELECT name FROM venues WHERE id = $1', [venueId]);
+                const venueName = venueResult.rows[0]?.name || 'Unknown Venue';
 
-                    // Get user email
-                    const userEmail = await client.query(
-                        'SELECT email FROM users WHERE clerk_id = $1',
-                        [userId]
-                    );
+                // Get user email from Clerk
+                const { clerkClient } = await import('@clerk/nextjs/server');
+                const clerk = await clerkClient();
+                const user = await clerk.users.getUser(userId);
+                const userEmail = user.emailAddresses[0]?.emailAddress || 'Unknown';
 
-                    await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/notify-first-event`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            eventId,
-                            eventName: name,
-                            venueName,
-                            date: timestamp,
-                            userId,
-                            userEmail: userEmail.rows[0]?.email || 'Unknown'
-                        })
-                    });
-                } catch (notifError) {
-                    console.error('Failed to send first event notification:', notifError);
-                    // Don't fail the event creation if notification fails
-                }
+                await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/notify-first-event`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventId,
+                        eventName: name,
+                        venueName,
+                        date: timestamp,
+                        userId,
+                        userEmail
+                    })
+                });
+            } catch (notifError) {
+                console.error('Failed to send admin notification:', notifError);
+                // Don't fail the event creation if notification fails
             }
 
             client.release();

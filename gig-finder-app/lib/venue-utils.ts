@@ -80,8 +80,8 @@ export async function findOrCreateVenue(
         console.log(`🆕 Creating new venue from ${source} (${approvalStatus}):`, venueData.name);
 
         const newVenue = await client.query(
-            `INSERT INTO venues (name, normalized_name, address, city, postcode, latitude, longitude, capacity, website, approved)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            `INSERT INTO venues (name, normalized_name, address, city, postcode, latitude, longitude, capacity, website, approved, verified)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
              RETURNING id, name, capacity, latitude, longitude, city`,
             [
                 venueData.name,
@@ -93,7 +93,8 @@ export async function findOrCreateVenue(
                 venueData.longitude || null,
                 venueData.capacity || null,
                 venueData.website || null,
-                approved
+                approved,
+                true // verified
             ]
         );
 
