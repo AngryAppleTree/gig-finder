@@ -41,7 +41,37 @@
 
 ---
 
-### 3. Refund System
+### 3. Guestlist Workflow Refinement
+**Status:** High Priority - Requires collaboration  
+**Description:** Improve the free guestlist/RSVP booking experience to differentiate it from paid ticketing
+
+**Current State:**
+- Button text: "Book Now" (confusing - sounds like payment)
+- Same modal as paid tickets
+- No clear distinction between free and paid events
+
+**Proposed Changes:**
+- Change button text to "Get on Guest List"
+- Dedicated guestlist modal (simpler, no payment fields)
+- Clear messaging: "Free entry - just RSVP"
+- Email confirmation: "You're on the list!"
+- Organizer view: Guestlist management interface
+
+**Business Logic:**
+- If `sellTickets = true` → Show "Buy Tickets" only
+- If `isInternalTicketing = true` (but `sellTickets = false`) → Show "Get on Guest List" only
+- Never show both buttons simultaneously
+
+**User Experience Goals:**
+- Make free events feel welcoming (not transactional)
+- Reduce confusion between paid/free
+- Encourage RSVPs for capacity planning
+
+**Estimated Effort:** 4-6 hours (requires design discussion)
+
+---
+
+### 4. Refund System
 **Status:** Blocked - Requires Stripe integration to be live  
 **Description:** Allow users and admins to cancel bookings and issue refunds
 
@@ -65,7 +95,7 @@
 
 ---
 
-### 4. Merchandise Bundling
+### 5. Merchandise Bundling
 **Status:** New Feature  
 **Description:** Allow users to pre-purchase merchandise (e.g., albums) with their ticket at a discounted price
 
@@ -155,5 +185,27 @@ CREATE TABLE booking_merchandise (
 **Recommended:** Combination of DB triggers + audit table for cancellations/refunds
 
 **Estimated Effort:** 2-4 hours
+
+---
+
+### Clean Up Legacy Event Ghost Code
+**Status:** Low Priority  
+**Description:** Clean up legacy unapproved events and improve admin UI for handling edge cases
+
+**Issues:**
+- ~10 legacy events exist with `approved = false` from before the "Live but Unverified" system
+- Some events have contradictory states (`approved = false, verified = true`)
+- Admin UI shows "VERIFY" button for unapproved events (confusing workflow)
+- Admin sort order prioritizes `approved` instead of `verified` status
+
+**Proposed Fixes:**
+1. Disable or hide "VERIFY" button for unapproved events
+2. Update admin sort order to show unverified events first
+3. Add bulk action to approve all legacy unapproved events
+4. OR add cleanup script to delete old unapproved events
+
+**Note:** This only affects legacy data. New events work correctly.
+
+**Estimated Effort:** 1-2 hours
 
 ---

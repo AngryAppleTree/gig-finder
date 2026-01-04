@@ -100,34 +100,13 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                     )}
                 </div>
                 <div style={{ marginTop: '1rem' }}>
-                    {/* Show booking button for manual events with ticketing enabled */}
-                    {(gig.isInternalTicketing || gig.sellTickets) && gig.source === 'manual' ? (
-                        <button
-                            className="btn-buy"
-                            style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%' }}
-                            onClick={handleBooking}
-                        >
-                            {gig.sellTickets ? 'Buy Tickets' : 'Book Now'}
-                        </button>
-                    ) : (gig.ticketUrl && gig.ticketUrl !== '#' ? (
-                        <a
-                            href={gig.ticketUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-buy"
-                            style={{ width: '100%', display: 'block', textAlign: 'center' }}
-                        >
-                            Get Tickets
-                        </a>
-                    ) : (
-                        <button
-                            className="btn-buy"
-                            style={{ backgroundColor: '#888', color: 'white', border: 'none', cursor: 'pointer', width: '100%' }}
-                            onClick={handleMoreInfo}
-                        >
-                            More Info
-                        </button>
-                    ))}
+                    <button
+                        className="btn-buy"
+                        style={{ width: '100%', cursor: 'pointer' }}
+                        onClick={() => window.location.href = `/gigfinder/event/${gig.id}`}
+                    >
+                        View Event
+                    </button>
                 </div>
             </div>
         </div>
