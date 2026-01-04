@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
                         0
                     ) as tickets_sold,
                     COALESCE(
-                        (SELECT COUNT(*) FROM bookings WHERE event_id = e.id AND status = 'confirmed' AND is_free = true),
+                        (SELECT COUNT(*) FROM bookings WHERE event_id = e.id AND status = 'confirmed' AND amount = 0),
                         0
                     ) as guests_registered
                 FROM events e
