@@ -79,9 +79,18 @@ function EditEventForm({ eventId }: { eventId: string }) {
     const fetchEventData = async () => {
         try {
             const res = await fetch(`/api/events/user?id=${eventId}`);
-            if (!res.ok) throw new Error('Failed to load event');
+
+            console.log('Fetch response status:', res.status);
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error('API Error:', res.status, errorText);
+                throw new Error(`Failed to load event (${res.status}): ${errorText}`);
+            }
 
             const data = await res.json();
+            console.log('Event data received:', data);
+
             if (data.event) {
                 const event = data.event;
 
@@ -125,8 +134,8 @@ function EditEventForm({ eventId }: { eventId: string }) {
                 setGuestsRegistered(event.guests_registered || 0);
             }
         } catch (err) {
-            console.error(err);
-            setStatusMessage('❌ Could not load event data');
+            console.error('Failed to fetch event:', err);
+            setStatusMessage(`❌ Could not load event data: ${err instanceof Error ? err.message : 'Unknown error'}`);
         } finally {
             setIsLoading(false);
         }
