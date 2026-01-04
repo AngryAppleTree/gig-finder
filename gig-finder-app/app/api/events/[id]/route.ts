@@ -3,10 +3,10 @@ import { getPool } from '@/lib/db';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const eventId = params.id;
+        const { id: eventId } = await params;
 
         const client = await getPool().connect();
 

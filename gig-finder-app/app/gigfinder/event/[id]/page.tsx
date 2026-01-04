@@ -6,19 +6,23 @@ import { Gig } from '@/components/gigfinder/types';
 import { BookingModal } from '@/components/gigfinder/BookingModal';
 import { Footer } from '@/components/gigfinder/Footer';
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
+export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const [event, setEvent] = useState<Gig | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [eventId, setEventId] = useState<string>('');
 
     useEffect(() => {
-        fetchEvent();
-    }, [params.id]);
+        params.then(p => {
+            setEventId(p.id);
+            fetchEvent(p.id);
+        });
+    }, []);
 
-    const fetchEvent = async () => {
+    const fetchEvent = async (id: string) => {
         try {
-            const response = await fetch(`/api/events/${params.id}`);
+            const response = await fetch(`/api/events/${id}`);
             const data = await response.json();
 
             if (!response.ok) {
