@@ -54,7 +54,7 @@ export async function GET(req: Request) {
         `);
         const totalCount = parseInt(countRes.rows[0].count);
 
-        // Fetch events with unapproved first, then by date
+        // Fetch events with unverified first, then by date
         const res = await client.query(`
             SELECT 
                 e.*,
@@ -63,7 +63,7 @@ export async function GET(req: Request) {
             LEFT JOIN venues v ON e.venue_id = v.id
             WHERE e.date >= NOW() - INTERVAL '7 days'
             ORDER BY 
-                CASE WHEN e.approved = false THEN 0 ELSE 1 END,
+                CASE WHEN e.verified = false THEN 0 ELSE 1 END,
                 e.date ASC
             LIMIT $1 OFFSET $2
         `, [limit, offset]);
