@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Gig } from '@/components/gigfinder/types';
 import { BookingModal } from '@/components/gigfinder/BookingModal';
 import { Footer } from '@/components/gigfinder/Footer';
+import '../gigfinder.css';
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -207,42 +208,25 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     )}
 
                     {/* Action Buttons */}
-                    <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
-                        {/* Primary Action Button */}
-                        {(event.isInternalTicketing || event.sellTickets) && event.source === 'manual' ? (
-                            <button
-                                className="btn-buy"
-                                style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%', fontSize: '1.1rem', padding: '1rem' }}
-                                onClick={handleBooking}
-                            >
-                                {event.sellTickets ? 'Buy Tickets' : 'Get on Guest List'}
-                            </button>
-                        ) : (event.ticketUrl && event.ticketUrl !== '#' ? (
-                            <a
-                                href={event.ticketUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn-buy"
-                                style={{ width: '100%', display: 'block', textAlign: 'center', fontSize: '1.1rem', padding: '1rem' }}
-                            >
-                                Get Tickets
-                            </a>
-                        ) : null)}
-
-                        {/* Share Button */}
+                    {(event.isInternalTicketing || event.sellTickets) && event.source === 'manual' ? (
                         <button
-                            className="btn-primary"
-                            onClick={handleShare}
-                            style={{ width: '100%', fontSize: '1rem', padding: '0.75rem' }}
+                            className="btn-buy"
+                            style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%', fontSize: '1.1rem', padding: '1rem' }}
+                            onClick={handleBooking}
                         >
-                            📤 Share This Event
+                            {event.sellTickets ? 'Buy Tickets' : 'Get on Guest List'}
                         </button>
-                    </div>
-                </div>
-
-                {/* Back Button */}
-                <div className="nav-buttons" style={{ marginTop: '2rem' }}>
-                    <button className="btn-back" onClick={() => router.back()}>← Back to Results</button>
+                    ) : (event.ticketUrl && event.ticketUrl !== '#' ? (
+                        <a
+                            href={event.ticketUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-buy"
+                            style={{ width: '100%', display: 'block', textAlign: 'center', fontSize: '1.1rem', padding: '1rem' }}
+                        >
+                            Get Tickets
+                        </a>
+                    ) : null)}
                 </div>
             </main>
 
