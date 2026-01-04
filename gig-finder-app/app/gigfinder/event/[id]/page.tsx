@@ -131,112 +131,109 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <main className="container" style={{ paddingTop: '2rem' }}>
-                <section className="step active">
-                    {/* Verification Badge */}
-                    {event.source !== 'manual' || event.isVerified ? (
-                        <div className="badge-verified" style={{ marginBottom: '1rem' }}>✓ Verified</div>
-                    ) : (
-                        <div className="badge-unverified" style={{ marginBottom: '1rem' }} title="This gig was posted by the community and is awaiting admin verification.">⚠ Community Post</div>
-                    )}
-
-                    {/* Event Image */}
-                    {event.imageUrl && (
-                        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                            <img
-                                src={event.imageUrl}
-                                alt={event.name}
-                                style={{
-                                    width: '100%',
-                                    maxWidth: '600px',
-                                    height: 'auto',
-                                    borderRadius: '8px',
-                                    border: '2px solid var(--color-border)'
-                                }}
-                            />
-                        </div>
-                    )}
-
-                    {/* Event Title */}
-                    <h2 className="step-title" style={{ marginBottom: '2rem' }}>{event.name}</h2>
-
-                    {/* Event Details */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
-                            <strong>📍 Venue:</strong> {locationText}
-                        </p>
-                        <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
-                            <strong>📅 Date:</strong> {event.date} {event.time && `at ${event.time}`}
-                        </p>
-                        <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
-                            <strong>💰 Price:</strong> {event.price}
-                        </p>
-                        {event.capacity && (
-                            <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
-                                <strong>👥 Capacity:</strong> {event.capacity}
-                            </p>
-                        )}
+                {/* Reuse exact GigCard layout */}
+                <div className="gig-card">
+                    <div className="gig-image">
+                        <img
+                            src={event.imageUrl || '/no-photo.png'}
+                            alt={`${event.name} at ${event.venue} on ${event.date}`}
+                            onError={(e) => e.currentTarget.src = '/no-photo.png'}
+                            style={{ height: '200px', width: '100%', objectFit: 'cover' }}
+                        />
                     </div>
+                    <div className="gig-details">
+                        {event.source !== 'manual' || event.isVerified ? (
+                            <div className="badge-verified">✓ Verified</div>
+                        ) : (
+                            <div className="badge-unverified" title="This gig was posted by the community and is awaiting admin verification.">⚠ Community Post</div>
+                        )}
+                        <h3 className="gig-name">{event.name}</h3>
+                        <div className="gig-info">
+                            <p className="gig-location">📍 {locationText}</p>
+                            <p className="gig-date">📅 {event.date} at {event.time}</p>
+                            <p className="gig-price">🎟️ {event.price}</p>
+                            {event.capacity && <p>👥 Capacity: {event.capacity}</p>}
 
-                    {/* Description */}
-                    {event.description && (
-                        <div style={{ marginBottom: '2rem' }}>
-                            <h3 style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontSize: '1.5rem' }}>About This Event</h3>
-                            <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: 'var(--color-text)' }}>
-                                {event.description}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Presale Info */}
-                    {event.presale_price && (
-                        <div style={{
-                            background: 'rgba(255,51,102,0.1)',
-                            border: '2px solid var(--color-secondary)',
-                            borderRadius: '8px',
-                            padding: '1.5rem',
-                            marginBottom: '2rem'
-                        }}>
-                            <p style={{
-                                color: 'var(--color-secondary)',
-                                fontWeight: 'bold',
-                                fontSize: '1.3rem',
-                                marginBottom: '0.5rem'
-                            }}>
-                                💿 Presale: £{typeof event.presale_price === 'number' ? event.presale_price.toFixed(2) : parseFloat(event.presale_price).toFixed(2)}
-                            </p>
-                            {event.presale_caption && (
-                                <p style={{
-                                    fontSize: '1rem',
-                                    fontStyle: 'italic',
-                                    color: 'var(--color-text-dim)'
+                            {/* Description - NEW field for detail page */}
+                            {event.description && (
+                                <div style={{
+                                    marginTop: '1rem',
+                                    paddingTop: '1rem',
+                                    borderTop: '1px solid var(--color-border)'
                                 }}>
-                                    {event.presale_caption}
-                                </p>
+                                    <p style={{
+                                        fontSize: '0.9rem',
+                                        lineHeight: '1.5',
+                                        color: 'var(--color-text)'
+                                    }}>
+                                        {event.description}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Presale info */}
+                            {event.presale_price && (
+                                <div style={{
+                                    marginTop: '0.5rem',
+                                    padding: '0.5rem',
+                                    background: 'rgba(255, 51, 102, 0.1)',
+                                    border: '1px solid var(--color-primary)',
+                                    borderRadius: '4px'
+                                }}>
+                                    <p style={{
+                                        color: 'var(--color-secondary)',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.9rem',
+                                        margin: '0 0 0.25rem 0'
+                                    }}>
+                                        💿 Presale: £{typeof event.presale_price === 'number' ? event.presale_price.toFixed(2) : parseFloat(event.presale_price).toFixed(2)}
+                                    </p>
+                                    {event.presale_caption && (
+                                        <p style={{
+                                            color: '#ccc',
+                                            fontSize: '0.75rem',
+                                            margin: 0,
+                                            fontStyle: 'italic'
+                                        }}>
+                                            {event.presale_caption}
+                                        </p>
+                                    )}
+                                </div>
                             )}
                         </div>
-                    )}
 
-                    {/* Action Button */}
-                    {(event.isInternalTicketing || event.sellTickets) && event.source === 'manual' ? (
-                        <button
-                            className="btn-buy"
-                            style={{ width: '100%', fontSize: '1.2rem', padding: '1rem' }}
-                            onClick={handleBooking}
-                        >
-                            {event.sellTickets ? 'Buy Tickets' : 'Get on Guest List'}
-                        </button>
-                    ) : (event.ticketUrl && event.ticketUrl !== '#' ? (
-                        <a
-                            href={event.ticketUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-buy"
-                            style={{ width: '100%', display: 'block', textAlign: 'center', fontSize: '1.2rem', padding: '1rem' }}
-                        >
-                            Get Tickets
-                        </a>
-                    ) : null)}
-                </section>
+                        {/* Action button - shows actual action instead of "View Event" */}
+                        <div style={{ marginTop: '1rem' }}>
+                            {(event.isInternalTicketing || event.sellTickets) && event.source === 'manual' ? (
+                                <button
+                                    className="btn-buy"
+                                    style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%' }}
+                                    onClick={handleBooking}
+                                >
+                                    {event.sellTickets ? 'Buy Tickets' : 'Get on Guest List'}
+                                </button>
+                            ) : (event.ticketUrl && event.ticketUrl !== '#' ? (
+                                <a
+                                    href={event.ticketUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn-buy"
+                                    style={{ width: '100%', display: 'block', textAlign: 'center' }}
+                                >
+                                    Get Tickets
+                                </a>
+                            ) : (
+                                <button
+                                    className="btn-buy"
+                                    style={{ backgroundColor: '#888', color: 'white', border: 'none', cursor: 'default', width: '100%' }}
+                                    disabled
+                                >
+                                    No Tickets Available
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </main>
 
             <BookingModal />
