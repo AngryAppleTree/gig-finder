@@ -13,6 +13,7 @@ export async function GET() {
                 city,
                 capacity
             FROM venues
+            WHERE approved = true
             ORDER BY name ASC
         `);
 

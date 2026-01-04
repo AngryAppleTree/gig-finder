@@ -71,7 +71,8 @@ function ResultsPageContent() {
                 capacity: e.capacity,
                 distance: e.distance,
                 presale_price: e.presale_price,
-                presale_caption: e.presale_caption
+                presale_caption: e.presale_caption,
+                isVerified: e.isVerified  // Include verification status
             }));
 
             // Apply client-side filters
