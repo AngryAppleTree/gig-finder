@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Gig } from '@/components/gigfinder/types';
 import { BookingModal } from '@/components/gigfinder/BookingModal';
 import { Footer } from '@/components/gigfinder/Footer';
-import '../gigfinder.css';
+import '../../gigfinder.css';
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
