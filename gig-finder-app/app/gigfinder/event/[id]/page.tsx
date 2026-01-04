@@ -12,11 +12,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     const [event, setEvent] = useState<Gig | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [eventId, setEventId] = useState<string>('');
 
     useEffect(() => {
         params.then(p => {
-            setEventId(p.id);
             fetchEvent(p.id);
         });
     }, []);
@@ -64,7 +62,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     url: url
                 });
             } catch (err) {
-                // User cancelled or share failed
                 copyToClipboard(url);
             }
         } else {
@@ -133,73 +130,85 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
             </div>
 
-            <main className="container" style={{ paddingTop: '2rem', maxWidth: '800px' }}>
-                <div className="gig-card" style={{ marginBottom: '2rem' }}>
+            <main className="container" style={{ paddingTop: '2rem' }}>
+                <section className="step active">
                     {/* Verification Badge */}
                     {event.source !== 'manual' || event.isVerified ? (
-                        <div className="badge-verified">✓ Verified</div>
+                        <div className="badge-verified" style={{ marginBottom: '1rem' }}>✓ Verified</div>
                     ) : (
-                        <div className="badge-unverified" title="This gig was posted by the community and is awaiting admin verification.">⚠ Community Post</div>
+                        <div className="badge-unverified" style={{ marginBottom: '1rem' }} title="This gig was posted by the community and is awaiting admin verification.">⚠ Community Post</div>
                     )}
 
                     {/* Event Image */}
                     {event.imageUrl && (
-                        <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
                             <img
                                 src={event.imageUrl}
                                 alt={event.name}
                                 style={{
                                     width: '100%',
+                                    maxWidth: '600px',
                                     height: 'auto',
-                                    maxHeight: '400px',
-                                    objectFit: 'cover',
-                                    borderRadius: '8px'
+                                    borderRadius: '8px',
+                                    border: '2px solid var(--color-border)'
                                 }}
                             />
                         </div>
                     )}
 
-                    {/* Event Details */}
-                    <h2 className="gig-name" style={{ fontSize: '2rem', marginBottom: '1rem' }}>{event.name}</h2>
+                    {/* Event Title */}
+                    <h2 className="step-title" style={{ marginBottom: '2rem' }}>{event.name}</h2>
 
-                    <div className="gig-info" style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>
-                        <p className="gig-location">📍 {locationText}</p>
-                        <p className="gig-date">📅 {event.date} {event.time && `at ${event.time}`}</p>
-                        <p className="gig-price">💰 {event.price}</p>
-                        {event.capacity && <p>👥 Capacity: {event.capacity}</p>}
+                    {/* Event Details */}
+                    <div style={{ marginBottom: '2rem' }}>
+                        <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
+                            <strong>📍 Venue:</strong> {locationText}
+                        </p>
+                        <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
+                            <strong>📅 Date:</strong> {event.date} {event.time && `at ${event.time}`}
+                        </p>
+                        <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
+                            <strong>💰 Price:</strong> {event.price}
+                        </p>
+                        {event.capacity && (
+                            <p style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>
+                                <strong>👥 Capacity:</strong> {event.capacity}
+                            </p>
+                        )}
                     </div>
 
                     {/* Description */}
                     {event.description && (
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            <h3 style={{ color: 'var(--color-primary)', marginBottom: '0.5rem' }}>About</h3>
-                            <p style={{ color: 'var(--color-text)', lineHeight: '1.6' }}>{event.description}</p>
+                        <div style={{ marginBottom: '2rem' }}>
+                            <h3 style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontSize: '1.5rem' }}>About This Event</h3>
+                            <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: 'var(--color-text)' }}>
+                                {event.description}
+                            </p>
                         </div>
                     )}
 
                     {/* Presale Info */}
                     {event.presale_price && (
                         <div style={{
-                            background: 'linear-gradient(135deg, rgba(255,51,102,0.1), rgba(255,51,102,0.05))',
+                            background: 'rgba(255,51,102,0.1)',
                             border: '2px solid var(--color-secondary)',
                             borderRadius: '8px',
-                            padding: '1rem',
-                            marginBottom: '1.5rem'
+                            padding: '1.5rem',
+                            marginBottom: '2rem'
                         }}>
                             <p style={{
                                 color: 'var(--color-secondary)',
                                 fontWeight: 'bold',
-                                fontSize: '1.1rem',
-                                margin: '0 0 0.25rem 0'
+                                fontSize: '1.3rem',
+                                marginBottom: '0.5rem'
                             }}>
                                 💿 Presale: £{typeof event.presale_price === 'number' ? event.presale_price.toFixed(2) : parseFloat(event.presale_price).toFixed(2)}
                             </p>
                             {event.presale_caption && (
                                 <p style={{
-                                    color: '#ccc',
-                                    fontSize: '0.9rem',
-                                    margin: 0,
-                                    fontStyle: 'italic'
+                                    fontSize: '1rem',
+                                    fontStyle: 'italic',
+                                    color: 'var(--color-text-dim)'
                                 }}>
                                     {event.presale_caption}
                                 </p>
@@ -207,11 +216,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         </div>
                     )}
 
-                    {/* Action Buttons */}
+                    {/* Action Button */}
                     {(event.isInternalTicketing || event.sellTickets) && event.source === 'manual' ? (
                         <button
                             className="btn-buy"
-                            style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%', fontSize: '1.1rem', padding: '1rem' }}
+                            style={{ width: '100%', fontSize: '1.2rem', padding: '1rem' }}
                             onClick={handleBooking}
                         >
                             {event.sellTickets ? 'Buy Tickets' : 'Get on Guest List'}
@@ -222,12 +231,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn-buy"
-                            style={{ width: '100%', display: 'block', textAlign: 'center', fontSize: '1.1rem', padding: '1rem' }}
+                            style={{ width: '100%', display: 'block', textAlign: 'center', fontSize: '1.2rem', padding: '1rem' }}
                         >
                             Get Tickets
                         </a>
                     ) : null)}
-                </div>
+                </section>
             </main>
 
             <BookingModal />
