@@ -31,9 +31,9 @@ function EditEventForm({ eventId }: { eventId: string }) {
     const [newVenueCity, setNewVenueCity] = useState('');
     const [newVenueCapacity, setNewVenueCapacity] = useState('');
 
-    // Booking counts for validation
-    const [ticketsSold, setTicketsSold] = useState(0);
-    const [guestsRegistered, setGuestsRegistered] = useState(0);
+    // Booking count for validation
+    const [bookingsCount, setBookingsCount] = useState(0);
+
 
     // Form data state
     const [formData, setFormData] = useState({
@@ -127,11 +127,9 @@ function EditEventForm({ eventId }: { eventId: string }) {
                     setPosterBase64(event.image_url);
                 }
 
-                // Fetch booking counts
-                setTicketsSold(event.tickets_sold || 0);
-                // For guest list, we'd need to add a bookings count API
-                // For now, assume if is_internal_ticketing is true and there are bookings, we can't disable
-                setGuestsRegistered(event.guests_registered || 0);
+                // Set booking count
+                setBookingsCount(event.bookings_count || 0);
+
             }
         } catch (err) {
             console.error('Failed to fetch event:', err);
@@ -274,9 +272,9 @@ function EditEventForm({ eventId }: { eventId: string }) {
         return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
     }
 
-    // Check if ticketing can be disabled
-    const canDisableGuestList = guestsRegistered === 0;
-    const canDisableSellTickets = ticketsSold === 0;
+    // Check if ticketing can be disabled (any bookings exist)
+    const canDisableTicketing = bookingsCount === 0;
+
 
     return (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -601,21 +599,21 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
                 {/* Free Guest List */}
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginBottom: '0.5rem', borderRadius: '4px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: canDisableGuestList ? 'pointer' : 'not-allowed', opacity: canDisableGuestList ? 1 : 0.6 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: canDisableTicketing ? 'pointer' : 'not-allowed', opacity: canDisableTicketing ? 1 : 0.6 }}>
                         <input
                             type="checkbox"
                             name="is_internal_ticketing"
                             value="true"
                             style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }}
                             defaultChecked={formData.is_internal_ticketing}
-                            disabled={!canDisableGuestList && formData.is_internal_ticketing}
+                            disabled={!canDisableTicketing && formData.is_internal_ticketing}
                         />
                         <div style={{ textAlign: 'left' }}>
                             <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Guest List (Free)</span>
                             <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book free tickets directly on GigFinder.</span>
-                            {!canDisableGuestList && formData.is_internal_ticketing && (
+                            {!canDisableTicketing && formData.is_internal_ticketing && (
                                 <span style={{ fontSize: '0.8rem', color: '#f88', display: 'block', marginTop: '0.25rem' }}>
-                                    ⚠️ Cannot disable - {guestsRegistered} guest{guestsRegistered !== 1 ? 's' : ''} already registered
+                                    ⚠️ Cannot disable - {bookingsCount} booking{bookingsCount !== 1 ? 's' : ''} exist
                                 </span>
                             )}
                         </div>
@@ -624,21 +622,21 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
                 {/* Paid Ticket Sales */}
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', borderRadius: '4px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: canDisableSellTickets ? 'pointer' : 'not-allowed', opacity: canDisableSellTickets ? 1 : 0.6 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: canDisableTicketing ? 'pointer' : 'not-allowed', opacity: canDisableTicketing ? 1 : 0.6 }}>
                         <input
                             type="checkbox"
                             name="sell_tickets"
                             value="true"
                             style={{ width: '24px', height: '24px', accentColor: 'var(--color-secondary)' }}
                             defaultChecked={formData.sell_tickets}
-                            disabled={!canDisableSellTickets && formData.sell_tickets}
+                            disabled={!canDisableTicketing && formData.sell_tickets}
                         />
                         <div style={{ textAlign: 'left' }}>
                             <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-secondary)' }}>Sell Tickets (Paid)</span>
                             <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Sell paid tickets via Stripe. Set a ticket price above.</span>
-                            {!canDisableSellTickets && formData.sell_tickets && (
+                            {!canDisableTicketing && formData.sell_tickets && (
                                 <span style={{ fontSize: '0.8rem', color: '#f88', display: 'block', marginTop: '0.25rem' }}>
-                                    ⚠️ Cannot disable - {ticketsSold} ticket{ticketsSold !== 1 ? 's' : ''} already sold
+                                    ⚠️ Cannot disable - {bookingsCount} booking{bookingsCount !== 1 ? 's' : ''} exist
                                 </span>
                             )}
                         </div>

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         const client = await getPool().connect();
 
         if (eventId) {
-            // Fetch single event with booking counts
+            // Fetch single event with total booking count
             const result = await client.query(
                 `SELECT 
                     e.*,
@@ -27,11 +27,7 @@ export async function GET(request: NextRequest) {
                     COALESCE(
                         (SELECT COUNT(*) FROM bookings WHERE event_id = e.id AND status = 'confirmed'),
                         0
-                    ) as tickets_sold,
-                    COALESCE(
-                        (SELECT COUNT(*) FROM bookings WHERE event_id = e.id AND status = 'confirmed' AND amount = 0),
-                        0
-                    ) as guests_registered
+                    ) as bookings_count
                 FROM events e
                 LEFT JOIN venues v ON e.venue_id = v.id
                 WHERE e.id = $1 AND e.user_id = $2`,
