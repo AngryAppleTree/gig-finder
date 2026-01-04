@@ -60,7 +60,7 @@ export async function GET(
                     month: 'short'
                 }),
                 time: e.date.toString().match(/\d{2}:\d{2}/)?.[0] || 'TBA',
-                priceVal: parseFloat(e.price) || 0,
+                priceVal: parseFloat(e.price?.toString().replace(/[^\d.]/g, '')) || 0,
                 price: e.price,
                 vibe: e.genre || 'all',
                 ticketUrl: e.ticket_url || null,

@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
             dateObj: e.date, // Timestamp
             date: new Date(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
             time: e.date.toString().match(/\d{2}:\d{2}/)?.[0] || 'TBA', // Extract time from timestamp
-            priceVal: parseFloat(e.price) || 0,
+            priceVal: parseFloat(e.price?.toString().replace(/[^\d.]/g, '')) || 0,
             price: e.price,
             vibe: e.genre ? mapGenreToVibe([{ name: e.genre }]) : 'all',
             ticketUrl: e.ticket_url || null, // Use DB ticket_url or null
