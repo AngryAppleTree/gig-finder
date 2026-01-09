@@ -1,0 +1,65 @@
+{
+  "cookies": [
+    {
+      "name": "__clerk_redirect_count",
+      "value": "3",
+      "domain": "localhost",
+      "path": "/admin",
+      "expires": 1767970440.640173,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__cf_bm",
+      "value": "heTrqIzG7b1zm9DhetHMTqgRT6KgjXQnXGgMEElE91s-1767970438-1.0.1.1-H0EVC1qg04mJ6VRkhWkvRVkTOG4IfEjMnUO3ozkjzazvRcoYcFarYWAgG21ru4avHkRwffyybVin.q70a57AvBk7nNoXXN2vYZKH1idCYLg",
+      "domain": ".assured-urchin-14.clerk.accounts.dev",
+      "path": "/",
+      "expires": 1767972238.374285,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_cfuvid",
+      "value": "xBoPLkxcMfLs5CtfDkBUCi8QeGHIZQmLqExV26HOeo4-1767970438399-0.0.1.1-604800000",
+      "domain": ".assured-urchin-14.clerk.accounts.dev",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "gigfinder_admin",
+      "value": "true",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1768056839.614122,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "__clerk_db_jwt_xFwSn4ul",
+      "value": "dvb_381cIjIHCLCnpuGHSHIPVmhTseY",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1799506439,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__clerk_db_jwt",
+      "value": "dvb_381cIjIHCLCnpuGHSHIPVmhTseY",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1799506439,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}
