@@ -1,0 +1,67 @@
+.container {
+    min-height: 100vh;
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
+.header {
+    padding: 1rem;
+    text-align: left;
+}
+
+.mainTitle {
+    position: relative;
+    margin: 0;
+    font-size: 3rem;
+}
+
+.main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.cancelledCard {
+    background: var(--color-surface);
+    padding: 3rem 2rem;
+    border: 3px solid var(--color-border);
+    box-shadow: 8px 8px 0 var(--color-border);
+}
+
+.icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.title {
+    font-family: var(--font-primary);
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+}
+
+.message {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: #ccc;
+}
+
+.infoBox {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.infoText {
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.backButton {
+    display: inline-block;
+    text-decoration: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
