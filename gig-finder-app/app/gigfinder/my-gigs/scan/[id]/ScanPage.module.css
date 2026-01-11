@@ -1,0 +1,128 @@
+/* Scanner Page Styles */
+
+.container {
+    background: #000;
+    min-height: 100vh;
+    padding: 1rem;
+    color: #fff;
+    font-family: sans-serif;
+}
+
+.header {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.backLink {
+    color: #aaa;
+    text-decoration: none;
+}
+
+.backLink:hover {
+    color: #fff;
+}
+
+.title {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.scannerViewport {
+    background: #111;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+.readerContainer {
+    width: 100%;
+}
+
+/* Result Overlay */
+.resultOverlay {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50vh;
+    padding: 2rem;
+    border-top: 4px solid #fff;
+    text-align: center;
+    box-shadow: 0 -5px 20px black;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.resultOverlay.success {
+    background: #0a3d0a;
+}
+
+.resultOverlay.duplicate {
+    background: #520;
+}
+
+.resultOverlay.error {
+    background: #411;
+}
+
+.resultIcon {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+
+.resultTitle {
+    font-size: 2rem;
+    margin: 0 0 10px 0;
+    color: #fff;
+}
+
+.guestName {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+    color: #eee;
+}
+
+.resultMessage {
+    color: #aaa;
+    margin: 0 0 20px 0;
+}
+
+.scanNextButton {
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.scanNextButton:hover {
+    transform: scale(1.05);
+}
+
+.scanNextButton:active {
+    transform: scale(0.98);
+}
+
+/* Global overrides for html5-qrcode library */
+:global(#reader__scan_region) {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+:global(#reader__dashboard_section_csr button) {
+    color: black !important;
+    background: white !important;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 10px;
+}
