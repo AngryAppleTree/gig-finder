@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import styles from './contact.module.css';
+import styles from '../static-pages.module.css';
+import '../static-pages-global.css';
 import { Footer } from '../../components/gigfinder/Footer';
 
 export default function ContactPage() {
@@ -51,8 +52,8 @@ export default function ContactPage() {
             <main>
                 <h1 className={styles.heroTitle}>📧 Contact Us</h1>
 
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <a href="/gigfinder" className={styles.btnSubmit} style={{ display: 'inline-block', textDecoration: 'none', padding: '0.75rem 1.5rem' }}>
+                <div className={styles.backButtonWrapper}>
+                    <a href="/gigfinder" className={styles.backButton}>
                         ← Back to GigFinder
                     </a>
                 </div>
@@ -67,7 +68,7 @@ export default function ContactPage() {
                     )}
 
                     {status === 'error' && (
-                        <div className={styles.successMessage} style={{ background: '#fee', border: '1px solid #fcc' }}>
+                        <div className={styles.errorMessage}>
                             ❌ {errorMessage}
                         </div>
                     )}
