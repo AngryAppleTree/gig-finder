@@ -1,0 +1,124 @@
+/* Static Pages Global CSS */
+/* Global styles for Footer and other shared elements on static pages */
+
+/* 
+ * ⚠️ MAINTENANCE NOTE: Footer Styles Duplication
+ * 
+ * Footer styles are duplicated in TWO locations:
+ * 1. app/gigfinder/gigfinder.css (for GigFinder pages)
+ * 2. app/static-pages-global.css (THIS FILE - for static pages)
+ * 
+ * WHY: Static pages don't load gigfinder.css, so Footer needs its own styles.
+ * 
+ * IF YOU CHANGE FOOTER STYLES: Update BOTH files to keep Footer consistent.
+ * IF YOU CHANGE FOOTER CONTENT: Only update /components/gigfinder/Footer.tsx
+ */
+
+/* Footer Styles - copied from gigfinder.css for static pages */
+.footer {
+    background: #0a0a0a;
+    padding: 3rem 2rem;
+    border-top: 4px solid #ff3366;
+    margin-top: 3rem;
+    width: 100%;
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.footer .logo-container {
+    margin-bottom: 0;
+}
+
+.main-logo {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(255, 51, 102, 0.3));
+}
+
+.powered-by {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.powered-text {
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    color: #cccccc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.angry-apple-text {
+    font-family: 'Arial Black', 'Arial Bold', sans-serif;
+    font-size: 1.5rem;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 3px 3px 0 #ff3366;
+    position: relative;
+    padding: 0.25rem 0.5rem;
+    background: #1a1a1a;
+    border: 3px solid #ff3366;
+    box-shadow: 5px 5px 0 rgba(255, 51, 102, 0.3);
+}
+
+.footer-bottom {
+    max-width: 800px;
+    margin: 2rem auto 0;
+    padding-top: 2rem;
+    border-top: 1px solid #333333;
+    text-align: center;
+    color: #cccccc;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+}
+
+.footer-bottom a {
+    color: #cccccc;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-bottom a:hover {
+    color: #ff3366;
+}
+
+/* Responsive Footer */
+@media (max-width: 768px) {
+    .logo-container {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .main-logo {
+        max-width: 180px;
+    }
+
+    .angry-apple-text {
+        font-size: 1.2rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}

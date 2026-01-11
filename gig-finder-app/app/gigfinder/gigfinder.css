@@ -1,5 +1,18 @@
 /* GigFinder - Accessible Punk Aesthetic */
 
+/* 
+ * ⚠️ MAINTENANCE NOTE: Footer Styles Duplication
+ * 
+ * Footer styles are duplicated in TWO locations:
+ * 1. app/gigfinder/gigfinder.css (THIS FILE - for GigFinder pages)
+ * 2. app/static-pages-global.css (for static pages like /terms, /privacy)
+ * 
+ * WHY: Static pages don't load gigfinder.css, so Footer needs its own styles.
+ * 
+ * IF YOU CHANGE FOOTER STYLES: Update BOTH files to keep Footer consistent.
+ * IF YOU CHANGE FOOTER CONTENT: Only update /components/gigfinder/Footer.tsx
+ */
+
 :root {
     /* High-contrast accessible colors (WCAG AA compliant) */
     --color-bg: #0a0a0a;
