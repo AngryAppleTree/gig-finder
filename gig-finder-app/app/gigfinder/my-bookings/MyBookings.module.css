@@ -1,0 +1,176 @@
+/* My Bookings Page CSS Module */
+
+/* Container */
+.pageContainer {
+    padding-bottom: 100px;
+}
+
+/* Loading State */
+.loadingContainer {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+/* Header */
+.header {
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+}
+
+.title {
+    position: relative;
+    margin: 0 0 2rem 0;
+    font-size: 3rem;
+    top: auto;
+    left: auto;
+}
+
+.navButtons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.backButton {
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+/* Main Content */
+.mainContainer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Error Message */
+.errorMessage {
+    color: red;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Empty State */
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    background: var(--color-surface);
+    border: 3px solid var(--color-border);
+}
+
+.emptyTitle {
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.emptyText {
+    margin-bottom: 2rem;
+}
+
+.emptyButton {
+    text-decoration: none;
+}
+
+/* Bookings List */
+.bookingsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Booking Card */
+.bookingCard {
+    background: var(--color-surface);
+    border: 3px solid var(--color-border);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 5px 5px 0 var(--color-primary);
+}
+
+.bookingCardRefunded {
+    opacity: 0.6;
+}
+
+/* Booking Header */
+.bookingHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.bookingInfo {
+    flex: 1;
+}
+
+.eventName {
+    font-family: var(--font-primary);
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.eventDetails {
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-secondary);
+}
+
+.ticketInfo {
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+/* Status Badge */
+.statusBadge {
+    padding: 0.3rem 0.6rem;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.statusConfirmed {
+    background: rgba(0, 255, 0, 0.2);
+    color: #0f0;
+    border: 2px solid #0f0;
+}
+
+.statusRefunded {
+    background: rgba(255, 0, 0, 0.2);
+    color: #f00;
+    border: 2px solid #f00;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.cancelButton {
+    border: 2px solid red;
+    color: red;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+/* Refund Message */
+.refundMessage {
+    color: #f00;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}

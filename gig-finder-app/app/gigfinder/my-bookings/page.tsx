@@ -4,6 +4,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import styles from './MyBookings.module.css';
 
 interface Booking {
     id: number;
@@ -48,88 +49,67 @@ export default function MyBookingsPage() {
 
     if (!isLoaded || loading) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+            <div className={styles.loadingContainer}>
                 <h2 className="step-title">Loading...</h2>
             </div>
         );
     }
 
     return (
-        <div style={{ paddingBottom: '100px' }}>
-            <header style={{ padding: '1rem', textAlign: 'center', position: 'relative' }}>
-                <h1 className="main-title" style={{ position: 'relative', margin: '0 0 2rem 0', fontSize: '3rem', top: 'auto', left: 'auto' }}>
+        <div className={styles.pageContainer}>
+            <header className={styles.header}>
+                <h1 className={`main-title ${styles.title}`}>
                     MY BOOKINGS
                 </h1>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                    <Link href="/gigfinder" className="btn-back" style={{ textDecoration: 'none', fontSize: '1rem' }}>
+                <div className={styles.navButtons}>
+                    <Link href="/gigfinder" className={`btn-back ${styles.backButton}`}>
                         ← FIND GIGS
                     </Link>
                 </div>
             </header>
 
-            <main className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1rem' }}>
-                {error && <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem' }}>{error}</div>}
+            <main className={`container ${styles.mainContainer}`}>
+                {error && <div className={styles.errorMessage}>{error}</div>}
 
                 {bookings.length === 0 && !error ? (
-                    <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--color-surface)', border: '3px solid var(--color-border)' }}>
-                        <h2 style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', marginBottom: '1rem' }}>No Bookings Yet</h2>
-                        <p style={{ marginBottom: '2rem' }}>You haven't booked any gigs yet.</p>
-                        <Link href="/gigfinder" className="btn-primary" style={{ textDecoration: 'none' }}>
+                    <div className={styles.emptyState}>
+                        <h2 className={styles.emptyTitle}>No Bookings Yet</h2>
+                        <p className={styles.emptyText}>You haven't booked any gigs yet.</p>
+                        <Link href="/gigfinder" className={`btn-primary ${styles.emptyButton}`}>
                             FIND GIGS
                         </Link>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className={styles.bookingsList}>
                         {bookings.map(booking => (
-                            <div key={booking.id} style={{
-                                background: 'var(--color-surface)',
-                                border: '3px solid var(--color-border)',
-                                padding: '1.5rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '1rem',
-                                boxShadow: '5px 5px 0 var(--color-primary)',
-                                opacity: booking.status === 'refunded' ? 0.6 : 1
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                                    <div>
-                                        <h3 style={{ fontFamily: 'var(--font-primary)', fontSize: '1.8rem', textTransform: 'uppercase', margin: 0, lineHeight: 1.1 }}>
+                            <div
+                                key={booking.id}
+                                className={`${styles.bookingCard} ${booking.status === 'refunded' ? styles.bookingCardRefunded : ''}`}
+                            >
+                                <div className={styles.bookingHeader}>
+                                    <div className={styles.bookingInfo}>
+                                        <h3 className={styles.eventName}>
                                             {booking.event_name}
                                         </h3>
-                                        <div style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', marginTop: '0.5rem', fontFamily: 'var(--font-secondary)' }}>
+                                        <div className={styles.eventDetails}>
                                             {new Date(booking.date).toLocaleDateString()} @ {booking.venue}
                                         </div>
-                                        <div style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+                                        <div className={styles.ticketInfo}>
                                             {booking.quantity} ticket{booking.quantity > 1 ? 's' : ''}
                                             {booking.price_paid && ` • £${booking.price_paid.toFixed(2)}`}
                                         </div>
                                     </div>
-                                    <div style={{
-                                        background: booking.status === 'confirmed' ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.2)',
-                                        color: booking.status === 'confirmed' ? '#0f0' : '#f00',
-                                        padding: '0.3rem 0.6rem',
-                                        fontFamily: 'var(--font-primary)',
-                                        textTransform: 'uppercase',
-                                        fontSize: '0.8rem',
-                                        border: `2px solid ${booking.status === 'confirmed' ? '#0f0' : '#f00'}`
-                                    }}>
+                                    <div className={`${styles.statusBadge} ${booking.status === 'confirmed' ? styles.statusConfirmed : styles.statusRefunded}`}>
                                         {booking.status}
                                     </div>
                                 </div>
 
                                 {booking.status === 'confirmed' && booking.price_paid && booking.price_paid > 0 && (
-                                    <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                                    <div className={styles.actions}>
                                         <Link
                                             href={`/gigfinder/my-bookings/cancel/${booking.id}`}
-                                            className="btn-back"
-                                            style={{
-                                                border: '2px solid red',
-                                                color: 'red',
-                                                padding: '0.5rem 1rem',
-                                                textDecoration: 'none',
-                                                fontSize: '0.9rem'
-                                            }}
+                                            className={`btn-back ${styles.cancelButton}`}
                                         >
                                             CANCEL & REFUND
                                         </Link>
@@ -137,7 +117,7 @@ export default function MyBookingsPage() {
                                 )}
 
                                 {booking.status === 'refunded' && (
-                                    <div style={{ color: '#f00', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                                    <div className={styles.refundMessage}>
                                         ✓ Refund processed - Money will be returned within 5-10 business days
                                     </div>
                                 )}
