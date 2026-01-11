@@ -4,6 +4,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import styles from './CancelBooking.module.css';
 
 interface Booking {
     id: number;
@@ -88,7 +89,7 @@ export default function CancelBookingPage() {
 
     if (!isLoaded || loading) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+            <div className={styles.loadingContainer}>
                 <h2 className="step-title">Loading...</h2>
             </div>
         );
@@ -96,9 +97,9 @@ export default function CancelBookingPage() {
 
     if (error || !booking) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', gap: '2rem', padding: '2rem' }}>
-                <h2 className="step-title" style={{ color: 'red' }}>{error || 'Booking not found'}</h2>
-                <Link href="/gigfinder/my-bookings" className="btn-primary" style={{ textDecoration: 'none' }}>
+            <div className={styles.errorContainer}>
+                <h2 className={`step-title ${styles.errorTitle}`}>{error || 'Booking not found'}</h2>
+                <Link href="/gigfinder/my-bookings" className={`btn-primary ${styles.errorButton}`}>
                     ← Back to My Bookings
                 </Link>
             </div>
@@ -106,68 +107,45 @@ export default function CancelBookingPage() {
     }
 
     return (
-        <div style={{ paddingBottom: '100px' }}>
-            <header style={{ padding: '1rem', textAlign: 'center' }}>
-                <h1 className="main-title" style={{ position: 'relative', margin: '0 0 2rem 0', fontSize: '3rem' }}>
+        <div className={styles.pageContainer}>
+            <header className={styles.header}>
+                <h1 className={`main-title ${styles.title}`}>
                     CANCEL BOOKING
                 </h1>
             </header>
 
-            <main className="container" style={{ maxWidth: '600px', margin: '0 auto', padding: '0 1rem' }}>
-                <div style={{
-                    background: 'var(--color-surface)',
-                    border: '3px solid var(--color-border)',
-                    padding: '2rem',
-                    boxShadow: '8px 8px 0 var(--color-primary)'
-                }}>
-                    <h2 style={{ fontFamily: 'var(--font-primary)', fontSize: '2rem', textTransform: 'uppercase', marginBottom: '1.5rem', color: 'var(--color-secondary)' }}>
+            <main className={`container ${styles.mainContainer}`}>
+                <div className={styles.bookingCard}>
+                    <h2 className={styles.eventTitle}>
                         {booking.event_name}
                     </h2>
 
-                    <div style={{ marginBottom: '2rem', lineHeight: 1.8 }}>
+                    <div className={styles.bookingDetails}>
                         <p><strong>Venue:</strong> {booking.venue}</p>
                         <p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p>
                         <p><strong>Tickets:</strong> {booking.quantity}</p>
                         <p><strong>Amount Paid:</strong> £{booking.price_paid.toFixed(2)}</p>
                     </div>
 
-                    <div style={{
-                        background: 'rgba(255,255,0,0.1)',
-                        border: '2px solid #ff0',
-                        padding: '1rem',
-                        borderRadius: '4px',
-                        marginBottom: '2rem'
-                    }}>
-                        <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                    <div className={styles.warningBox}>
+                        <p className={styles.warningText}>
                             ⚠️ <strong>Cancellation Policy:</strong><br />
                             You will receive a full refund of £{booking.price_paid.toFixed(2)}.<br />
                             The refund will appear in your account within 5-10 business days.
                         </p>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div className={styles.actions}>
                         <button
                             onClick={handleCancel}
                             disabled={cancelling}
-                            className="btn-primary"
-                            style={{
-                                flex: 1,
-                                background: 'red',
-                                borderColor: 'red',
-                                opacity: cancelling ? 0.5 : 1,
-                                cursor: cancelling ? 'not-allowed' : 'pointer'
-                            }}
+                            className={`btn-primary ${styles.cancelButton} ${cancelling ? styles.cancelButtonDisabled : ''}`}
                         >
                             {cancelling ? 'PROCESSING...' : 'CONFIRM CANCELLATION'}
                         </button>
                         <Link
                             href="/gigfinder/my-bookings"
-                            className="btn-back"
-                            style={{
-                                flex: 1,
-                                textDecoration: 'none',
-                                textAlign: 'center'
-                            }}
+                            className={`btn-back ${styles.keepButton}`}
                         >
                             KEEP BOOKING
                         </Link>
