@@ -1,0 +1,238 @@
+/* Static Pages CSS Module */
+/* Shared styles for Terms, Privacy, Contact, Pledge pages */
+
+/* Define fonts locally for static pages */
+/* These match the GigFinder aesthetic but are self-contained */
+:root {
+    --static-font-primary: 'Arial Black', 'Arial Bold', sans-serif;
+    --static-font-secondary: 'Courier New', monospace;
+    --static-color-bg: #0a0a0f;
+    --static-color-surface: #050508;
+    --static-color-primary: #ff3366;
+    --static-color-secondary: #00d4ff;
+    --static-color-text: #e0e0e0;
+    --static-color-text-dim: #aaa;
+    --static-color-border: #ff3366;
+}
+
+/* Container */
+.container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: var(--static-font-secondary);
+    background: var(--static-color-bg);
+    min-height: 100vh;
+    color: var(--static-color-text);
+}
+
+/* Hero Title */
+.heroTitle {
+    font-family: var(--static-font-primary);
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--static-color-primary);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Back Button Wrapper */
+.backButtonWrapper {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.backButton {
+    display: inline-block;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #ff3366, #ff6b9d);
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--static-font-primary);
+}
+
+.backButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 51, 102, 0.3);
+}
+
+/* Card Container */
+.card {
+    background: var(--static-color-surface);
+    border: 2px solid var(--static-color-border);
+    border-radius: 12px;
+    padding: 3rem;
+    margin-bottom: 2rem;
+}
+
+/* Content Wrapper */
+.contentWrapper {
+    color: var(--static-color-text);
+    line-height: 1.6;
+    font-family: var(--static-font-secondary);
+}
+
+/* Section Title (main heading in card) */
+.sectionTitle {
+    font-size: 1.5rem;
+    color: var(--static-color-primary);
+    margin-bottom: 1rem;
+    font-family: var(--static-font-primary);
+}
+
+/* Last Updated */
+.lastUpdated {
+    margin-bottom: 2rem;
+    font-family: var(--static-font-secondary);
+}
+
+/* Section Headings (h3) */
+.sectionHeading {
+    margin-top: 2rem;
+    color: var(--static-color-secondary);
+    margin-bottom: 1rem;
+    font-family: var(--static-font-primary);
+}
+
+/* Sub Headings (paragraphs with strong) */
+.subHeading {
+    color: white;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--static-font-secondary);
+}
+
+/* Lists */
+.bulletList {
+    list-style: none;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    font-family: var(--static-font-secondary);
+}
+
+.bulletItem {
+    margin-bottom: 0.5rem;
+}
+
+.numberedList {
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    font-family: var(--static-font-secondary);
+}
+
+.numberedItem {
+    margin-top: 0.5rem;
+}
+
+/* Highlight text */
+.highlight {
+    color: var(--static-color-primary);
+}
+
+/* Links */
+.link {
+    color: var(--static-color-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.link:hover {
+    color: var(--static-color-secondary);
+}
+
+/* Form elements (for contact page) */
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.label {
+    display: block;
+    color: var(--static-color-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-family: var(--static-font-primary);
+}
+
+.input,
+.textarea,
+.select {
+    width: 100%;
+    padding: 1rem;
+    background: var(--static-color-bg);
+    border: 2px solid var(--static-color-border);
+    border-radius: 8px;
+    color: var(--static-color-text);
+    font-family: var(--static-font-secondary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+    outline: none;
+    border-color: var(--static-color-secondary);
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+/* Submit Button */
+.btnSubmit {
+    background: linear-gradient(135deg, #ff3366, #ff6b9d);
+    color: white;
+    border: none;
+    padding: 1.5rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1.5rem;
+    font-family: var(--static-font-primary);
+}
+
+.btnSubmit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 51, 102, 0.3);
+}
+
+.btnSubmit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Success/Error Messages */
+.successMessage {
+    background: linear-gradient(135deg, #00d4ff, #00ffaa);
+    color: #050508;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    font-family: var(--static-font-primary);
+}
+
+.errorMessage {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c00;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    font-family: var(--static-font-primary);
+}
