@@ -42,7 +42,6 @@ export async function GET(req: Request) {
 
 import { Resend } from 'resend';
 import { generateTicketQR } from '@/lib/qr-generator';
-import { generateManualBookingEmail, getQRCodeAttachment } from '@/lib/email-templates';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -138,23 +137,36 @@ export async function POST(req: Request) {
         try {
             if (process.env.RESEND_API_KEY) {
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-
-                // Generate email HTML using template
-                const emailHTML = generateManualBookingEmail({
-                    customerName: name,
-                    eventName: event.name,
-                    venueName: event.venue_name,
-                    eventDate: new Date(event.date),
-                    bookingId,
-                    ticketQuantity,
-                });
+                const dateStr = new Date(event.date).toLocaleDateString();
 
                 await resend.emails.send({
                     from: fromAddress,
                     to: email,
                     subject: `Ticket Confirmed: ${event.name}`,
-                    html: emailHTML,
-                    attachments: [getQRCodeAttachment(bookingId, qrBuffer)]
+                    html: `
+                        <div style="font-family: sans-serif; color: #333;">
+                            <h1 style="color: #000;">You're on the list!</h1>
+                            <p>Hi ${name},</p>
+                            <p>Your spot for <strong>${event.name}</strong> is confirmed.</p>
+                            <p><strong>Venue:</strong> ${event.venue_name || 'TBA'}<br><strong>Date:</strong> ${dateStr}</p>
+                            
+                            <div style="text-align: center; margin: 20px 0;">
+                                <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
+                            </div>
+                            
+                            <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
+                            <hr>
+                            <p style="font-size: 12px; color: #888;">Sent via GigFinder</p>
+                        </div>
+                    `,
+                    attachments: [
+                        {
+                            filename: `ticket-${bookingId}.png`,
+                            content: qrBuffer,
+                            // @ts-ignore - content_id is valid in API but missing in some SDK types
+                            content_id: 'ticket-qr'
+                        }
+                    ]
                 });
             } else {
                 console.log(`[MOCK EMAIL] To: ${email} (Booking #${bookingId}). Set RESEND_API_KEY to see QR code email.`);
