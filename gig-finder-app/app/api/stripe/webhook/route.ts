@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
                         eventDate: new Date(eventData.date),
                         bookingId,
                         ticketQuantity: parseInt(quantity),
-                        ticketPrice: eventData.ticket_price,
+                        ticketPrice: parseFloat(eventData.ticket_price),
                         recordsQuantity: recordsQty,
                         recordsPrice: recordsPriceNum,
                         platformFee: platformFeeNum,
