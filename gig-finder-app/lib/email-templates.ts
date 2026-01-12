@@ -98,7 +98,7 @@ function generateBaseTicketEmail(data: TicketEmailData, additionalContent: strin
                 
                 <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                     <p style="margin: 0 0 15px 0; font-weight: bold; color: #667eea;">Your Entry QR Code</p>
-                    <img src="cid:${QR_CODE_CONTENT_ID}" alt="Your Entry QR Code" style="border: 4px solid #667eea; border-radius: 8px; width: 250px; height: 250px; display: block; margin: 0 auto;" />
+                    <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #667eea; border-radius: 8px; width: 250px; height: 250px; display: block; margin: 0 auto;" />
                     <p style="margin: 15px 0 0 0; font-size: 12px; color: #666;">Show this QR code at the venue for entry</p>
                 </div>
                 
