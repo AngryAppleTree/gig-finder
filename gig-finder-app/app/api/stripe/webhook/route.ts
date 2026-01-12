@@ -12,8 +12,6 @@ const stripe = process.env.STRIPE_SECRET_KEY
     })
     : null;
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
 export async function POST(req: NextRequest) {
     // Check if Stripe is configured
     if (!stripe) {
@@ -118,10 +116,13 @@ export async function POST(req: NextRequest) {
             await client.query('COMMIT');
 
             // Send confirmation email
-            if (process.env.RESEND_API_KEY && resend) {
+            if (process.env.RESEND_API_KEY) {
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
                 try {
+                    // Initialize Resend at runtime (not build time)
+                    const resend = new Resend(process.env.RESEND_API_KEY);
+
                     // Generate email HTML using template
                     const emailHTML = generatePaymentConfirmationEmail({
                         customerName,
