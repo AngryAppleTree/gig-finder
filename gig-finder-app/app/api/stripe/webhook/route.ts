@@ -4,6 +4,7 @@ import { Resend } from 'resend';
 import { getPool } from '@/lib/db';
 import { safeLog, redactEmail } from '@/lib/logger';
 import { generateTicketQR } from '@/lib/qr-generator';
+import { generatePaymentConfirmationEmail, getQRCodeAttachment } from '@/lib/email-templates';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -100,64 +101,29 @@ export async function POST(req: NextRequest) {
 
             // Send confirmation email
             if (process.env.RESEND_API_KEY && resend) {
-                // Convert to base64 for inline embedding
-                const qrBase64 = qrBuffer.toString('base64');
-
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-                const dateStr = new Date(eventData.date).toLocaleDateString();
 
-                // Calculate totals
-                const ticketsSubtotal = eventData.ticket_price * parseInt(quantity);
-                const recordsSubtotal = recordsPriceNum * recordsQty;
-                const totalPaid = (ticketsSubtotal + recordsSubtotal + platformFeeNum).toFixed(2);
+                // Generate email HTML using template
+                const emailHTML = generatePaymentConfirmationEmail({
+                    customerName,
+                    eventName: eventData.name,
+                    venueName: eventData.venue_name,
+                    eventDate: new Date(eventData.date),
+                    bookingId,
+                    ticketQuantity: parseInt(quantity),
+                    ticketPrice: eventData.ticket_price,
+                    recordsQuantity: recordsQty,
+                    recordsPrice: recordsPriceNum,
+                    platformFee: platformFeeNum,
+                });
 
                 try {
                     await resend.emails.send({
                         from: fromAddress,
                         to: customerEmail,
                         subject: `Ticket Confirmed: ${eventData.name}`,
-                        html: `
-                            <div style="font-family: sans-serif; color: #333;">
-                                <h1 style="color: #000;">Payment Successful! 🎉</h1>
-                                <p>Hi ${customerName},</p>
-                                <p>Your payment of <strong>£${totalPaid}</strong> has been confirmed.</p>
-                                
-                                <h2 style="color: #000; font-size: 18px;">Event Details</h2>
-                                <p><strong>Event:</strong> ${eventData.name}<br>
-                                <strong>Venue:</strong> ${eventData.venue_name || 'TBA'}<br>
-                                <strong>Date:</strong> ${dateStr}<br>
-                                <strong>Tickets:</strong> ${quantity}</p>
-                                
-                                ${recordsQty > 0 ? `
-                                <h2 style="color: #000; font-size: 18px;">Presale Records</h2>
-                                <p>💿 <strong>${recordsQty} vinyl record${recordsQty > 1 ? 's' : ''}</strong> - £${recordsSubtotal.toFixed(2)}<br>
-                                <em style="color: #666; font-size: 14px;">Your record${recordsQty > 1 ? 's' : ''} will be available for collection at the venue.</em></p>
-                                ` : ''}
-                                
-                                <h2 style="color: #000; font-size: 18px;">Payment Breakdown</h2>
-                                <p>Tickets: £${ticketsSubtotal.toFixed(2)}<br>
-                                ${recordsQty > 0 ? `Records: £${recordsSubtotal.toFixed(2)}<br>` : ''}
-                                Platform Fee: £${platformFeeNum.toFixed(2)}<br>
-                                <strong>Total: £${totalPaid}</strong></p>
-                                
-                                <div style="text-align: center; margin: 20px 0;">
-                                    <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #000; width: 250px; height: 250px;" />
-                                </div>
-                                
-                                <p style="text-align: center; color: #666;">Booking Ref: #${bookingId}</p>
-                                <p style="font-size: 12px; color: #888;">Show this QR code at the venue for entry.</p>
-                                
-                                <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-                                <p style="font-size: 11px; color: #999; text-align: center;">Ticket sold by Gig-finder.co.uk as agent for the artists performing at the event.</p>
-                            </div>
-                        `,
-                        attachments: [
-                            {
-                                filename: `ticket-${bookingId}.png`,
-                                content: qrBuffer,
-                                contentId: 'ticket-qr'
-                            }
-                        ]
+                        html: emailHTML,
+                        attachments: [getQRCodeAttachment(bookingId, qrBuffer)]
                     });
                     safeLog(`✅ Confirmation email sent to ${redactEmail(customerEmail)} for booking #${bookingId}`);
                 } catch (emailError: any) {
