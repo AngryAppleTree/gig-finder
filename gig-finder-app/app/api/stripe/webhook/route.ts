@@ -1,9 +1,9 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import QRCode from 'qrcode';
 import { getPool } from '@/lib/db';
 import { safeLog, redactEmail } from '@/lib/logger';
+import { generateTicketQR } from '@/lib/qr-generator';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -80,8 +80,8 @@ export async function POST(req: NextRequest) {
 
             const bookingId = bookingRes.rows[0].id;
 
-            // Generate QR code data with correct format: GF-TICKET:{bookingId}-{eventId}
-            const qrCodeData = `GF-TICKET:${bookingId}-${eventId}`;
+            // Generate QR code using utility function
+            const { qrCodeData, qrBuffer } = await generateTicketQR(bookingId, parseInt(eventId));
 
             // Update booking with QR code
             await client.query(
@@ -100,12 +100,6 @@ export async function POST(req: NextRequest) {
 
             // Send confirmation email
             if (process.env.RESEND_API_KEY && resend) {
-                // Generate QR code image from saved data
-                const qrBuffer = await QRCode.toBuffer(
-                    qrCodeData,
-                    { width: 300, margin: 2 }
-                );
-
                 // Convert to base64 for inline embedding
                 const qrBase64 = qrBuffer.toString('base64');
 

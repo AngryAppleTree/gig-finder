@@ -40,8 +40,8 @@ export async function GET(req: Request) {
     }
 }
 
-import QRCode from 'qrcode';
 import { Resend } from 'resend';
+import { generateTicketQR } from '@/lib/qr-generator';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -117,6 +117,15 @@ export async function POST(req: Request) {
         );
         const bookingId = bookingRes.rows[0].id;
 
+        // Generate QR code using utility function
+        const { qrCodeData, qrBuffer } = await generateTicketQR(bookingId, parseInt(eventId));
+
+        // Update booking with QR code (BUG FIX: this was missing!)
+        await client.query(
+            'UPDATE bookings SET qr_code = $1 WHERE id = $2',
+            [qrCodeData, bookingId]
+        );
+
         // Update Sold Count by quantity
         await client.query('UPDATE events SET tickets_sold = COALESCE(tickets_sold, 0) + $1 WHERE id = $2', [ticketQuantity, eventId]);
 
@@ -124,11 +133,9 @@ export async function POST(req: Request) {
 
         // --- EMAIL LOGIC ---
         // We do this after commit so if email fails, booking is still valid (or we could catch and log error)
+        // Note: qrBuffer is already generated above using utility function
         try {
             if (process.env.RESEND_API_KEY) {
-                // Generate Buffer (no data: prefix)
-                // Use GF-TICKET prefix to avoid triggering Booking.com app deep links
-                const qrBuffer = await QRCode.toBuffer(`GF-TICKET:${bookingId}-${eventId}`, { width: 300, margin: 2 });
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
                 const dateStr = new Date(event.date).toLocaleDateString();
 
