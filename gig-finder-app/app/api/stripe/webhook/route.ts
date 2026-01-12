@@ -71,6 +71,24 @@ export async function POST(req: NextRequest) {
             const recordsPriceNum = recordsPrice ? parseFloat(recordsPrice) : 0;
             const platformFeeNum = platformFee ? parseFloat(platformFee) : 0;
 
+            // IDEMPOTENCY CHECK: Prevent duplicate bookings from webhook retries
+            const existingBooking = await client.query(
+                'SELECT id FROM bookings WHERE payment_intent_id = $1',
+                [session.payment_intent]
+            );
+
+            if (existingBooking.rowCount && existingBooking.rowCount > 0) {
+                const existingId = existingBooking.rows[0].id;
+                safeLog(`⚠️ Duplicate webhook detected for payment_intent ${session.payment_intent}. Booking #${existingId} already exists. Skipping.`);
+                await client.query('ROLLBACK');
+                client.release();
+                return NextResponse.json({
+                    received: true,
+                    message: 'Duplicate webhook - booking already exists',
+                    bookingId: existingId
+                });
+            }
+
             // Create booking with records data (QR code will be added after we have the booking ID)
             const bookingRes = await client.query(
                 `INSERT INTO bookings (event_id, customer_name, customer_email, quantity, records_quantity, records_price, platform_fee, status, payment_intent_id)
@@ -103,21 +121,21 @@ export async function POST(req: NextRequest) {
             if (process.env.RESEND_API_KEY && resend) {
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
-                // Generate email HTML using template
-                const emailHTML = generatePaymentConfirmationEmail({
-                    customerName,
-                    eventName: eventData.name,
-                    venueName: eventData.venue_name,
-                    eventDate: new Date(eventData.date),
-                    bookingId,
-                    ticketQuantity: parseInt(quantity),
-                    ticketPrice: eventData.ticket_price,
-                    recordsQuantity: recordsQty,
-                    recordsPrice: recordsPriceNum,
-                    platformFee: platformFeeNum,
-                });
-
                 try {
+                    // Generate email HTML using template
+                    const emailHTML = generatePaymentConfirmationEmail({
+                        customerName,
+                        eventName: eventData.name,
+                        venueName: eventData.venue_name,
+                        eventDate: new Date(eventData.date),
+                        bookingId,
+                        ticketQuantity: parseInt(quantity),
+                        ticketPrice: eventData.ticket_price,
+                        recordsQuantity: recordsQty,
+                        recordsPrice: recordsPriceNum,
+                        platformFee: platformFeeNum,
+                    });
+
                     await resend.emails.send({
                         from: fromAddress,
                         to: customerEmail,
