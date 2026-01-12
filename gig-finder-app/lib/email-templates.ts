@@ -8,6 +8,9 @@
  * Note: QR codes are embedded only (no separate attachment)
  */
 
+// Constants
+export const QR_CODE_CONTENT_ID = 'ticket-qr';
+
 export interface TicketEmailData {
     customerName: string;
     eventName: string;
@@ -25,12 +28,51 @@ export interface PaymentEmailData extends TicketEmailData {
 }
 
 /**
+ * Create QR code attachment configuration
+ * Ensures consistent attachment format across all emails
+ */
+export function createQRAttachment(bookingId: number, qrBuffer: Buffer) {
+    return {
+        filename: `ticket-${bookingId}.png`,
+        content: qrBuffer,
+        contentId: QR_CODE_CONTENT_ID
+    };
+}
+
+/**
+ * Safely format event date with fallback
+ * Prevents email generation from failing due to invalid dates
+ */
+function formatEventDate(date: Date): string {
+    try {
+        const d = new Date(date);
+        if (isNaN(d.getTime())) {
+            return 'Date TBA';
+        }
+        return d.toLocaleDateString();
+    } catch {
+        return 'Date TBA';
+    }
+}
+
+/**
  * Generate base ticket confirmation email HTML
  * Used for both manual and paid bookings
  */
 function generateBaseTicketEmail(data: TicketEmailData, additionalContent: string = ''): string {
-    // Simple date formatting to avoid locale issues
-    const dateStr = new Date(data.eventDate).toLocaleDateString();
+    // Validate required fields
+    if (!data.customerName?.trim()) {
+        throw new Error('Customer name is required for email generation');
+    }
+    if (!data.eventName?.trim()) {
+        throw new Error('Event name is required for email generation');
+    }
+    if (!data.bookingId || data.bookingId <= 0) {
+        throw new Error('Valid booking ID is required for email generation');
+    }
+
+    // Safe date formatting with fallback
+    const dateStr = formatEventDate(data.eventDate);
 
     return `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
@@ -56,7 +98,7 @@ function generateBaseTicketEmail(data: TicketEmailData, additionalContent: strin
                 
                 <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                     <p style="margin: 0 0 15px 0; font-weight: bold; color: #667eea;">Your Entry QR Code</p>
-                    <img src="cid:ticket-qr" alt="Your Entry QR Code" style="border: 4px solid #667eea; border-radius: 8px; width: 250px; height: 250px; display: block; margin: 0 auto;" />
+                    <img src="cid:${QR_CODE_CONTENT_ID}" alt="Your Entry QR Code" style="border: 4px solid #667eea; border-radius: 8px; width: 250px; height: 250px; display: block; margin: 0 auto;" />
                     <p style="margin: 15px 0 0 0; font-size: 12px; color: #666;">Show this QR code at the venue for entry</p>
                 </div>
                 

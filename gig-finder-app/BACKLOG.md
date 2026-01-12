@@ -96,5 +96,49 @@ CREATE TABLE booking_merchandise (
         - Implement a dedicated scraping service.
         - Rely solely on RSS feed data (approximate dates).
 
+- **Show Guest List for Paid-Only Events**: Currently, the "GUEST LIST" button on My Gigs page only appears when `is_internal_ticketing = true` (free guest list enabled). Update the logic to also show the guest list when `sell_tickets = true` (paid ticketing enabled).
+    - **Current Logic**: `{gig.is_internal_ticketing && <GUEST LIST button>}`
+    - **New Logic**: `{(gig.is_internal_ticketing || gig.sell_tickets) && <GUEST LIST button>}`
+    - **Files to Update**:
+        - `/app/gigfinder/my-gigs/page.tsx` (line 145)
+    - **Rationale**: Event organizers need to see who purchased tickets, not just who's on the free guest list
+    - **Estimated Effort**: 5 minutes
+
 ## Low Priority
+
+### Testing: My Bookings Feature
+**Status:** Blocked - Feature not fully developed yet  
+**Description:** Create E2E tests for My Bookings functionality once the feature is complete
+
+**Tests to Include:**
+- View list of purchased tickets
+- View individual booking details with QR code
+- Cancel a booking
+- Verify refund flow (when refund system is implemented)
+- Check booking status updates
+
+**Prerequisites:**
+- My Bookings feature must be fully developed
+- Refund system should be implemented for complete coverage
+
+**Estimated Effort:** 2-3 hours
+
+---
+
+### Testing: QR Code Scanning
+**Status:** Lower priority - Manual workaround exists  
+**Description:** Create E2E tests for QR code scanning at event check-in
+
+**Tests to Include:**
+- Scan valid QR code
+- Mark attendee as checked in
+- Handle duplicate scans
+- Handle invalid QR codes
+- View check-in statistics
+
+**Note:** Manual workaround available, so automated testing is not critical
+
+**Estimated Effort:** 1-2 hours
+
+---
 

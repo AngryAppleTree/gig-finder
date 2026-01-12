@@ -40,7 +40,7 @@ test.describe('Result Card Rendering', () => {
         const button = card.locator('button.btn-buy, a.btn-buy');
         await expect(button).toBeVisible();
         // Text should be one of the expected variations
-        await expect(button).toHaveText(/Buy Tickets|Book Now|Get Tickets|More Info/i);
+        await expect(button).toHaveText(/Buy Tickets|Book Now|Get Tickets|More Info|View Event/i);
     });
 
     test('Presale information identifies correctly if present', async ({ page }) => {

@@ -1,71 +1,120 @@
 import { test as setup, expect } from '@playwright/test';
 
 /**
- * Authentication Setup for Regular User (Clerk)
+ * Clerk Authentication Setup - MANUAL 2FA WORKAROUND
  * 
- * This file authenticates a regular user via Clerk and saves the session state.
+ * This script handles Clerk login with 2FA using a MANUAL workaround.
  * 
- * PRE-REQUISITES:
- * 1. You must have a test user in Clerk.
- * 2. You might need to set up 'Testing Tokens' in your Clerk Dashboard
- *    if you want to bypass 2FA/email verification or purely purely programmatic login.
+ * HOW TO RUN:
+ * -----------
+ * Localhost: npx playwright test clerk-auth.setup.ts --project=setup --headed
+ * PREVIEW: BASE_URL=https://your-preview-url npx playwright test clerk-auth.setup.ts --project=setup --headed
  * 
- * For now, this script attempts a standard UI login flow or uses the Clerk Testing API if configured.
+ * WHAT HAPPENS:
+ * -------------
+ * 1. Browser opens to sign-in page (--headed mode)
+ * 2. Script fills email and password automatically
+ * 3. **YOU MUST MANUALLY ENTER THE 2FA CODE** when prompted
+ * 4. Script waits for successful login
+ * 5. Session is saved to tests/.auth/user.json (localhost) or user-preview.json (PREVIEW)
+ * 6. All tests using 'chromium-clerk' project will reuse this session
+ * 
+ * WHEN TO RE-RUN:
+ * ---------------
+ * - Session expires (Clerk sessions last ~7 days)
+ * - Tests fail with authentication errors
+ * - After clearing tests/.auth/ directory
+ * 
+ * CREDENTIALS:
+ * ------------
+ * Email: TEST_USER_EMAIL from .env.local
+ * Password: TEST_USER_PASSWORD from .env.local
+ * 2FA: Manual entry required (from your authenticator app)
  */
 
-const USER_AUTH_FILE = 'tests/.auth/user.json';
+// Determine which auth file to use based on BASE_URL
+const baseURL = process.env.BASE_URL || 'http://localhost:3000';
+const isPreview = baseURL.includes('vercel.app');
+const USER_AUTH_FILE = isPreview ? 'tests/.auth/user-preview.json' : 'tests/.auth/user.json';
 
-setup('authenticate as regular clerk user', async ({ page }) => {
-    // Navigate to the sign-in page
-    // Note: Adjust the URL if your sign-in page is different (e.g. /sign-in, /login)
-    // The main app usually redirects restricted pages to sign-in.
-    await page.goto('/sign-in');
+setup('authenticate with Clerk (manual 2FA)', async ({ page }) => {
+    console.log('🔐 Starting Clerk authentication...');
+    console.log('🌐 Target URL:', baseURL);
+    console.log('📁 Will save session to:', USER_AUTH_FILE);
+    console.log('');
+    console.log('⚠️  MANUAL STEP REQUIRED:');
+    console.log('   When prompted, you must manually enter your 2FA code');
+    console.log('');
 
-    // Wait for the Clerk sign-in form to appear
-    // This selector targets the Clerk sign-in input. Clerk classes are dynamic,
-    // so we target by name or placeholder or accessible role.
-    const emailInput = page.locator('input[name="identifier"], input[type="email"]');
+    // Get credentials from environment
+    const email = process.env.TEST_USER_EMAIL;
+    const password = process.env.TEST_USER_PASSWORD;
 
-    // ⚠️ TODO: Replace these credentials with valid test user credentials
-    // Ideally store these in .env.local as TEST_USER_EMAIL and TEST_USER_PASSWORD
-    const email = process.env.TEST_USER_EMAIL || 'test-user@gigfinder.com';
-    const password = process.env.TEST_USER_PASSWORD || 'password123';
+    if (!email || !password) {
+        throw new Error(
+            '❌ Missing credentials! Set TEST_USER_EMAIL and TEST_USER_PASSWORD in .env.local'
+        );
+    }
 
     try {
-        console.log(`Navigating to /sign-in...`);
-        // Wait for input to be attached to DOM
-        // The locator logic is a bit brittle with dynamic Clerk changes, but let's try strict visibility
-        await expect(emailInput).toBeVisible({ timeout: 10000 });
-        console.log('Email input found');
+        // Navigate to sign-in page
+        console.log('1️⃣  Navigating to /sign-in...');
+        await page.goto('/sign-in');
 
+        // Fill email
+        console.log('2️⃣  Filling email...');
+        const emailInput = page.locator('input[name="identifier"], input[type="email"]');
+        await expect(emailInput).toBeVisible({ timeout: 10000 });
         await emailInput.fill(email);
         await page.keyboard.press('Enter');
-        console.log('Email submitted');
 
-        // Wait for password input (Clerk often has a multi-step form)
+        // Fill password
+        console.log('3️⃣  Filling password...');
         const passwordInput = page.locator('input[name="password"], input[type="password"]');
         await expect(passwordInput).toBeVisible({ timeout: 10000 });
-        console.log('Password input found');
-
         await passwordInput.fill(password);
         await page.keyboard.press('Enter');
-        console.log('Password submitted');
 
-        // Wait for successful redirection to dashboard or home
-        // Clerk usually redirects to /gigfinder or / after login
-        await page.waitForURL(/gigfinder|dashboard/, { timeout: 15000 });
-        console.log('Redirect successful');
+        // Wait for 2FA or successful login
+        console.log('');
+        console.log('⏳ WAITING FOR 2FA...');
+        console.log('   👉 Please enter your 2FA code in the browser window');
+        console.log('   👉 The script will wait up to 60 seconds');
+        console.log('');
 
-        // Save state
+        // Wait for successful redirect (gives user time to enter 2FA)
+        await page.waitForURL(/gigfinder|dashboard/, { timeout: 60000 });
+
+        console.log('✅ Login successful!');
+
+        // Save authentication state
         await page.context().storageState({ path: USER_AUTH_FILE });
-        console.log('✅ User authentication setup complete');
+        console.log(`✅ Session saved to ${USER_AUTH_FILE}`);
+        console.log('');
+        console.log('🎉 Authentication setup complete!');
+        console.log('   All tests using "chromium-clerk" project will now use this session');
 
     } catch (error) {
-        console.error('❌ Login failed:', error);
+        console.error('');
+        console.error('❌ Authentication failed!');
+        console.error('');
+
+        // Save debug screenshot
         await page.screenshot({ path: 'tests/auth-debug.png', fullPage: true });
-        console.log('📸 Debug screenshot saved to tests/auth-debug.png');
-        console.warn('Check tests/auth-debug.png to see what the browser saw.');
-        // We throw error now so it marks as failed visibly
+        console.error('📸 Debug screenshot saved to: tests/auth-debug.png');
+        console.error('');
+
+        if (error instanceof Error) {
+            if (error.message.includes('Timeout')) {
+                console.error('⏱️  Timeout Error:');
+                console.error('   - Did you enter the 2FA code?');
+                console.error('   - Check if you were redirected to /gigfinder or /dashboard');
+                console.error('   - Try running again with more time');
+            } else {
+                console.error('Error details:', error.message);
+            }
+        }
+
         throw error;
     }
 });

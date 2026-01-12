@@ -242,6 +242,7 @@ function goBack() {
     } else if (currentStep === 'details') {
         // Go back from details to results
         document.getElementById('gig-details').classList.remove('active');
+        document.getElementById('results').classList.remove('hidden');
         document.getElementById('results').classList.add('active');
         currentStep = 'results';
     }
@@ -791,6 +792,7 @@ function showGigDetails(gigId) {
 
     // Hide results, show details
     document.getElementById('results').classList.remove('active');
+    document.getElementById('results').classList.add('hidden'); // Ensure it is hidden
     document.getElementById('gig-details').classList.add('active');
     currentStep = 'details'; // Update state
 

@@ -125,7 +125,7 @@ export class TermsPage {
     async expectLastUpdatedPresent() {
         await expect(this.lastUpdated).toBeVisible();
         await expect(this.lastUpdated).toContainText('Last Updated:');
-        await expect(this.lastUpdated).toContainText('December 2, 2025');
+        await expect(this.lastUpdated).toContainText('January 2, 2026');
     }
 
     /**

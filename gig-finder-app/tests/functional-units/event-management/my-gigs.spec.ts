@@ -14,7 +14,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('My Gigs Page', () => {
 
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page }, testInfo) => {
+        // Only run in authenticated environment
+        if (testInfo.project.name !== 'chromium-clerk') {
+            test.skip();
+        }
         await page.goto('/gigfinder/my-gigs');
     });
 

@@ -4,6 +4,7 @@ import { Resend } from 'resend';
 import { getPool } from '@/lib/db';
 import { safeLog, redactEmail } from '@/lib/logger';
 import { generateTicketQR } from '@/lib/qr-generator';
+import { generatePaymentConfirmationEmail, createQRAttachment } from '@/lib/email-templates';
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -103,7 +104,6 @@ export async function POST(req: NextRequest) {
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
                 // Generate email HTML using template
-                const { generatePaymentConfirmationEmail } = await import('@/lib/email-templates');
                 const emailHTML = generatePaymentConfirmationEmail({
                     customerName,
                     eventName: eventData.name,
@@ -123,13 +123,7 @@ export async function POST(req: NextRequest) {
                         to: customerEmail,
                         subject: `Ticket Confirmed: ${eventData.name}`,
                         html: emailHTML,
-                        attachments: [
-                            {
-                                filename: `ticket-${bookingId}.png`,
-                                content: qrBuffer,
-                                contentId: 'ticket-qr'
-                            }
-                        ]
+                        attachments: [createQRAttachment(bookingId, qrBuffer)]
                     });
                     safeLog(`✅ Confirmation email sent to ${redactEmail(customerEmail)} for booking #${bookingId}`);
                 } catch (emailError: any) {

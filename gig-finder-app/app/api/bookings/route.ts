@@ -42,6 +42,7 @@ export async function GET(req: Request) {
 
 import { Resend } from 'resend';
 import { generateTicketQR } from '@/lib/qr-generator';
+import { generateManualBookingEmail, createQRAttachment } from '@/lib/email-templates';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -139,7 +140,6 @@ export async function POST(req: Request) {
                 const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
                 // Generate email HTML using template
-                const { generateManualBookingEmail } = await import('@/lib/email-templates');
                 const emailHTML = generateManualBookingEmail({
                     customerName: name,
                     eventName: event.name,
@@ -154,13 +154,7 @@ export async function POST(req: Request) {
                     to: email,
                     subject: `Ticket Confirmed: ${event.name}`,
                     html: emailHTML,
-                    attachments: [
-                        {
-                            filename: `ticket-${bookingId}.png`,
-                            content: qrBuffer,
-                            contentId: 'ticket-qr' // FIXED: was content_id (snake_case), now contentId (camelCase)
-                        }
-                    ]
+                    attachments: [createQRAttachment(bookingId, qrBuffer)]
                 });
             } else {
                 console.log(`[MOCK EMAIL] To: ${email} (Booking #${bookingId}). Set RESEND_API_KEY to see QR code email.`);
