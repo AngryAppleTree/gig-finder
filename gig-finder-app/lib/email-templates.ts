@@ -27,7 +27,8 @@ export interface PaymentEmailData extends TicketEmailData {
  * Used for both manual and paid bookings
  */
 function generateBaseTicketEmail(data: TicketEmailData, additionalContent: string = ''): string {
-    const dateStr = data.eventDate.toLocaleDateString('en-GB', {
+    // Use simpler date formatting to avoid locale issues on server
+    const dateStr = new Date(data.eventDate).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
