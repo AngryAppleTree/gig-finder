@@ -4,6 +4,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import styles from './GuestList.module.css';
 
 interface Booking {
     id: number;
@@ -111,39 +112,38 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
     if (loading) return <div className="p-10 text-center text-white" style={{ paddingTop: '100px' }}>Loading guest list...</div>;
 
     return (
-        <div style={{ minHeight: '100vh', paddingBottom: '3rem', background: '#0a0a0a', color: '#fff' }}>
-            <header style={{ padding: '2rem', textAlign: 'center' }}>
-                <h1 className="main-title" style={{ fontSize: '2.5rem', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>GUEST LIST</h1>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <Link href="/gigfinder/my-gigs" className="btn-back" style={{ textDecoration: 'none' }}>← Back to My Gigs</Link>
+        <div className={styles.container}>
+            <header className={styles.header}>
+                <h1 className={`main-title ${styles.title}`}>GUEST LIST</h1>
+                <div className={styles.headerActions}>
+                    <Link href="/gigfinder/my-gigs" className={`btn-back ${styles.backLink}`}>← Back to My Gigs</Link>
 
                     {bookings.length > 0 && (
-                        <button onClick={() => setShowEmailModal(true)} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
+                        <button onClick={() => setShowEmailModal(true)} className={`btn-primary ${styles.emailButton}`}>
                             ✉️ Email Guests
                         </button>
                     )}
 
                     {bookings.length > 0 && (
-                        <Link href={`/gigfinder/my-gigs/scan/${eventId}`} className="btn-primary" style={{ fontSize: '1rem', padding: '0.5rem 1rem', textDecoration: 'none', background: '#333', border: '1px solid #555' }}>
+                        <Link href={`/gigfinder/my-gigs/scan/${eventId}`} className={`btn-primary ${styles.scanButton}`}>
                             📷 Scan Tickets
                         </Link>
                     )}
                 </div>
             </header>
 
-            <main className="container" style={{ maxWidth: '800px', margin: '0 auto', paddingLeft: '1rem', paddingRight: '1rem' }}>
+            <main className={`container ${styles.main}`} role="main">
                 {/* Add Guest Section */}
-                <div style={{ background: '#1a1a1a', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #333' }}>
-                    <h3 style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontFamily: 'var(--font-primary)' }}>+ Add Guest Manually</h3>
-                    <form onSubmit={handleAddGuest} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <div className={styles.addGuestSection}>
+                    <h3 className={styles.addGuestTitle}>+ Add Guest Manually</h3>
+                    <form onSubmit={handleAddGuest} className={styles.addGuestForm}>
                         <input
                             type="text"
                             placeholder="Guest Name"
                             value={newName}
                             onChange={e => setNewName(e.target.value)}
                             required
-                            className="text-input"
-                            style={{ flex: 1, minWidth: '200px', padding: '0.8rem', background: '#000', border: '1px solid #444', color: 'white' }}
+                            className={`text-input ${styles.guestInput}`}
                         />
                         <input
                             type="email"
@@ -151,75 +151,59 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
                             value={newEmail}
                             onChange={e => setNewEmail(e.target.value)}
                             required
-                            className="text-input"
-                            style={{ flex: 1, minWidth: '200px', padding: '0.8rem', background: '#000', border: '1px solid #444', color: 'white' }}
+                            className={`text-input ${styles.guestInput}`}
                         />
-                        <button type="submit" disabled={adding} className="btn-primary" style={{ padding: '0.5rem 1.5rem' }}>
+                        <button type="submit" disabled={adding} className={`btn-primary ${styles.addButton}`}>
                             {adding ? 'Adding...' : 'Add'}
                         </button>
                     </form>
                 </div>
 
                 {/* List Section */}
-                <div style={{ background: 'var(--color-surface)', padding: '2rem', borderRadius: '8px', border: '1px solid #333' }}>
-                    <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid #333', paddingBottom: '0.5rem', fontFamily: 'var(--font-primary)' }}>
+                <div className={styles.guestListSection}>
+                    <h2 className={styles.guestListTitle}>
                         Total Names: {bookings.length}
                     </h2>
 
                     {bookings.length === 0 ? (
-                        <p style={{ color: '#888', fontStyle: 'italic' }}>No names on the list yet.</p>
+                        <p className={styles.emptyMessage}>No names on the list yet.</p>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className={styles.guestListItems}>
                             {bookings.map(b => (
-                                <div key={b.id} style={{
-                                    background: '#111',
-                                    padding: '1rem',
-                                    borderRadius: '8px',
-                                    border: b.checked_in_at ? '2px solid #44ff44' : '1px solid #333',
-                                    opacity: b.checked_in_at ? 0.7 : 1
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                                <div key={b.id} className={`${styles.guestItem} ${b.checked_in_at ? styles.checkedIn : ''}`}>
+                                    <div className={styles.guestItemHeader}>
+                                        <div className={styles.guestInfo}>
+                                            <div className={styles.guestName}>
                                                 {b.customer_name}
                                             </div>
-                                            <div style={{ fontSize: '0.85rem', color: '#888' }}>
+                                            <div className={styles.guestEmail}>
                                                 {b.customer_email}
                                             </div>
                                         </div>
-                                        <span style={{
-                                            padding: '0.25rem 0.75rem',
-                                            borderRadius: '4px',
-                                            background: b.checked_in_at ? '#113311' : '#333',
-                                            color: b.checked_in_at ? '#44ff44' : '#888',
-                                            fontSize: '0.75rem',
-                                            textTransform: 'uppercase',
-                                            fontWeight: 'bold',
-                                            whiteSpace: 'nowrap'
-                                        }}>
+                                        <span className={`${styles.statusBadge} ${b.checked_in_at ? styles.checkedIn : styles.notScanned}`}>
                                             {b.checked_in_at ? '✓ CHECKED IN' : 'NOT SCANNED'}
                                         </span>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #222' }}>
+                                    <div className={styles.guestItemDetails}>
                                         <div>
-                                            <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Tickets</div>
-                                            <div style={{ color: 'var(--color-secondary)', fontWeight: 'bold' }}>
+                                            <div className={styles.detailLabel}>Tickets</div>
+                                            <div className={styles.ticketCount}>
                                                 🎟️ {b.quantity || 1}
                                             </div>
                                         </div>
                                         {b.records_quantity && b.records_quantity > 0 && (
                                             <div>
-                                                <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Records</div>
-                                                <div style={{ color: '#ff69b4', fontWeight: 'bold' }}>
+                                                <div className={styles.detailLabel}>Records</div>
+                                                <div className={styles.recordCount}>
                                                     💿 {b.records_quantity}
                                                 </div>
                                             </div>
                                         )}
                                         {b.checked_in_at && (
                                             <div>
-                                                <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Checked In</div>
-                                                <div style={{ color: '#44ff44', fontSize: '0.85rem' }}>
+                                                <div className={styles.detailLabel}>Checked In</div>
+                                                <div className={styles.checkInTime}>
                                                     {new Date(b.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
@@ -233,33 +217,27 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
 
                 {/* Email Modal */}
                 {showEmailModal && (
-                    <div style={{
-                        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                        background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                        zIndex: 1000
-                    }}>
-                        <div style={{ background: '#222', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', border: '1px solid var(--color-primary)' }}>
-                            <h2 style={{ marginBottom: '1.5rem', color: 'var(--color-primary)' }}>Email All Guests</h2>
-                            <form onSubmit={handleSendEmail} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modalContent}>
+                            <h2 className={styles.modalTitle}>Email All Guests</h2>
+                            <form onSubmit={handleSendEmail} className={styles.modalForm}>
                                 <input
                                     type="text"
                                     placeholder="Subject"
                                     value={emailSubject}
                                     onChange={e => setEmailSubject(e.target.value)}
                                     required
-                                    className="text-input"
-                                    style={{ width: '100%' }}
+                                    className={`text-input ${styles.modalInput}`}
                                 />
                                 <textarea
                                     placeholder="Message..."
                                     value={emailMessage}
                                     onChange={e => setEmailMessage(e.target.value)}
                                     required
-                                    className="text-input"
-                                    style={{ width: '100%', minHeight: '150px' }}
+                                    className={`text-input ${styles.modalTextarea}`}
                                 ></textarea>
-                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                    <button type="button" onClick={() => setShowEmailModal(false)} className="btn-back" style={{ border: 'none', background: 'none', textDecoration: 'underline' }}>Cancel</button>
+                                <div className={styles.modalActions}>
+                                    <button type="button" onClick={() => setShowEmailModal(false)} className={`btn-back ${styles.cancelButton}`}>Cancel</button>
                                     <button type="submit" disabled={sendingEmail} className="btn-primary">
                                         {sendingEmail ? 'Sending...' : 'Send Broadcast'}
                                     </button>
