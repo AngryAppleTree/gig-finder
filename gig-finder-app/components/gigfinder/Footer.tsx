@@ -14,7 +14,7 @@ export function Footer() {
             </div>
 
             <div className="footer-bottom">
-                <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. | <Link href="/privacy">Privacy Policy</Link> | <Link href="/terms">Terms of Service</Link> | <Link href="/pledge">Our Pledge</Link> | <Link href="/contact">Contact</Link> | <Link href="/admin">Admin</Link></p>
+                <p>&copy; 2025 Angry Apple Tree Ltd. All rights reserved. | <Link href="/privacy">Privacy Policy</Link> | <Link href="/terms">Terms of Service</Link> | <Link href="/pledge">Our Pledge</Link> | <Link href="/contact">Contact</Link></p>
             </div>
         </footer>
     );
