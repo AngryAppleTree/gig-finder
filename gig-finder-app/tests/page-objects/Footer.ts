@@ -133,13 +133,14 @@ export class FooterComponent {
 
     /**
      * Assert that all footer links are visible
+     * Note: Admin link removed in commit 16e0143 for security
      */
     async expectAllLinksVisible() {
         await expect(this.privacyLink).toBeVisible();
         await expect(this.termsLink).toBeVisible();
         await expect(this.pledgeLink).toBeVisible();
         await expect(this.contactLink).toBeVisible();
-        await expect(this.adminLink).toBeVisible();
+        // Admin link intentionally removed from public footer
     }
 
     /**
