@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { GigCard } from '@/components/gigfinder/GigCard';
+import { ResultsList } from '@/components/gigfinder/ResultsList';
 import { BookingModal } from '@/components/gigfinder/BookingModal';
 import { Footer } from '@/components/gigfinder/Footer';
 import { Gig } from '@/components/gigfinder/types';
@@ -224,34 +224,11 @@ function ResultsPageContent() {
                 <section className="step active">
                     <h2 className="step-title">Your Gigs 🎸</h2>
 
-                    {gigs.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '2rem' }}>
-                            <p style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--color-text-dim)' }}>
-                                No gigs found matching your criteria!
-                            </p>
-                            <p style={{ fontSize: '1rem', color: 'var(--color-text-dim)', marginBottom: '2rem' }}>
-                                Try adjusting your filters or search again.
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="results-summary">
-                                <strong>Showing {gigs.length} gig{gigs.length !== 1 ? 's' : ''}</strong>
-                            </div>
-
-                            <div className="gigs-list">
-                                {gigs.map(gig => (
-                                    <GigCard key={gig.id} gig={gig} />
-                                ))}
-                            </div>
-                        </>
-                    )}
-
-                    {/* Bottom navigation for convenience */}
-                    <div className="nav-buttons" style={{ marginTop: 'var(--spacing-xl)' }}>
-                        <button className="btn-back" onClick={handleBack}>← Back</button>
-                        <button className="btn-primary" onClick={handleStartOver}>Start Over</button>
-                    </div>
+                    <ResultsList
+                        gigs={gigs}
+                        onBack={handleBack}
+                        onStartOver={handleStartOver}
+                    />
                 </section>
             </main>
             <BookingModal />

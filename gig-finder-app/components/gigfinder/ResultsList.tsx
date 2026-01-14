@@ -1,23 +1,25 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { GigCard } from './GigCard';
 import { Gig } from './types';
+import styles from './ResultsList.module.css';
 
 interface ResultsListProps {
     gigs: Gig[];
+    onBack?: () => void;
+    onStartOver?: () => void;
 }
 
-export function ResultsList({ gigs }: ResultsListProps) {
+export function ResultsList({ gigs, onBack, onStartOver }: ResultsListProps) {
     const hasSearched = true; // If mounted, we assume search happened
-
 
     if (!hasSearched && gigs.length === 0) return null;
 
     if (hasSearched && gigs.length === 0) {
         return (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>No gigs found matching your criteria! 🎸</h3>
+            <div className={styles.emptyState}>
+                <h3 className={styles.emptyStateHeading}>No gigs found matching your criteria! 🎸</h3>
                 <p>Try adjusting your filters.</p>
                 {renderNavButtons()}
             </div>
@@ -26,18 +28,16 @@ export function ResultsList({ gigs }: ResultsListProps) {
 
     function renderNavButtons() {
         return (
-            <div className="nav-buttons" style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+            <div className={`nav-buttons ${styles.navButtons}`}>
                 <button
-                    className="btn-back"
-                    onClick={() => typeof window !== 'undefined' && (window as any).goBack()}
-                    style={{ padding: '10px 20px', border: '1px solid #666', background: 'transparent', color: 'white', cursor: 'pointer' }}
+                    className={`btn-back ${styles.backButton}`}
+                    onClick={onBack}
                 >
                     ← Back
                 </button>
                 <button
-                    className="btn-primary"
-                    onClick={() => typeof window !== 'undefined' && (window as any).resetQuiz()}
-                    style={{ padding: '10px 20px', background: 'var(--color-primary)', border: 'none', color: 'white', cursor: 'pointer' }}
+                    className={`btn-primary ${styles.primaryButton}`}
+                    onClick={onStartOver}
                 >
                     Start Over
                 </button>
@@ -47,8 +47,8 @@ export function ResultsList({ gigs }: ResultsListProps) {
 
     // Standard Vertical Scroll List (Desktop & Mobile)
     return (
-        <div className="gigs-list" style={{ display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
-            <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        <div className={`gigs-list ${styles.container}`}>
+            <div className={styles.summary}>
                 <p><strong>Showing {gigs.length} gigs</strong></p>
             </div>
 
