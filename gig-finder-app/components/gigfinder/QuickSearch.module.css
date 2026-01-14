@@ -1,0 +1,43 @@
+/* QuickSearch Component Styles */
+
+.container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-border);
+}
+
+.title {
+    margin-top: 0;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    color: var(--color-text);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.formWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.inputGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.input {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #444;
+    color: white;
+}
+
+.searchButton {
+    width: 100%;
+    margin-top: 1rem;
+}
