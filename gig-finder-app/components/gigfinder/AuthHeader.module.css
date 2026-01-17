@@ -1,0 +1,27 @@
+/* AuthHeader.module.css */
+
+.container {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 100px;
+    min-height: 40px;
+    justify-content: flex-end;
+}
+
+.loadingButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.signInButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
