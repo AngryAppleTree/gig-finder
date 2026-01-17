@@ -1,0 +1,255 @@
+/* BookingModal.module.css */
+
+/* === Modal Overlay === */
+.overlay {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+/* === Modal Content === */
+.content {
+    background: #1a1a1a;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 450px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid var(--color-primary);
+    box-shadow: 0 0 20px rgba(255, 51, 102, 0.3);
+}
+
+/* === Close Button === */
+.closeButton {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+/* === Success State === */
+.successContainer {
+    text-align: center;
+    padding: 1rem;
+}
+
+.successIcon {
+    color: var(--color-secondary);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.successTitle {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.successText {
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.successButton {
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+/* === Form Elements === */
+.eventName {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.errorBox {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid red;
+    color: red;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+
+.formGroup {
+    margin-bottom: 1rem;
+}
+
+.formGroupLarge {
+    margin-bottom: 1.5rem;
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background: #000;
+    color: white;
+    font-family: inherit;
+}
+
+.helpText {
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 0.3rem;
+}
+
+.helpTextCenter {
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 0.3rem;
+    text-align: center;
+}
+
+/* === Quantity Selector === */
+.quantityContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quantityButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--color-primary);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.quantityButton:not(:disabled) {
+    background: var(--color-surface);
+    color: var(--color-primary);
+    cursor: pointer;
+}
+
+.quantityButton:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.quantityDisplay {
+    flex: 1;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--color-primary);
+    font-family: var(--font-display);
+}
+
+/* === Presale Records Section === */
+.presaleContainer {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 51, 102, 0.1);
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+}
+
+.presaleHeader {
+    margin-bottom: 0.8rem;
+}
+
+.presaleLabel {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.presaleCaption {
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-bottom: 0.5rem;
+}
+
+.presalePrice {
+    font-size: 0.8rem;
+    color: var(--color-secondary);
+    font-weight: bold;
+}
+
+/* === Order Summary === */
+.summaryContainer {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+.summaryTitle {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.summaryLabel {
+    color: #999;
+}
+
+.summaryValue {
+    color: white;
+}
+
+.summaryTotal {
+    border-top: 1px solid #444;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.summaryTotalLabel {
+    color: var(--color-secondary);
+}
+
+.summaryTotalValue {
+    color: var(--color-secondary);
+}
+
+/* === Submit Button === */
+.submitButton {
+    width: 100%;
+}
+
+.submitButton:disabled {
+    opacity: 0.7;
+}

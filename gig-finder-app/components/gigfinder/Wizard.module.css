@@ -1,0 +1,112 @@
+/* Wizard.module.css */
+
+/* Rejection Screen */
+.rejectionContainer {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.rejectionTitle {
+    font-family: var(--font-primary);
+    font-size: 3rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+}
+
+.rejectionSubtitle {
+    font-family: var(--font-primary);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.rejectionText {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-bottom: 2rem;
+}
+
+/* Step 1 Divider ("OR TAKE THE JOURNEY") */
+.dividerContainer {
+    text-align: center;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.dividerLine {
+    border: 0;
+    border-top: 1px solid #333;
+}
+
+.dividerText {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-bg);
+    padding: 0 10px;
+    color: #666;
+    font-size: 0.9rem;
+    font-family: var(--font-primary);
+}
+
+/* Date Picker */
+.datePickerContainer {
+    margin-top: 1rem;
+}
+
+.checkboxLabel {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.checkboxText {
+    margin-left: 10px;
+}
+
+/* Step 1 Footer ("Promising a good night?") */
+.footerSection {
+    margin-top: 3rem;
+    text-align: center;
+    border-top: 2px dashed #333;
+    padding-top: 1.5rem;
+}
+
+.footerTitle {
+    font-family: var(--font-primary);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.footerButtons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.footerBtn {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+}
+
+.adminBtn {
+    background: #333;
+    border: 1px solid #666;
+}
+
+/* Step 2 Specifics */
+.step2Grid {
+    margin-bottom: var(--spacing-md);
+}
+
+.nextButton {
+    margin-top: 1rem;
+}
+
+/* Step 3 Subtext */
+.smallText {
+    font-size: 0.8rem;
+}

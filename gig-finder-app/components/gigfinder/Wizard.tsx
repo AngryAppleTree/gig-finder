@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { QuickSearch } from './QuickSearch';
 import Script from 'next/script';
+import styles from './Wizard.module.css';
 
 interface WizardChoices {
     when: string | null;
@@ -166,10 +167,10 @@ export function Wizard({ isAdmin }: WizardProps) {
     // ============================================================================
     if (isRejection) {
         return (
-            <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-                <h1 style={{ fontFamily: 'var(--font-primary)', fontSize: '3rem', color: 'var(--color-primary)', marginBottom: '1rem' }}>GET TAE FUCK</h1>
-                <h2 style={{ fontFamily: 'var(--font-primary)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>We only do small gigs!</h2>
-                <h3 style={{ fontSize: '1.2rem', color: '#ccc', marginBottom: '2rem' }}>We prefer sweaty, smelly cellars.</h3>
+            <div className={`container ${styles.rejectionContainer}`}>
+                <h1 className={styles.rejectionTitle}>GET TAE FUCK</h1>
+                <h2 className={styles.rejectionSubtitle}>We only do small gigs!</h2>
+                <h3 className={styles.rejectionText}>We prefer sweaty, smelly cellars.</h3>
                 <button className="btn-primary" onClick={resetQuiz}>Try Again</button>
             </div>
         );
@@ -200,9 +201,9 @@ export function Wizard({ isAdmin }: WizardProps) {
                             <QuickSearch />
                         </div>
 
-                        <div style={{ textAlign: 'center', position: 'relative', marginBottom: '2rem' }}>
-                            <hr style={{ border: 0, borderTop: '1px solid #333' }} />
-                            <span style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--color-bg)', padding: '0 10px', color: '#666', fontSize: '0.9rem', fontFamily: 'var(--font-primary)' }}>OR TAKE THE JOURNEY</span>
+                        <div className={styles.dividerContainer}>
+                            <hr className={styles.dividerLine} />
+                            <span className={styles.dividerText}>OR TAKE THE JOURNEY</span>
                         </div>
 
                         <h2 className="step-title" id="step1-title">When do you want to go?</h2>
@@ -230,22 +231,22 @@ export function Wizard({ isAdmin }: WizardProps) {
                         </div>
 
                         {choices.when === 'custom' && (
-                            <div className="date-picker center-content" id="datePicker" style={{ marginTop: '1rem' }}>
+                            <div className={`date-picker center-content ${styles.datePickerContainer}`} id="datePicker">
                                 <input type="date" className="date-input" onChange={(e) => handleDateChange(e.target.value)} />
-                                <label className="checkbox-label" style={{ display: 'block', marginTop: '0.5rem' }}>
+                                <label className={`checkbox-label ${styles.checkboxLabel}`}>
                                     <input type="checkbox" onChange={(e) => setChoices(p => ({ ...p, flexible: e.target.checked }))} />
-                                    <span style={{ marginLeft: '10px' }}>I am flexible with the date</span>
+                                    <span className={styles.checkboxText}>I am flexible with the date</span>
                                 </label>
                             </div>
                         )}
 
-                        <div style={{ marginTop: '3rem', textAlign: 'center', borderTop: '2px dashed #333', paddingTop: '1.5rem' }}>
-                            <p style={{ fontFamily: 'var(--font-primary)', fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--color-text)' }}>PROMISING A GOOD NIGHT?</p>
-                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                <a href="/gigfinder/add-event" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none', fontSize: '1rem', padding: '0.8rem 1.5rem' }}>ADD YOUR GIG +</a>
-                                <a href="/gigfinder/my-gigs" className="btn-back" style={{ display: 'inline-block', textDecoration: 'none', fontSize: '1rem', padding: '0.8rem 1.5rem' }}>MY GIGS</a>
+                        <div className={styles.footerSection}>
+                            <p className={styles.footerTitle}>PROMISING A GOOD NIGHT?</p>
+                            <div className={styles.footerButtons}>
+                                <a href="/gigfinder/add-event" className={`btn-primary ${styles.footerBtn}`}>ADD YOUR GIG +</a>
+                                <a href="/gigfinder/my-gigs" className={`btn-back ${styles.footerBtn}`}>MY GIGS</a>
                                 {isAdmin && (
-                                    <a href="/admin" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none', fontSize: '1rem', padding: '0.8rem 1.5rem', background: '#333', border: '1px solid #666' }}>ADMIN CONSOLE</a>
+                                    <a href="/admin" className={`btn-primary ${styles.footerBtn} ${styles.adminBtn}`}>ADMIN CONSOLE</a>
                                 )}
                             </div>
                         </div>
@@ -257,7 +258,7 @@ export function Wizard({ isAdmin }: WizardProps) {
                 {currentStep === 2 && (
                     <section className="step active" id="r-step2">
                         <h2 className="step-title">How far will you travel?</h2>
-                        <div className="options-grid" style={{ marginBottom: 'var(--spacing-md)' }}>
+                        <div className={`options-grid ${styles.step2Grid}`}>
                             <button className="option-btn" onClick={() => handleLocation('local')}>
                                 <span className="option-icon">🎯</span>
                                 <span className="option-text">Locally</span>
@@ -285,7 +286,7 @@ export function Wizard({ isAdmin }: WizardProps) {
                                     // Handle Enter Key
                                     onKeyDown={(e) => e.key === 'Enter' && submitPostcode()}
                                 />
-                                <button className="btn-primary" onClick={submitPostcode} style={{ marginTop: '1rem' }}>Next →</button>
+                                <button className={`btn-primary ${styles.nextButton}`} onClick={submitPostcode}>Next →</button>
                             </div>
                         )}
                         <div className="nav-buttons">
@@ -301,15 +302,15 @@ export function Wizard({ isAdmin }: WizardProps) {
                         <div className="options-grid">
                             <button className="option-btn" onClick={() => handleSize('small')}>
                                 <span className="option-icon">🕯️</span>
-                                <span className="option-text">Small & Cosy<br /><span style={{ fontSize: '0.8rem' }}>(Up to 100)</span></span>
+                                <span className="option-text">Small & Cosy<br /><span className={styles.smallText}>(Up to 100)</span></span>
                             </button>
                             <button className="option-btn" onClick={() => handleSize('medium')}>
                                 <span className="option-icon">🏢</span>
-                                <span className="option-text">Quite Big<br /><span style={{ fontSize: '0.8rem' }}>(100 - 5,000)</span></span>
+                                <span className="option-text">Quite Big<br /><span className={styles.smallText}>(100 - 5,000)</span></span>
                             </button>
                             <button className="option-btn" onClick={() => handleSize('huge')}>
                                 <span className="option-icon">👑</span>
-                                <span className="option-text">Proper Huge<br /><span style={{ fontSize: '0.8rem' }}>(Over 5,000)</span></span>
+                                <span className="option-text">Proper Huge<br /><span className={styles.smallText}>(Over 5,000)</span></span>
                             </button>
                             <button className="option-btn" onClick={() => handleSize('any')}>
                                 <span className="option-icon">🎪</span>

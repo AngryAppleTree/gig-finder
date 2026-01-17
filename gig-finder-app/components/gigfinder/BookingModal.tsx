@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { calculatePlatformFee, formatCurrency, getPlatformFeeDescription } from '@/lib/platform-fee';
+import styles from './BookingModal.module.css';
 
 export function BookingModal() {
     const [isOpen, setIsOpen] = useState(false);
@@ -130,75 +131,52 @@ export function BookingModal() {
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" style={{
-            display: 'flex',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0,0,0,0.85)',
-            zIndex: 9999,
-            justifyContent: 'center',
-            alignItems: 'center'
-        }}>
-            <div className="modal-content" style={{
-                background: '#1a1a1a',
-                padding: '2rem',
-                borderRadius: '12px',
-                maxWidth: '450px',
-                width: '90%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative',
-                border: '1px solid var(--color-primary)',
-                boxShadow: '0 0 20px rgba(255,51,102,0.3)'
-            }}>
+        <div className={`modal-overlay ${styles.overlay}`}>
+            <div className={`modal-content ${styles.content}`}>
                 <button
                     onClick={() => setIsOpen(false)}
                     aria-label="Close booking modal"
-                    style={{ position: 'absolute', top: '10px', right: '15px', background: 'none', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer' }}
+                    className={styles.closeButton}
                 >
                     &times;
                 </button>
 
                 {status === 'success' ? (
-                    <div style={{ textAlign: 'center', padding: '1rem' }}>
-                        <h2 style={{ color: 'var(--color-secondary)', fontSize: '2rem', marginBottom: '1rem' }}>🎉</h2>
-                        <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>You're on the list!</h3>
-                        <p style={{ color: '#ccc', fontSize: '0.9rem' }}>Check your email for your ticket.</p>
+                    <div className={styles.successContainer}>
+                        <h2 className={styles.successIcon}>🎉</h2>
+                        <h3 className={styles.successTitle}>You're on the list!</h3>
+                        <p className={styles.successText}>Check your email for your ticket.</p>
                         <button
-                            className="btn-primary"
+                            className={`btn-primary ${styles.successButton}`}
                             onClick={() => setIsOpen(false)}
-                            style={{ marginTop: '1.5rem', width: '100%' }}
                         >
                             Close
                         </button>
                     </div>
                 ) : (
                     <>
-                        <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#ccc', fontSize: '0.9rem' }}>{eventName}</p>
+                        <p className={styles.eventName}>{eventName}</p>
 
                         {status === 'error' && (
-                            <div style={{ background: 'rgba(255,0,0,0.1)', border: '1px solid red', color: 'red', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.8rem' }}>
+                            <div className={styles.errorBox}>
                                 {errorMessage}
                             </div>
                         )}
 
                         <form onSubmit={handleSubmit}>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label htmlFor="booking-name" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Your Full Name</label>
+                            <div className={styles.formGroup}>
+                                <label htmlFor="booking-name" className={styles.label}>Your Full Name</label>
                                 <input
                                     id="booking-name"
                                     type="text"
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid #333', background: '#000', color: 'white', fontFamily: 'inherit' }}
+                                    className={styles.input}
                                 />
                             </div>
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label htmlFor="booking-email" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Email Address</label>
+                            <div className={styles.formGroupLarge}>
+                                <label htmlFor="booking-email" className={styles.label}>Email Address</label>
                                 <input
                                     id="booking-email"
                                     type="email"
@@ -206,45 +184,25 @@ export function BookingModal() {
                                     value={formData.email}
                                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                                     aria-describedby="email-help"
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '4px', border: '1px solid #333', background: '#000', color: 'white', fontFamily: 'inherit' }}
+                                    className={styles.input}
                                 />
-                                <p id="email-help" style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem' }}>We'll email your ticket instantly.</p>
+                                <p id="email-help" className={styles.helpText}>We'll email your ticket instantly.</p>
                             </div>
 
                             {/* Tickets Quantity Selector */}
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Number of Tickets</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div className={styles.formGroupLarge}>
+                                <label className={styles.label}>Number of Tickets</label>
+                                <div className={styles.quantityContainer}>
                                     <button
                                         type="button"
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                         disabled={quantity <= 1}
                                         aria-label="Decrease ticket quantity"
-                                        style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '50%',
-                                            border: '2px solid var(--color-primary)',
-                                            background: quantity <= 1 ? '#333' : 'var(--color-surface)',
-                                            color: quantity <= 1 ? '#666' : 'var(--color-primary)',
-                                            fontSize: '1.5rem',
-                                            cursor: quantity <= 1 ? 'not-allowed' : 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 'bold'
-                                        }}
+                                        className={styles.quantityButton}
                                     >
                                         −
                                     </button>
-                                    <div style={{
-                                        flex: 1,
-                                        textAlign: 'center',
-                                        fontSize: '1.5rem',
-                                        fontWeight: 'bold',
-                                        color: 'var(--color-primary)',
-                                        fontFamily: 'var(--font-display)'
-                                    }}>
+                                    <div className={styles.quantityDisplay}>
                                         {quantity}
                                     </div>
                                     <button
@@ -252,101 +210,49 @@ export function BookingModal() {
                                         onClick={() => setQuantity(Math.min(10, quantity + 1))}
                                         disabled={quantity >= 10}
                                         aria-label="Increase ticket quantity"
-                                        style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '50%',
-                                            border: '2px solid var(--color-primary)',
-                                            background: quantity >= 10 ? '#333' : 'var(--color-surface)',
-                                            color: quantity >= 10 ? '#666' : 'var(--color-primary)',
-                                            fontSize: '1.5rem',
-                                            cursor: quantity >= 10 ? 'not-allowed' : 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 'bold'
-                                        }}
+                                        className={styles.quantityButton}
                                     >
                                         +
                                     </button>
                                 </div>
-                                <p style={{ fontSize: '0.7rem', color: '#666', marginTop: '0.3rem', textAlign: 'center' }}>
+                                <p className={styles.helpTextCenter}>
                                     Maximum 10 tickets per booking
                                 </p>
                             </div>
 
                             {/* Presale Records Section - Only show if presale price exists */}
                             {presalePrice && presalePrice > 0 && (
-                                <div style={{
-                                    marginBottom: '1.5rem',
-                                    padding: '1rem',
-                                    background: 'rgba(255, 51, 102, 0.1)',
-                                    border: '1px solid var(--color-primary)',
-                                    borderRadius: '8px'
-                                }}>
-                                    <div style={{ marginBottom: '0.8rem' }}>
-                                        <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                <div className={styles.presaleContainer}>
+                                    <div className={styles.presaleHeader}>
+                                        <label className={styles.presaleLabel}>
                                             🎵 Add Vinyl Records
                                         </label>
                                         {presaleCaption && (
-                                            <p style={{ fontSize: '0.75rem', color: '#ccc', marginBottom: '0.5rem' }}>
+                                            <p className={styles.presaleCaption}>
                                                 {presaleCaption}
                                             </p>
                                         )}
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--color-secondary)', fontWeight: 'bold' }}>
+                                        <p className={styles.presalePrice}>
                                             {formatCurrency(presalePrice)} per record
                                         </p>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div className={styles.quantityContainer}>
                                         <button
                                             type="button"
                                             onClick={() => setRecordsQuantity(Math.max(0, recordsQuantity - 1))}
                                             disabled={recordsQuantity <= 0}
-                                            style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '50%',
-                                                border: '2px solid var(--color-primary)',
-                                                background: recordsQuantity <= 0 ? '#333' : 'var(--color-surface)',
-                                                color: recordsQuantity <= 0 ? '#666' : 'var(--color-primary)',
-                                                fontSize: '1.5rem',
-                                                cursor: recordsQuantity <= 0 ? 'not-allowed' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontWeight: 'bold'
-                                            }}
+                                            className={styles.quantityButton}
                                         >
                                             −
                                         </button>
-                                        <div style={{
-                                            flex: 1,
-                                            textAlign: 'center',
-                                            fontSize: '1.5rem',
-                                            fontWeight: 'bold',
-                                            color: 'var(--color-primary)',
-                                            fontFamily: 'var(--font-display)'
-                                        }}>
+                                        <div className={styles.quantityDisplay}>
                                             {recordsQuantity}
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setRecordsQuantity(Math.min(10, recordsQuantity + 1))}
                                             disabled={recordsQuantity >= 10}
-                                            style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '50%',
-                                                border: '2px solid var(--color-primary)',
-                                                background: recordsQuantity >= 10 ? '#333' : 'var(--color-surface)',
-                                                color: recordsQuantity >= 10 ? '#666' : 'var(--color-primary)',
-                                                fontSize: '1.5rem',
-                                                cursor: recordsQuantity >= 10 ? 'not-allowed' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontWeight: 'bold'
-                                            }}
+                                            className={styles.quantityButton}
                                         >
                                             +
                                         </button>
@@ -356,44 +262,30 @@ export function BookingModal() {
 
                             {/* Order Summary with Platform Fee */}
                             {ticketPrice > 0 && (
-                                <div style={{
-                                    marginBottom: '1.5rem',
-                                    padding: '1rem',
-                                    background: 'rgba(0,0,0,0.3)',
-                                    borderRadius: '8px',
-                                    border: '1px solid #333'
-                                }}>
-                                    <h4 style={{ fontSize: '0.9rem', marginBottom: '0.8rem', color: '#ccc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                <div className={styles.summaryContainer}>
+                                    <h4 className={styles.summaryTitle}>
                                         Order Summary
                                     </h4>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                                        <span style={{ color: '#999' }}>Tickets ({quantity}x)</span>
-                                        <span style={{ color: 'white' }}>{formatCurrency(ticketPrice * quantity)}</span>
+                                    <div className={styles.summaryRow}>
+                                        <span className={styles.summaryLabel}>Tickets ({quantity}x)</span>
+                                        <span className={styles.summaryValue}>{formatCurrency(ticketPrice * quantity)}</span>
                                     </div>
                                     {recordsQuantity > 0 && presalePrice && (
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                                            <span style={{ color: '#999' }}>Records ({recordsQuantity}x)</span>
-                                            <span style={{ color: 'white' }}>{formatCurrency(presalePrice * recordsQuantity)}</span>
+                                        <div className={styles.summaryRow}>
+                                            <span className={styles.summaryLabel}>Records ({recordsQuantity}x)</span>
+                                            <span className={styles.summaryValue}>{formatCurrency(presalePrice * recordsQuantity)}</span>
                                         </div>
                                     )}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                                        <span style={{ color: '#999' }}>{getPlatformFeeDescription()}</span>
-                                        <span style={{ color: 'white' }}>{formatCurrency(calculatePlatformFee({
+                                    <div className={styles.summaryRow}>
+                                        <span className={styles.summaryLabel}>{getPlatformFeeDescription()}</span>
+                                        <span className={styles.summaryValue}>{formatCurrency(calculatePlatformFee({
                                             ticketsSubtotal: ticketPrice * quantity,
                                             recordsSubtotal: (presalePrice || 0) * recordsQuantity
                                         }).platformFee)}</span>
                                     </div>
-                                    <div style={{
-                                        borderTop: '1px solid #444',
-                                        marginTop: '0.8rem',
-                                        paddingTop: '0.8rem',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        fontSize: '1.1rem',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        <span style={{ color: 'var(--color-secondary)' }}>Total</span>
-                                        <span style={{ color: 'var(--color-secondary)' }}>
+                                    <div className={styles.summaryTotal}>
+                                        <span className={styles.summaryTotalLabel}>Total</span>
+                                        <span className={styles.summaryTotalValue}>
                                             {formatCurrency(calculatePlatformFee({
                                                 ticketsSubtotal: ticketPrice * quantity,
                                                 recordsSubtotal: (presalePrice || 0) * recordsQuantity
@@ -404,9 +296,8 @@ export function BookingModal() {
                             )}
                             <button
                                 type="submit"
-                                className="btn-primary"
+                                className={`btn-primary ${styles.submitButton}`}
                                 disabled={status === 'submitting'}
-                                style={{ width: '100%', opacity: status === 'submitting' ? 0.7 : 1 }}
                             >
                                 {status === 'submitting' ? 'Processing...' : 'Confirm Booking'}
                             </button>
