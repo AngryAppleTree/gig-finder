@@ -307,11 +307,11 @@ function AddEventForm() {
     // If still checking auth/restoring, show loading? 
     // Actually, we want to show form immediately for anon users, so we just wait for isLoaded
     if (!isLoaded) {
-        return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
+        return <div className={styles.loadingContainer}>Loading...</div>;
     }
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={handleSubmit} className={styles.formContainer}>
 
             {/* Status Message */}
             {statusMessage && (
@@ -334,7 +334,7 @@ function AddEventForm() {
             </div>
 
             {/* Venue with Autocomplete */}
-            <div style={{ position: 'relative' }}>
+            <div className={styles.venueInputContainer}>
                 <label htmlFor="venue" className={styles.label}>Venue</label>
                 <input
                     type="text"
@@ -449,35 +449,25 @@ function AddEventForm() {
             {/* Description */}
             <div>
                 <label htmlFor="description" className={styles.label}>Description</label>
-                <textarea id="description" name="description" className="text-input" style={{ width: '100%', minHeight: '100px', textTransform: 'none' }} placeholder="Tell us about the gig..."></textarea>
+                <textarea id="description" name="description" className={`text-input ${styles.textareaLarge}`} placeholder="Tell us about the gig..."></textarea>
             </div>
 
             {/* Price */}
             <div>
                 <label htmlFor="price" className={styles.label}>Price</label>
-                <div style={{ position: 'relative' }}>
-                    <span style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--color-primary)',
-                        fontFamily: 'var(--font-primary)',
-                        fontSize: '1.2rem',
-                        pointerEvents: 'none'
-                    }}>£</span>
+                <div className={styles.priceInputContainer}>
+                    <span className={styles.priceSymbol}>£</span>
                     <input
                         type="text"
                         id="price"
                         name="price"
-                        className="text-input"
-                        style={{ width: '100%', paddingLeft: '32px' }}
+                        className={`text-input ${styles.priceInput}`}
                         placeholder="10.00 or 0 for Free"
                         pattern="^\d+(\.\d{0,2})?$"
                         title="Enter a valid price (e.g., 10 or 10.50). Use 0 for free entry."
                     />
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                <p className={styles.helpText}>
                     Enter amount in £ (e.g., 10 or 10.50). Use 0 for free entry.
                 </p>
             </div>
@@ -487,29 +477,19 @@ function AddEventForm() {
                 <label htmlFor="presale_price" className={styles.label}>
                     Record Presale Price (Optional)
                 </label>
-                <div style={{ position: 'relative' }}>
-                    <span style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--color-primary)',
-                        fontFamily: 'var(--font-primary)',
-                        fontSize: '1.2rem',
-                        pointerEvents: 'none'
-                    }}>£</span>
+                <div className={styles.priceInputContainer}>
+                    <span className={styles.priceSymbol}>£</span>
                     <input
                         type="text"
                         id="presale_price"
                         name="presale_price"
-                        className="text-input"
-                        style={{ width: '100%', paddingLeft: '32px' }}
+                        className={`text-input ${styles.priceInput}`}
                         placeholder="8.00"
                         pattern="^\d+(\.\d{0,2})?$"
                         title="Enter a valid price (e.g., 8 or 8.50)"
                     />
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                <p className={styles.helpText}>
                     Discounted price for customers who pre-buy records
                 </p>
             </div>
@@ -527,7 +507,7 @@ function AddEventForm() {
                     placeholder="e.g., Buy our new album and get £2 off entry!"
                     maxLength={200}
                 />
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                <p className={styles.helpText}>
                     Explain the presale offer (max 200 characters)
                 </p>
             </div>
