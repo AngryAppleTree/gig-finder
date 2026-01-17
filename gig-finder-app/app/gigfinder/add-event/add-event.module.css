@@ -1,0 +1,286 @@
+/* Add Event Page - CSS Module */
+
+/* === Form Container & Layout === */
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.formRow {
+    margin-bottom: 1.5rem;
+}
+
+/* === Form Elements === */
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+}
+
+.labelRequired {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+}
+
+.input {
+    width: 100%;
+}
+
+.textarea {
+    width: 100%;
+}
+
+.select {
+    width: 100%;
+}
+
+.checkboxGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.checkboxLabel {
+    cursor: pointer;
+}
+
+/* === Venue Autocomplete === */
+.venueInputContainer {
+    position: relative;
+}
+
+.venueDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #222;
+    border: 1px solid var(--color-primary);
+    border-radius: 4px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.venueOption {
+    padding: 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+    transition: background 0.2s;
+}
+
+.venueOption:hover {
+    background: var(--color-primary);
+}
+
+.venueOptionName {
+    font-weight: bold;
+}
+
+.venueOptionDetails {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.newVenueIndicator {
+    font-size: 0.85rem;
+    color: var(--color-secondary);
+    margin-top: 0.5rem;
+}
+
+/* === New Venue Section === */
+.newVenueSection {
+    padding: 1rem;
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid var(--color-secondary);
+    border-radius: 8px;
+}
+
+.newVenueTitle {
+    font-family: var(--font-primary);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--color-secondary);
+}
+
+.newVenueGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.newVenueHint {
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+}
+
+/* === Image Upload === */
+.imageUploadSection {
+    margin-bottom: 1.5rem;
+}
+
+.imagePreviewContainer {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.imagePreview {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+    border: 2px solid var(--color-primary);
+}
+
+.uploadButton {
+    margin-top: 0.5rem;
+}
+
+.imageHint {
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+}
+
+/* === Status Messages === */
+.statusMessage {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+.statusSuccess {
+    background: rgba(0, 255, 0, 0.1);
+    border: 2px solid #0f0;
+    color: #0f0;
+}
+
+.statusError {
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid #f00;
+    color: #f00;
+}
+
+.statusInfo {
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid var(--color-secondary);
+    color: var(--color-secondary);
+}
+
+/* === Ticketing Section === */
+.ticketingSection {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.ticketingTitle {
+    font-family: var(--font-primary);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.ticketingHint {
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+}
+
+/* === Presale Section === */
+.presaleSection {
+    padding: 1rem;
+    background: rgba(255, 51, 102, 0.1);
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+}
+
+.presaleTitle {
+    font-family: var(--font-primary);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+}
+
+.presaleGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.presaleHint {
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+}
+
+/* === Buttons === */
+.submitButton {
+    width: 100%;
+}
+
+.submitButtonDisabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    width: 100%;
+    background: #666;
+    border-color: #666;
+}
+
+/* === Helper Text === */
+.helpText {
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+}
+
+.helpTextSmall {
+    font-size: 0.7rem;
+    color: #888;
+    margin-top: 0.3rem;
+}
+
+/* === Loading State === */
+.loadingContainer {
+    color: white;
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* === New Venue Alert === */
+.newVenueAlert {
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px solid var(--color-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.newVenueAlertTitle {
+    font-family: var(--font-primary);
+    font-size: 1.2rem;
+    color: var(--color-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.newVenueAlertText {
+    color: #ccc;
+}

@@ -2,6 +2,7 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense, useState } from 'react';
+import styles from './add-event.module.css';
 
 interface Venue {
     id: number;
@@ -328,13 +329,13 @@ function AddEventForm() {
 
             {/* Event Name */}
             <div>
-                <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Event / Artist Name</label>
-                <input type="text" id="name" name="name" required className="text-input" style={{ width: '100%' }} placeholder="e.g. The Spiders from Mars" />
+                <label htmlFor="name" className={styles.label}>Event / Artist Name</label>
+                <input type="text" id="name" name="name" required className={`text-input ${styles.input}`} placeholder="e.g. The Spiders from Mars" />
             </div>
 
             {/* Venue with Autocomplete */}
             <div style={{ position: 'relative' }}>
-                <label htmlFor="venue" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Venue</label>
+                <label htmlFor="venue" className={styles.label}>Venue</label>
                 <input
                     type="text"
                     id="venue"
@@ -343,8 +344,7 @@ function AddEventForm() {
                     onFocus={() => setShowVenueSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowVenueSuggestions(false), 200)}
                     required
-                    className="text-input"
-                    style={{ width: '100%' }}
+                    className={`text-input ${styles.input}`}
                     placeholder="Start typing venue name..."
                     autoComplete="off"
                 />
@@ -413,7 +413,7 @@ function AddEventForm() {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                            <label className={styles.label}>
                                 Town/City *
                             </label>
                             <input
@@ -421,22 +421,20 @@ function AddEventForm() {
                                 value={newVenueCity}
                                 onChange={(e) => setNewVenueCity(e.target.value)}
                                 required={isNewVenue}
-                                className="text-input"
-                                style={{ width: '100%' }}
+                                className={`text-input ${styles.input}`}
                                 placeholder="e.g. Edinburgh"
                             />
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                            <label className={styles.label}>
                                 Venue Capacity (Optional)
                             </label>
                             <input
                                 type="number"
                                 value={newVenueCapacity}
                                 onChange={(e) => setNewVenueCapacity(e.target.value)}
-                                className="text-input"
-                                style={{ width: '100%' }}
+                                className={`text-input ${styles.input}`}
                                 placeholder="e.g. 200 (leave blank if unknown)"
                                 min="1"
                                 max="10000"
@@ -453,19 +451,19 @@ function AddEventForm() {
             {/* Date & Time */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                    <label htmlFor="date" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Date</label>
-                    <input type="date" id="date" name="date" required className="date-input" style={{ width: '100%' }} />
+                    <label htmlFor="date" className={styles.label}>Date</label>
+                    <input type="date" id="date" name="date" required className={`date-input ${styles.input}`} />
                 </div>
                 <div>
-                    <label htmlFor="time" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Time</label>
-                    <input type="text" id="time" name="time" placeholder="20:00" className="text-input" style={{ width: '100%' }} />
+                    <label htmlFor="time" className={styles.label}>Time</label>
+                    <input type="text" id="time" name="time" placeholder="20:00" className={`text-input ${styles.input}`} />
                 </div>
             </div>
 
             {/* Genre */}
             <div>
-                <label htmlFor="genre" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Genre</label>
-                <select id="genre" name="genre" className="text-input" style={{ width: '100%' }}>
+                <label htmlFor="genre" className={styles.label}>Genre</label>
+                <select id="genre" name="genre" className={`text-input ${styles.input}`}>
                     <option value="rock_blues_punk">Rock / Punk / Blues</option>
                     <option value="indie_alt">Indie / Alternative</option>
                     <option value="metal">Metal</option>
@@ -479,13 +477,13 @@ function AddEventForm() {
 
             {/* Description */}
             <div>
-                <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Description</label>
+                <label htmlFor="description" className={styles.label}>Description</label>
                 <textarea id="description" name="description" className="text-input" style={{ width: '100%', minHeight: '100px', textTransform: 'none' }} placeholder="Tell us about the gig..."></textarea>
             </div>
 
             {/* Price */}
             <div>
-                <label htmlFor="price" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Price</label>
+                <label htmlFor="price" className={styles.label}>Price</label>
                 <div style={{ position: 'relative' }}>
                     <span style={{
                         position: 'absolute',
@@ -515,7 +513,7 @@ function AddEventForm() {
 
             {/* Presale Price (Optional) */}
             <div>
-                <label htmlFor="presale_price" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                <label htmlFor="presale_price" className={styles.label}>
                     Record Presale Price (Optional)
                 </label>
                 <div style={{ position: 'relative' }}>
@@ -547,15 +545,14 @@ function AddEventForm() {
 
             {/* Presale Caption (Optional) */}
             <div>
-                <label htmlFor="presale_caption" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                <label htmlFor="presale_caption" className={styles.label}>
                     Presale Explanation (Optional)
                 </label>
                 <input
                     type="text"
                     id="presale_caption"
                     name="presale_caption"
-                    className="text-input"
-                    style={{ width: '100%' }}
+                    className={`text-input ${styles.input}`}
                     placeholder="e.g., Buy our new album and get £2 off entry!"
                     maxLength={200}
                 />
@@ -566,7 +563,7 @@ function AddEventForm() {
 
             {/* Image Upload */}
             <div>
-                <label htmlFor="poster" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                <label htmlFor="poster" className={styles.label}>
                     Gig Poster / Image (Optional)
                 </label>
                 <input
@@ -586,7 +583,7 @@ function AddEventForm() {
 
             {/* Ticketing Options */}
             <div style={{ marginTop: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                <label className={styles.label}>
                     Ticketing Options
                 </label>
 
