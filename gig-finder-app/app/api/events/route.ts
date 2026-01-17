@@ -1,36 +1,16 @@
-// Skiddle API Route
-// Fetches events from Skiddle API and transforms them to GigFinder format
+/**
+ * Public Events Search API
+ * 
+ * This endpoint ONLY queries the database.
+ * It does NOT scrape or fetch from external APIs.
+ * 
+ * For data ingestion, use /api/admin/scrape-skiddle (admin only)
+ */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getVenueCapacity } from './venue-capacities';
 import { mapGenreToVibe } from './genre-mapping';
-import { findOrCreateVenue, type VenueData } from '@/lib/venue-utils';
-import { findOrCreateEvent, type EventData } from '@/lib/event-utils';
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit';
 import { getPool } from '@/lib/db';
-
-const SKIDDLE_API_BASE = 'https://www.skiddle.com/api/v1';
-
-interface SkiddleEvent {
-    id: string;
-    eventname: string;
-    venue: {
-        name: string;
-        town: string;
-        latitude: string;
-        longitude: string;
-    };
-    date: string;
-    openingtimes: {
-        doorsopen: string;
-    };
-    entryprice: string;
-    link: string;
-    description: string;
-    EventCode: string;
-    imageurl: string;
-    genres?: Array<{ name: string }>;
-}
 
 export async function GET(request: NextRequest) {
     // Rate limiting
@@ -59,10 +39,7 @@ export async function GET(request: NextRequest) {
     const maxDate = searchParams.get('maxDate');
     const keyword = searchParams.get('keyword');
 
-    const apiKey = process.env.SKIDDLE_API_KEY || '';
-    const skiddleDisabled = process.env.DISABLE_SKIDDLE === 'true';
-
-    // 1. Fetch Manual Gigs (Level 1 Data) with Venue Info
+    // Fetch Manual Gigs (Database Only) with Venue Info
     let manualEvents: any[] = [];
     try {
         const client = await getPool().connect();
@@ -96,20 +73,17 @@ export async function GET(request: NextRequest) {
         manualEvents = res.rows;
         client.release();
     } catch (e) {
-        console.error('Failed to fetch manual events from DB:', e);
-        // Proceed without manual events if DB fails
+        console.error('Failed to fetch events from DB:', e);
+        return NextResponse.json(
+            { error: 'Database error', success: false },
+            { status: 500 }
+        );
     }
 
-    // Prepare Manual Gigs for Deduplication & Display
-    const manualFingerprints = new Set<string>();
-    const formattedManualEvents = manualEvents.map(e => {
-        if (e.fingerprint) manualFingerprints.add(e.fingerprint);
-
-        // Ensure fingerprint is generated if missing (legacy)
+    // Format events for display
+    const formattedEvents = manualEvents.map(e => {
         const dateStr = new Date(e.date).toISOString().split('T')[0];
         const venueName = e.venue_name || e.venue || 'Unknown Venue';
-        const fp = e.fingerprint || `${dateStr}|${venueName.toLowerCase().trim()}|${e.name.toLowerCase().trim()}`;
-        manualFingerprints.add(fp);
 
         // Use venue data from JOIN or fallback to defaults
         const venueCity = e.venue_city || location;
@@ -123,7 +97,7 @@ export async function GET(request: NextRequest) {
             location: venueName,
             venue: venueName,
             town: venueCity,
-            coords: { lat: venueLat, lon: venueLon }, // Real coordinates from venues table!
+            coords: { lat: venueLat, lon: venueLon }, // Real coordinates from venues table
             capacity: venueCapacity || null, // Return as number from venues table
             dateObj: e.date, // Timestamp
             date: new Date(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
@@ -152,211 +126,17 @@ export async function GET(request: NextRequest) {
         };
     });
 
-    // 2. Fetch Skiddle Gigs (Level 3 Data)
-    // TODO: After Beta - decide whether to keep or remove Skiddle integration
-    //       If not using Skiddle, remove this entire section (lines 151-343) to reduce complexity
-    //       If keeping Skiddle, properly test venue deduplication and enable DISABLE_SKIDDLE=false
-    // Skip Skiddle if disabled via environment variable (e.g., during Beta)
-    if (skiddleDisabled) {
-        console.log('⏸️  Skiddle scraper disabled (DISABLE_SKIDDLE=true)');
-        return NextResponse.json({
-            success: true,
-            count: manualEvents.length,
-            events: formattedManualEvents,
-            source: 'manual_only',
-            message: 'Skiddle disabled during Beta'
-        });
-    }
+    // Sort by Date
+    formattedEvents.sort((a, b) => new Date(a.dateObj).getTime() - new Date(b.dateObj).getTime());
 
-    if (!apiKey || apiKey === 'your_skiddle_api_key_here') {
-        // Should usually return error, but if we have manual gigs, maybe return those?
-        if (manualEvents.length > 0) {
-            return NextResponse.json({ success: true, count: manualEvents.length, events: formattedManualEvents, source: 'manual_only' });
+    return NextResponse.json({
+        success: true,
+        count: formattedEvents.length,
+        events: formattedEvents,
+        source: 'database'
+    }, {
+        headers: {
+            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
         }
-        return NextResponse.json({ error: 'Skiddle API key missing' }, { status: 500 });
-    }
-
-    try {
-        const params = new URLSearchParams({
-            api_key: apiKey,
-            latitude: location === 'Edinburgh' ? '55.9533' : '55.8642',
-            longitude: location === 'Edinburgh' ? '-3.1883' : '-4.2518',
-            radius: '20',
-            order: 'date',
-            limit: '100',
-            eventcode: 'LIVE',
-        });
-
-        if (minDate) params.append('minDate', minDate);
-        if (maxDate) params.append('maxDate', maxDate);
-        if (genre) params.append('g', genre);
-        if (keyword) params.append('keyword', keyword);
-
-        const skiddleUrl = `${SKIDDLE_API_BASE}/events/search/?${params.toString()}`;
-        console.log('Fetching from Skiddle:', skiddleUrl.replace(apiKey, 'API_KEY_HIDDEN'));
-
-        const response = await fetch(skiddleUrl);
-        if (!response.ok) throw new Error(`Skiddle API error: ${response.status}`);
-        const data = await response.json();
-
-        // Process venues from Skiddle events - ensure they exist in database
-        const venueMap = new Map<string, number>(); // venue name -> venue_id
-        const skiddleResults = data.results || [];
-
-        console.log(`📍 Processing ${skiddleResults.length} venues from Skiddle...`);
-
-        for (const event of skiddleResults) {
-            const venueName = event.venue?.name;
-            if (!venueName || venueMap.has(venueName.toLowerCase())) {
-                continue; // Skip if no venue or already processed
-            }
-
-            try {
-                const venueData: VenueData = {
-                    name: venueName,
-                    city: event.venue.town || location,
-                    latitude: event.venue.latitude ? parseFloat(event.venue.latitude) : undefined,
-                    longitude: event.venue.longitude ? parseFloat(event.venue.longitude) : undefined,
-                    // Skiddle doesn't provide capacity, address, postcode, or website in event data
-                };
-
-                const venueResult = await findOrCreateVenue(venueData, 'skiddle', false);
-                venueMap.set(venueName.toLowerCase(), venueResult.id);
-
-                if (venueResult.isNew) {
-                    console.log(`  ✨ New venue created: ${venueName}`);
-                }
-            } catch (error) {
-                console.error(`  ❌ Failed to process venue ${venueName}:`, error);
-                // Continue with other venues
-            }
-        }
-
-        console.log(`✅ Processed ${venueMap.size} unique venues`);
-
-        // Process and persist Skiddle events to database
-        const skiddleEvents = await Promise.all((data.results || []).map(async (event: SkiddleEvent, index: number) => {
-            // Parse price
-            let priceVal = 0;
-            let priceText = 'Free';
-            if (event.entryprice) {
-                const m = event.entryprice.match(/£?([\d.]+)/);
-                if (m) { priceVal = parseFloat(m[1]); priceText = `£${priceVal.toFixed(2)}`; }
-            }
-
-            // Map genre to vibe
-            let vibe = mapGenreToVibe(event.genres || []);
-            if (vibe === 'indie_alt' && !event.genres?.length) {
-                // Fallback detection
-                const text = (event.eventname + ' ' + event.description).toLowerCase();
-                if (text.match(/rock|punk/)) vibe = 'rock_blues_punk';
-                else if (text.match(/metal/)) vibe = 'metal';
-                else if (text.match(/electronic|dj/)) vibe = 'electronic';
-            }
-
-            const dateObj = new Date(event.date);
-            const dateStr = event.date; // YYYY-MM-DD
-
-            // Deduplication check against manual events
-            const fp = `${dateStr}|${event.venue.name.toLowerCase().trim()}|${event.eventname.toLowerCase().trim()}`;
-            if (manualFingerprints.has(fp)) {
-                return null; // Skip - manual version takes priority
-            }
-
-            // Get venue ID from venueMap
-            const venueId = venueMap.get(event.venue.name.toLowerCase());
-            if (!venueId) {
-                console.error(`⚠️  No venue ID for ${event.venue.name}, skipping event`);
-                return null;
-            }
-
-            // Persist event to database using shared utility
-            try {
-                const eventData: EventData = {
-                    name: event.eventname,
-                    venueId: venueId,
-                    date: dateStr,
-                    time: event.openingtimes?.doorsopen || undefined,
-                    genre: event.genres?.[0]?.name || undefined,
-                    description: event.description || undefined,
-                    price: priceText,
-                    ticketPrice: priceVal,
-                    ticketUrl: event.link,
-                    imageUrl: event.imageurl,
-                    source: 'skiddle'
-                };
-
-                const persistedEvent = await findOrCreateEvent(eventData, false);
-
-                // Get venue capacity for display
-                let venueCapacity: number | null = null;
-                try {
-                    const client = await getPool().connect();
-                    const venueResult = await client.query('SELECT capacity FROM venues WHERE id = $1', [venueId]);
-                    if (venueResult.rows[0]?.capacity) {
-                        venueCapacity = venueResult.rows[0].capacity;
-                    }
-                    client.release();
-                } catch (err) {
-                    console.error(`Failed to get capacity for venue ${event.venue.name}:`, err);
-                }
-
-                // Return formatted event for display
-                return {
-                    id: persistedEvent.id, // Use database ID
-                    name: event.eventname,
-                    location: event.venue.name,
-                    venue: event.venue.name,
-                    town: event.venue.town,
-                    coords: { lat: parseFloat(event.venue.latitude), lon: parseFloat(event.venue.longitude) },
-                    capacity: venueCapacity,
-                    dateObj: event.date,
-                    date: dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
-                    time: event.openingtimes?.doorsopen || 'TBA',
-                    priceVal,
-                    price: priceText,
-                    vibe,
-                    ticketUrl: event.link,
-                    description: event.description || '',
-                    imageUrl: event.imageurl,
-                    source: 'skiddle',
-                    priority: 3
-                };
-            } catch (error) {
-                console.error(`Failed to persist event ${event.eventname}:`, error);
-                return null; // Skip this event if persistence fails
-            }
-        }));
-
-        const filteredSkiddleEvents = skiddleEvents.filter((e: any) => e !== null); // Remove skipped
-
-        // Merge Level 1 and Level 3
-        const allEvents = [...formattedManualEvents, ...filteredSkiddleEvents];
-
-        // Sort by Date
-        allEvents.sort((a, b) => new Date(a.dateObj).getTime() - new Date(b.dateObj).getTime());
-
-        return NextResponse.json({
-            success: true,
-            count: allEvents.length,
-            events: allEvents,
-            sources: ['manual', 'skiddle']
-        }, {
-            headers: {
-                'Cache-Control': 'no-store, no-cache, must-revalidate',
-                'Pragma': 'no-cache'
-            }
-        });
-
-    } catch (error) {
-        console.error('API Processing Error:', error);
-        // Fallback to manual only if Skiddle fails
-        return NextResponse.json({
-            success: true,
-            count: formattedManualEvents.length,
-            events: formattedManualEvents,
-            source: 'manual_fallback',
-            error: 'Skiddle failed'
-        });
-    }
+    });
 }
