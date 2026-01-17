@@ -315,14 +315,10 @@ function AddEventForm() {
 
             {/* Status Message */}
             {statusMessage && (
-                <div style={{
-                    padding: '1rem',
-                    background: statusMessage.startsWith('✅') ? 'var(--color-secondary)' : '#511',
-                    color: 'white',
-                    fontFamily: 'var(--font-primary)',
-                    textAlign: 'center',
-                    borderRadius: '4px'
-                }}>
+                <div className={`${styles.statusMessageContainer} ${statusMessage.startsWith('✅') ? styles.statusMessageSuccess :
+                    statusMessage.startsWith('❌') ? styles.statusMessageError :
+                        styles.statusMessageInfo
+                    }`}>
                     {statusMessage}
                 </div>
             )}
@@ -522,47 +518,46 @@ function AddEventForm() {
                     id="poster"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="text-input"
-                    style={{ width: '100%', padding: '0.5rem' }}
+                    className={`text-input ${styles.imageInput}`}
                 />
                 {posterPreview && (
-                    <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                        <img src={posterPreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px', border: '2px solid #555' }} />
+                    <div className={styles.imagePreviewWrapper}>
+                        <img src={posterPreview} alt="Preview" className={styles.imagePreviewImg} />
                     </div>
                 )}
             </div>
 
             {/* Ticketing Options */}
-            <div style={{ marginTop: '1rem' }}>
+            <div className={styles.ticketingWrapper}>
                 <label className={styles.label}>
                     Ticketing Options
                 </label>
 
                 {/* Free Guest List */}
-                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginBottom: '0.5rem', borderRadius: '4px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
-                        <input type="checkbox" name="is_internal_ticketing" value="true" style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }} />
-                        <div style={{ textAlign: 'left' }}>
-                            <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Guest List (Free)</span>
-                            <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book free tickets directly on GigFinder.</span>
+                <div className={styles.ticketingOption}>
+                    <label className={styles.ticketingCheckboxLabel}>
+                        <input type="checkbox" name="is_internal_ticketing" value="true" className={styles.ticketingCheckboxPrimary} />
+                        <div className={styles.ticketingTextWrapper}>
+                            <span className={styles.ticketingTitlePrimary}>Enable Guest List (Free)</span>
+                            <span className={styles.ticketingDescription}>Let people book free tickets directly on GigFinder.</span>
                         </div>
                     </label>
                 </div>
 
                 {/* Paid Ticket Sales */}
-                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', borderRadius: '4px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
-                        <input type="checkbox" name="sell_tickets" value="true" style={{ width: '24px', height: '24px', accentColor: 'var(--color-secondary)' }} />
-                        <div style={{ textAlign: 'left' }}>
-                            <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-secondary)' }}>Sell Tickets (Paid)</span>
-                            <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Sell paid tickets via Stripe. Set a ticket price above.</span>
+                <div className={styles.ticketingOptionLast}>
+                    <label className={styles.ticketingCheckboxLabel}>
+                        <input type="checkbox" name="sell_tickets" value="true" className={styles.ticketingCheckboxSecondary} />
+                        <div className={styles.ticketingTextWrapper}>
+                            <span className={styles.ticketingTitleSecondary}>Sell Tickets (Paid)</span>
+                            <span className={styles.ticketingDescription}>Sell paid tickets via Stripe. Set a ticket price above.</span>
                         </div>
                     </label>
                 </div>
             </div>
 
             {/* Submit Button */}
-            <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ marginTop: '1rem', fontSize: '1.2rem' }}>
+            <button type="submit" disabled={isSubmitting} className={`btn-primary ${styles.submitButtonLarge}`}>
                 {isSubmitting ? 'Uploading...' : 'SUBMIT GIG'}
             </button>
         </form>
@@ -571,22 +566,22 @@ function AddEventForm() {
 
 export default function AddEventPage() {
     return (
-        <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff' }}>
-            <header style={{ padding: '1rem', textAlign: 'left' }}>
-                <h1 className="main-title" style={{ position: 'relative', margin: '0', fontSize: '3rem' }}>GIG<br />FINDER</h1>
+        <div className={styles.pageWrapper}>
+            <header className={styles.pageHeader}>
+                <h1 className={`main-title ${styles.pageTitle}`}>GIG<br />FINDER</h1>
             </header>
 
-            <main className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
-                <div style={{ background: 'var(--color-surface)', padding: '2rem', border: '3px solid var(--color-border)', boxShadow: '8px 8px 0 var(--color-primary)' }}>
-                    <h2 style={{ fontFamily: 'var(--font-primary)', fontSize: '2rem', marginBottom: '1.5rem', textAlign: 'center', textTransform: 'uppercase' }}>Add Your Event</h2>
+            <main className={`container ${styles.pageMain}`}>
+                <div className={styles.pageCard}>
+                    <h2 className={styles.pageCardTitle}>Add Your Event</h2>
 
                     <Suspense fallback={<div>Loading form...</div>}>
                         <AddEventForm />
                     </Suspense>
                 </div>
 
-                <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-                    <a href="/gigfinder" className="btn-back" style={{ textDecoration: 'none' }}>← Back to Finder</a>
+                <div className={styles.pageFooter}>
+                    <a href="/gigfinder" className={`btn-back ${styles.pageBackLink}`}>← Back to Finder</a>
                 </div>
             </main>
         </div>
