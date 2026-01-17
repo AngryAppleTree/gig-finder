@@ -351,34 +351,15 @@ function AddEventForm() {
 
                 {/* Autocomplete Dropdown */}
                 {showVenueSuggestions && venueInput && filteredVenues.length > 0 && (
-                    <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        background: '#222',
-                        border: '1px solid var(--color-primary)',
-                        borderRadius: '4px',
-                        marginTop: '4px',
-                        maxHeight: '200px',
-                        overflowY: 'auto',
-                        zIndex: 1000
-                    }}>
+                    <div className={styles.venueDropdown}>
                         {filteredVenues.map(venue => (
                             <div
                                 key={venue.id}
                                 onClick={() => handleVenueSelect(venue)}
-                                style={{
-                                    padding: '0.75rem',
-                                    cursor: 'pointer',
-                                    borderBottom: '1px solid #333',
-                                    transition: 'background 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-primary)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                className={styles.venueOption}
                             >
-                                <div style={{ fontWeight: 'bold' }}>{venue.name}</div>
-                                <div style={{ fontSize: '0.85rem', color: '#888' }}>
+                                <div className={styles.venueOptionName}>{venue.name}</div>
+                                <div className={styles.venueOptionDetails}>
                                     {venue.city || 'Unknown city'} • Capacity: {venue.capacity || 'Unknown'}
                                 </div>
                             </div>
@@ -388,7 +369,7 @@ function AddEventForm() {
 
                 {/* New Venue Indicator */}
                 {isNewVenue && venueInput && (
-                    <p style={{ fontSize: '0.85rem', color: 'var(--color-secondary)', marginTop: '0.5rem' }}>
+                    <p className={styles.newVenueIndicator}>
                         ✨ New venue - we'll add "{venueInput}" to our database
                     </p>
                 )}
@@ -396,22 +377,12 @@ function AddEventForm() {
 
             {/* Conditional: New Venue Fields */}
             {isNewVenue && venueInput && (
-                <div style={{
-                    padding: '1rem',
-                    background: 'rgba(255, 215, 0, 0.1)',
-                    border: '2px solid var(--color-secondary)',
-                    borderRadius: '8px'
-                }}>
-                    <h3 style={{
-                        fontFamily: 'var(--font-primary)',
-                        fontSize: '1.2rem',
-                        marginBottom: '1rem',
-                        color: 'var(--color-secondary)'
-                    }}>
+                <div className={styles.newVenueSection}>
+                    <h3 className={styles.newVenueTitle}>
                         New Venue Details
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className={styles.formGrid}>
                         <div>
                             <label className={styles.label}>
                                 Town/City *
@@ -442,14 +413,14 @@ function AddEventForm() {
                         </div>
                     </div>
 
-                    <p style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '0.5rem' }}>
+                    <p className={styles.newVenueHint}>
                         💡 If you don't know the capacity, leave it blank - admin will update it
                     </p>
                 </div>
             )}
 
             {/* Date & Time */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className={styles.formGrid}>
                 <div>
                     <label htmlFor="date" className={styles.label}>Date</label>
                     <input type="date" id="date" name="date" required className={`date-input ${styles.input}`} />
