@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Gig } from './types';
+import styles from './GigCard.module.css';
 
 interface GigCardProps {
     gig: Gig;
@@ -26,7 +27,7 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
     const locationText = gig.town ? `${gig.location}, ${gig.town}` : gig.location;
 
     const distanceHtml = gig.distance !== undefined
-        ? <span style={{ fontSize: '0.9rem', color: 'var(--color-primary)' }}>({gig.distance.toFixed(1)} miles away)</span>
+        ? <span className={styles.distanceText}>({gig.distance.toFixed(1)} miles away)</span>
         : null;
 
     const handleBooking = () => {
@@ -56,7 +57,7 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                     src={gig.imageUrl || '/no-photo.png'}
                     alt={`${gig.name} at ${gig.venue} on ${gig.date}`}
                     onError={(e) => e.currentTarget.src = '/no-photo.png'}
-                    style={{ height: '200px', width: '100%', objectFit: 'cover' }}
+                    className={styles.gigImage}
                 />
             </div>
             <div className="gig-details">
@@ -71,38 +72,21 @@ export const GigCard: React.FC<GigCardProps> = ({ gig }) => {
                     <p className="gig-date">📅 {gig.date} at {gig.time}</p>
                     <p className="gig-price">🎟️ {gig.price}</p>
                     {gig.presale_price && (
-                        <div style={{
-                            marginTop: '0.5rem',
-                            padding: '0.5rem',
-                            background: 'rgba(255, 51, 102, 0.1)',
-                            border: '1px solid var(--color-primary)',
-                            borderRadius: '4px'
-                        }}>
-                            <p style={{
-                                color: 'var(--color-secondary)',
-                                fontWeight: 'bold',
-                                fontSize: '0.9rem',
-                                margin: '0 0 0.25rem 0'
-                            }}>
+                        <div className={styles.presaleContainer}>
+                            <p className={styles.presalePrice}>
                                 💿 Presale: £{typeof gig.presale_price === 'number' ? gig.presale_price.toFixed(2) : parseFloat(gig.presale_price).toFixed(2)}
                             </p>
                             {gig.presale_caption && (
-                                <p style={{
-                                    color: '#ccc',
-                                    fontSize: '0.75rem',
-                                    margin: 0,
-                                    fontStyle: 'italic'
-                                }}>
+                                <p className={styles.presaleCaption}>
                                     {gig.presale_caption}
                                 </p>
                             )}
                         </div>
                     )}
                 </div>
-                <div style={{ marginTop: '1rem' }}>
+                <div className={styles.buttonContainer}>
                     <button
-                        className="btn-buy"
-                        style={{ width: '100%', cursor: 'pointer' }}
+                        className={`btn-buy ${styles.viewButton}`}
                         onClick={() => window.location.href = `/gigfinder/event/${gig.id}`}
                     >
                         View Event

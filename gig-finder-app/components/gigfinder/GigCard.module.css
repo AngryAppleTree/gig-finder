@@ -1,0 +1,53 @@
+/* GigCard Component Styles - CSS Module */
+
+/* Distance indicator styling */
+.distanceText {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+}
+
+/* Image styling - CRITICAL: Tests verify 200px height and cover fit */
+.gigImage {
+    height: 200px !important;
+    /* Override global .gig-image img { height: 100% } */
+    width: 100%;
+    object-fit: cover;
+}
+
+/* Presale container - pink background with border */
+.presaleContainer {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 51, 102, 0.1);
+    border: 1px solid var(--color-primary);
+    border-radius: 4px;
+}
+
+/* Presale price text - CRITICAL: Tests verify bold and color */
+.presalePrice {
+    color: var(--color-secondary);
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin: 0 0 0.25rem 0;
+}
+
+/* Presale caption - CRITICAL: Tests verify 12px (0.75rem) and italic */
+.presaleCaption {
+    color: #ccc;
+    font-size: 0.75rem;
+    /* 12px - tested in gig-card-details.spec.ts line 286 */
+    margin: 0;
+    font-style: italic;
+    /* tested in gig-card-details.spec.ts line 284 */
+}
+
+/* Button container spacing */
+.buttonContainer {
+    margin-top: 1rem;
+}
+
+/* View Event button styling */
+.viewButton {
+    width: 100%;
+    cursor: pointer;
+}
