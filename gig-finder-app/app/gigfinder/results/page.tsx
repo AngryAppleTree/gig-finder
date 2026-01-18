@@ -8,6 +8,7 @@ import { Footer } from '@/components/gigfinder/Footer';
 import { Gig } from '@/components/gigfinder/types';
 import { postcodeCoordinates, venueLocations } from '@/components/gigfinder/constants';
 import { calculateDistance } from '@/components/gigfinder/utils';
+import styles from './results.module.css';
 
 function ResultsPageContent() {
     const searchParams = useSearchParams();
@@ -168,10 +169,10 @@ function ResultsPageContent() {
         return (
             <>
                 <h1 className="main-title">GIG<br />FINDER</h1>
-                <main className="container" style={{ paddingTop: '120px' }}>
+                <main className={`container ${styles.mainLoading}`}>
                     <div className="step active">
                         <h2 className="step-title">🔍 Searching...</h2>
-                        <p style={{ textAlign: 'center', fontSize: '1.2rem', color: 'var(--color-text-dim)' }}>
+                        <p className={styles.loadingMessage}>
                             Finding the best gigs for you...
                         </p>
                     </div>
@@ -184,10 +185,10 @@ function ResultsPageContent() {
         return (
             <>
                 <h1 className="main-title">GIG<br />FINDER</h1>
-                <main className="container" style={{ paddingTop: '120px' }}>
+                <main className={`container ${styles.mainLoading}`}>
                     <div className="step active">
                         <h2 className="step-title">❌ Error</h2>
-                        <p style={{ textAlign: 'center', fontSize: '1.2rem', color: 'var(--color-primary)', marginBottom: '2rem' }}>
+                        <p className={styles.errorMessage}>
                             {error}
                         </p>
                         <div className="nav-buttons">
@@ -205,22 +206,14 @@ function ResultsPageContent() {
             <h1 className="main-title">GIG<br />FINDER</h1>
 
             {/* Sticky Navigation Header */}
-            <div style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 100,
-                background: 'var(--color-bg)',
-                borderBottom: '2px solid var(--color-border)',
-                padding: '1rem',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
-            }}>
-                <div className="nav-buttons" style={{ margin: 0, maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
+            <div className={styles.stickyHeader}>
+                <div className={`nav-buttons ${styles.navButtonsContainer}`}>
                     <button className="btn-back" onClick={handleBack}>← Back</button>
                     <button className="btn-primary" onClick={handleStartOver}>Start Over</button>
                 </div>
             </div>
 
-            <main className="container" style={{ paddingTop: '2rem' }}>
+            <main className={`container ${styles.mainResults}`}>
                 <section className="step active">
                     <h2 className="step-title">Your Gigs 🎸</h2>
 
@@ -242,7 +235,7 @@ function ResultsLoading() {
     return (
         <>
             <h1 className="main-title">GIG<br />FINDER</h1>
-            <main className="container" style={{ paddingTop: '120px' }}>
+            <main className={`container ${styles.mainLoading}`}>
                 <div className="step active">
                     <h2 className="step-title">🔍 Loading...</h2>
                 </div>
