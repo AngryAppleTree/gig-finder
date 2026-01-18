@@ -4,20 +4,8 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import { api, ApiError, type Booking } from '@/lib';
 import styles from './GuestList.module.css';
-
-interface Booking {
-    id: number;
-    customer_name: string;
-    customer_email: string;
-    quantity: number;
-    records_quantity?: number;
-    records_price?: number;
-    platform_fee?: number;
-    status: string;
-    created_at: string;
-    checked_in_at?: string | null;
-}
 
 export default function GuestListPage({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = use(params);
@@ -46,16 +34,13 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
 
     const fetchBookings = async () => {
         try {
-            const res = await fetch(`/api/bookings?eventId=${eventId}`);
-            if (res.ok) {
-                const data = await res.json();
-                setBookings(data.bookings);
-            } else {
-                console.error('Failed to load bookings');
-                // You might handle 404 or 403 here
-            }
+            const data = await api.bookings.getByEventId(eventId);
+            setBookings(data.bookings);
         } catch (e) {
             console.error(e);
+            if (e instanceof ApiError) {
+                console.error('Failed to load bookings:', e.getUserMessage());
+            }
         } finally {
             setLoading(false);
         }
@@ -65,19 +50,20 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
         e.preventDefault();
         setAdding(true);
         try {
-            const res = await fetch('/api/bookings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ eventId, name: newName, email: newEmail })
+            await api.bookings.create({
+                eventId: parseInt(eventId),
+                name: newName,
+                email: newEmail
             });
-            if (res.ok) {
-                setNewName('');
-                setNewEmail('');
-                fetchBookings(); // Refresh list automatically
-                // alert('Guest Added!'); // Silent success is cleaner, just see list update
+            setNewName('');
+            setNewEmail('');
+            fetchBookings(); // Refresh list automatically
+        } catch (err) {
+            console.error(err);
+            if (err instanceof ApiError) {
+                alert('Failed to add guest: ' + err.getUserMessage());
             } else {
-                const err = await res.json();
-                alert('Failed to add guest: ' + err.error);
+                alert('Failed to add guest');
             }
         } finally {
             setAdding(false);
@@ -88,22 +74,22 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
         e.preventDefault();
         setSendingEmail(true);
         try {
-            const res = await fetch('/api/bookings/email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ eventId, subject: emailSubject, message: emailMessage })
+            const data = await api.bookings.sendEmail({
+                eventId: parseInt(eventId),
+                subject: emailSubject,
+                message: emailMessage
             });
-            const data = await res.json();
-            if (res.ok) {
-                alert(data.message);
-                setShowEmailModal(false);
-                setEmailSubject('');
-                setEmailMessage('');
-            } else {
-                alert('Error: ' + data.error);
-            }
+            alert(data.message);
+            setShowEmailModal(false);
+            setEmailSubject('');
+            setEmailMessage('');
         } catch (err) {
-            alert('Failed to send email');
+            console.error(err);
+            if (err instanceof ApiError) {
+                alert('Error: ' + err.getUserMessage());
+            } else {
+                alert('Failed to send email');
+            }
         } finally {
             setSendingEmail(false);
         }
