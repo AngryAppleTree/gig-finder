@@ -29,6 +29,7 @@ export interface Event {
     id: number;
     name: string;
     venue: string;
+    venue_id?: number;
     location: string;
     town?: string;
     date: string;
@@ -46,31 +47,43 @@ export interface Event {
     sellTickets?: boolean;
     presale_price?: number;
     presale_caption?: string;
+    bookings_count?: number;
 }
 
 export interface CreateEventRequest {
     name: string;
     venue: string;
-    venueId?: number;
-    location: string;
-    town?: string;
+    venue_id?: number;
     date: string;
     time: string;
     price: string;
     genre?: string;
-    imageUrl?: string;
-    imageBase64?: string;
-    ticketUrl?: string;
     description?: string;
-    capacity?: number;
-    sellTickets?: boolean;
-    freeGuestList?: boolean;
-    presale_price?: number;
+    imageUrl?: string;
+    presale_price?: string;
     presale_caption?: string;
+    is_internal_ticketing?: boolean;
+    sell_tickets?: boolean;
+    new_venue?: {
+        name: string;
+        city: string;
+        capacity: number | null;
+    };
 }
 
 export interface UpdateEventRequest extends Partial<CreateEventRequest> {
-    id: number;
+    id: number | string;
+}
+
+export interface CreateEventResponse {
+    event: Event;
+    message: string;
+    needsApproval?: boolean;
+}
+
+export interface UpdateEventResponse {
+    event: Event;
+    message: string;
 }
 
 export interface EventSearchParams {

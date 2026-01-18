@@ -3,13 +3,9 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense, useState } from 'react';
 import styles from './add-event.module.css';
-
-interface Venue {
-    id: number;
-    name: string;
-    city?: string;
-    capacity?: number;
-}
+import { api } from '@/lib/api-client';
+import { ApiError } from '@/lib/errors/ApiError';
+import type { Venue } from '@/lib/api-types';
 
 function AddEventForm() {
     const { isLoaded, isSignedIn } = useUser();
@@ -113,8 +109,7 @@ function AddEventForm() {
 
     const fetchVenues = async () => {
         try {
-            const res = await fetch('/api/venues');
-            const data = await res.json();
+            const data = await api.venues.getAll();
             if (data.venues) {
                 setVenues(data.venues);
                 console.log('Loaded venues:', data.venues);
@@ -261,44 +256,38 @@ function AddEventForm() {
         }
 
         try {
-            const res = await fetch('/api/events/manual', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            const data = await api.events.create(payload);
 
-            if (res.ok) {
-                const data = await res.json();
+            // ✅ Success - Clear draft
+            sessionStorage.removeItem('GIGFINDER_DRAFT_EVENT');
 
-                // ✅ Success - Clear draft
-                sessionStorage.removeItem('GIGFINDER_DRAFT_EVENT');
-
-                if (isNewVenue) {
-                    // Redirect with new venue message
-                    router.push(`/gigfinder/add-event?newVenue=${encodeURIComponent(venueInput)}`);
-                } else {
-                    // Check if approval is needed
-                    if (data.needsApproval) {
-                        setStatusMessage('✅ Event Submitted! Your first event requires admin approval. You\'ll be notified once it\'s live.');
-                    } else {
-                        setStatusMessage('✅ Event Added Successfully!');
-                    }
-                    setPosterPreview('');
-                    setPosterBase64('');
-                    setVenueInput('');
-                    setSelectedVenue(null);
-                    setIsNewVenue(false);
-                    // Reset fields
-                    setNewVenueCity('');
-                    setNewVenueCapacity('');
-                    (e.target as HTMLFormElement).reset();
-                }
+            if (isNewVenue) {
+                // Redirect with new venue message
+                router.push(`/gigfinder/add-event?newVenue=${encodeURIComponent(venueInput)}`);
             } else {
-                const data = await res.json();
-                setStatusMessage(`❌ Error: ${data.error || 'Failed to add event'}`);
+                // Check if approval is needed
+                if (data.needsApproval) {
+                    setStatusMessage('✅ Event Submitted! Your first event requires admin approval. You\'ll be notified once it\'s live.');
+                } else {
+                    setStatusMessage('✅ Event Added Successfully!');
+                }
+                setPosterPreview('');
+                setPosterBase64('');
+                setVenueInput('');
+                setSelectedVenue(null);
+                setIsNewVenue(false);
+                // Reset fields
+                setNewVenueCity('');
+                setNewVenueCapacity('');
+                (e.target as HTMLFormElement).reset();
             }
         } catch (err) {
-            setStatusMessage('❌ Network Error');
+            console.error(err);
+            if (err instanceof ApiError) {
+                setStatusMessage(`❌ Error: ${err.getUserMessage()}`);
+            } else {
+                setStatusMessage('❌ Failed to add event');
+            }
         } finally {
             setIsSubmitting(false);
         }

@@ -3,13 +3,9 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, Suspense, useState, use } from 'react';
 import styles from './edit-event.module.css';
-
-interface Venue {
-    id: number;
-    name: string;
-    city?: string;
-    capacity?: number;
-}
+import { api } from '@/lib/api-client';
+import { ApiError } from '@/lib/errors/ApiError';
+import type { Venue } from '@/lib/api-types';
 
 function EditEventForm({ eventId }: { eventId: string }) {
     const { isLoaded, isSignedIn } = useUser();
@@ -67,8 +63,7 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
     const fetchVenues = async () => {
         try {
-            const res = await fetch('/api/venues');
-            const data = await res.json();
+            const data = await api.venues.getAll();
             if (data.venues) {
                 setVenues(data.venues);
             }
@@ -79,17 +74,7 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
     const fetchEventData = async () => {
         try {
-            const res = await fetch(`/api/events/user?id=${eventId}`);
-
-            console.log('Fetch response status:', res.status);
-
-            if (!res.ok) {
-                const errorText = await res.text();
-                console.error('API Error:', res.status, errorText);
-                throw new Error(`Failed to load event (${res.status}): ${errorText}`);
-            }
-
-            const data = await res.json();
+            const data = await api.events.getUserEvent(eventId);
             console.log('Event data received:', data);
 
             if (data.event) {
@@ -110,8 +95,8 @@ function EditEventForm({ eventId }: { eventId: string }) {
                     price: (event.price || '').replace(/£/g, '').trim(),
                     presale_price: (event.presale_price?.toString() || '').replace(/£/g, '').trim(),
                     presale_caption: event.presale_caption || '',
-                    is_internal_ticketing: event.is_internal_ticketing || false,
-                    sell_tickets: event.sell_tickets || false
+                    is_internal_ticketing: event.isInternalTicketing || false,
+                    sell_tickets: event.sellTickets || false
                 });
 
                 // Set venue
@@ -123,9 +108,9 @@ function EditEventForm({ eventId }: { eventId: string }) {
                 }
 
                 // Set image if exists
-                if (event.image_url) {
-                    setPosterPreview(event.image_url);
-                    setPosterBase64(event.image_url);
+                if (event.imageUrl) {
+                    setPosterPreview(event.imageUrl);
+                    setPosterBase64(event.imageUrl);
                 }
 
                 // Set booking count
@@ -134,7 +119,11 @@ function EditEventForm({ eventId }: { eventId: string }) {
             }
         } catch (err) {
             console.error('Failed to fetch event:', err);
-            setStatusMessage(`❌ Could not load event data: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            if (err instanceof ApiError) {
+                setStatusMessage(`❌ ${err.getUserMessage()}`);
+            } else {
+                setStatusMessage(`❌ Could not load event data`);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -249,21 +238,16 @@ function EditEventForm({ eventId }: { eventId: string }) {
         }
 
         try {
-            const res = await fetch('/api/events/user', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                setStatusMessage('✅ Event Updated Successfully!');
-                setTimeout(() => router.push('/gigfinder/my-gigs'), 1500);
-            } else {
-                const data = await res.json();
-                setStatusMessage(`❌ Error: ${data.error || 'Failed to update event'}`);
-            }
+            await api.events.update(eventId, payload);
+            setStatusMessage('✅ Event Updated Successfully!');
+            setTimeout(() => router.push('/gigfinder/my-gigs'), 1500);
         } catch (err) {
-            setStatusMessage('❌ Network Error');
+            console.error(err);
+            if (err instanceof ApiError) {
+                setStatusMessage(`❌ Error: ${err.getUserMessage()}`);
+            } else {
+                setStatusMessage('❌ Failed to update event');
+            }
         } finally {
             setIsSubmitting(false);
         }

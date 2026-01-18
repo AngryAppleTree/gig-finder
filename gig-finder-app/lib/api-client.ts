@@ -12,7 +12,9 @@ import type {
     RequestOptions,
     Event,
     CreateEventRequest,
+    CreateEventResponse,
     UpdateEventRequest,
+    UpdateEventResponse,
     EventSearchParams,
     Booking,
     CreateBookingRequest,
@@ -224,15 +226,15 @@ class ApiClient {
         /**
          * Create new event
          */
-        create: async (data: CreateEventRequest): Promise<{ event: Event; message: string }> => {
-            return this.post<{ event: Event; message: string }>(API_ROUTES.EVENTS.MANUAL, data);
+        create: async (data: CreateEventRequest): Promise<CreateEventResponse> => {
+            return this.post<CreateEventResponse>(API_ROUTES.EVENTS.MANUAL, data);
         },
 
         /**
          * Update existing event
          */
-        update: async (id: string | number, data: UpdateEventRequest): Promise<{ event: Event; message: string }> => {
-            return this.put<{ event: Event; message: string }>(API_ROUTES.EVENTS.USER, { ...data, id });
+        update: async (id: string | number, data: UpdateEventRequest): Promise<UpdateEventResponse> => {
+            return this.put<UpdateEventResponse>(API_ROUTES.EVENTS.USER, { ...data, id });
         },
 
         /**
