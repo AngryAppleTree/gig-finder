@@ -64,7 +64,11 @@ test.describe('Homepage Elements', () => {
 
     test.describe('User Roles & Visibility', () => {
 
-        test('Public User (Unauthenticated) DOES NOT see Admin Console button', async ({ page }) => {
+        test('Public User (Unauthenticated) DOES NOT see Admin Console button', async ({ page, context }) => {
+            // Clear auth state to ensure we're signed out
+            await context.clearCookies();
+            await page.goto('/gigfinder');
+
             const home = new Homepage(page);
             await home.expectSignedOut();
             await home.expectAdminButtonHidden();
