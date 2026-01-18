@@ -1,0 +1,159 @@
+/**
+ * API Request and Response Types
+ * 
+ * Centralized type definitions for API interactions
+ */
+
+// ============================================================================
+// Common Types
+// ============================================================================
+
+export interface ApiResponse<T> {
+    data?: T;
+    error?: string;
+    message?: string;
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    pageSize: number;
+}
+
+// ============================================================================
+// Event Types
+// ============================================================================
+
+export interface Event {
+    id: number;
+    name: string;
+    venue: string;
+    location: string;
+    town?: string;
+    date: string;
+    time: string;
+    price: string;
+    genre?: string;
+    imageUrl?: string;
+    ticketUrl?: string;
+    description?: string;
+    capacity?: number;
+    source: 'manual' | 'skiddle' | 'scraper';
+    isVerified?: boolean;
+    isInternalTicketing?: boolean;
+    sellTickets?: boolean;
+    presale_price?: number;
+    presale_caption?: string;
+}
+
+export interface CreateEventRequest {
+    name: string;
+    venue: string;
+    venueId?: number;
+    location: string;
+    town?: string;
+    date: string;
+    time: string;
+    price: string;
+    genre?: string;
+    imageUrl?: string;
+    imageBase64?: string;
+    ticketUrl?: string;
+    description?: string;
+    capacity?: number;
+    sellTickets?: boolean;
+    freeGuestList?: boolean;
+    presale_price?: number;
+    presale_caption?: string;
+}
+
+export interface UpdateEventRequest extends Partial<CreateEventRequest> {
+    id: number;
+}
+
+export interface EventSearchParams {
+    keyword?: string;
+    location?: string;
+    minDate?: string;
+    genre?: string;
+    budget?: string;
+    venueSize?: string;
+    postcode?: string;
+    distance?: string;
+}
+
+// ============================================================================
+// Booking Types
+// ============================================================================
+
+export interface Booking {
+    id: number;
+    event_id: number;
+    customer_name: string;
+    customer_email: string;
+    quantity: number;
+    records_quantity?: number;
+    records_price?: number;
+    platform_fee?: number;
+    status: 'confirmed' | 'cancelled' | 'refunded';
+    created_at: string;
+    checked_in_at?: string | null;
+}
+
+export interface CreateBookingRequest {
+    eventId: number;
+    name: string;
+    email: string;
+    quantity?: number;
+}
+
+export interface SendEmailRequest {
+    eventId: number;
+    subject: string;
+    message: string;
+}
+
+export interface CheckInRequest {
+    bookingId: number;
+    eventId: number;
+}
+
+export interface RefundRequest {
+    bookingId: number;
+}
+
+// ============================================================================
+// Venue Types
+// ============================================================================
+
+export interface Venue {
+    id: number;
+    name: string;
+    city?: string;
+    capacity?: number;
+}
+
+// ============================================================================
+// API Client Configuration
+// ============================================================================
+
+export interface ApiClientConfig {
+    baseUrl?: string;
+    timeout?: number;
+    retries?: number;
+    retryDelay?: number;
+    onError?: (error: Error) => void;
+    onRequest?: (url: string, options: RequestInit) => void;
+    onResponse?: (response: Response) => void;
+}
+
+// ============================================================================
+// Request Options
+// ============================================================================
+
+export interface RequestOptions extends RequestInit {
+    timeout?: number;
+    retry?: boolean;
+    retries?: number;
+}

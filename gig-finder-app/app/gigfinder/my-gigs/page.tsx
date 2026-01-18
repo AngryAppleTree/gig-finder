@@ -4,24 +4,13 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { api, ApiError, type Event } from '@/lib';
 import styles from './my-gigs.module.css';
-
-// Types
-interface Gig {
-    id: number;
-    name: string;
-    venue: string;
-    date: string; // ISO string 
-    genre: string;
-    price: string;
-    created_at: string;
-    is_internal_ticketing?: boolean;
-}
 
 export default function MyGigsPage() {
     const { isLoaded, isSignedIn, user } = useUser();
     const router = useRouter();
-    const [gigs, setGigs] = useState<Gig[]>([]);
+    const [gigs, setGigs] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -37,13 +26,15 @@ export default function MyGigsPage() {
 
     const fetchGigs = async () => {
         try {
-            const res = await fetch('/api/events/user');
-            if (!res.ok) throw new Error('Failed to fetch gigs');
-            const data = await res.json();
+            const data = await api.events.getUserEvents();
             setGigs(data.events || []);
         } catch (err) {
             console.error(err);
-            setError('Could not load your gigs. Trying refreshing?');
+            if (err instanceof ApiError) {
+                setError(err.getUserMessage());
+            } else {
+                setError('Could not load your gigs. Try refreshing?');
+            }
         } finally {
             setLoading(false);
         }
@@ -53,19 +44,16 @@ export default function MyGigsPage() {
         if (!confirm('Are you sure you want to delete this gig? This cannot be undone.')) return;
 
         try {
-            const res = await fetch(`/api/events/user?id=${id}`, {
-                method: 'DELETE',
-            });
-
-            if (res.ok) {
-                // Remove from local state
-                setGigs(prev => prev.filter(g => g.id !== id));
-            } else {
-                alert('Failed to delete gig.');
-            }
+            await api.events.deleteUserEvent(id);
+            // Remove from local state
+            setGigs(prev => prev.filter(g => g.id !== id));
         } catch (err) {
             console.error(err);
-            alert('Error deleting gig.');
+            if (err instanceof ApiError) {
+                alert(`Failed to delete gig: ${err.getUserMessage()}`);
+            } else {
+                alert('Error deleting gig.');
+            }
         }
     };
 
@@ -129,7 +117,7 @@ export default function MyGigsPage() {
                                         EDIT
                                     </Link>
 
-                                    {gig.is_internal_ticketing && (
+                                    {gig.isInternalTicketing && (
                                         <Link href={`/gigfinder/my-gigs/guestlist/${gig.id}`} className={`btn-back ${styles.guestListButton}`}>
                                             GUEST LIST
                                         </Link>
