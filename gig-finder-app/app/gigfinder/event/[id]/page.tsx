@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Gig } from '@/components/gigfinder/types';
+import { api, ApiError, type Event } from '@/lib';
 import { BookingModal } from '@/components/gigfinder/BookingModal';
 import { Footer } from '@/components/gigfinder/Footer';
 import '../../gigfinder.css';
@@ -10,7 +10,7 @@ import styles from './event-detail.module.css';
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
-    const [event, setEvent] = useState<Gig | null>(null);
+    const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -22,20 +22,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
     const fetchEvent = async (id: string) => {
         try {
-            const response = await fetch(`/api/events/${id}`);
-            const data = await response.json();
-
-            if (!response.ok) {
-                setError(data.error || 'Event not found');
-                setLoading(false);
-                return;
-            }
-
-            setEvent(data.event);
+            const eventData = await api.events.getById(id);
+            setEvent(eventData);
             setLoading(false);
         } catch (err) {
             console.error('Failed to fetch event:', err);
-            setError('Failed to load event');
+            if (err instanceof ApiError) {
+                setError(err.getUserMessage());
+            } else {
+                setError('Failed to load event');
+            }
             setLoading(false);
         }
     };
