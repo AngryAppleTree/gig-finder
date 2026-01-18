@@ -134,8 +134,16 @@ export interface SendEmailRequest {
 }
 
 export interface CheckInRequest {
-    bookingId: number;
-    eventId: number;
+    qrData: string;
+}
+
+export interface CheckInResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+    details?: string;
+    guest?: string;
+    code?: string;
 }
 
 export interface RefundRequest {

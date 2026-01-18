@@ -5,6 +5,8 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './ScanPage.module.css';
+import { api } from '@/lib/api-client';
+import { ApiError } from '@/lib/errors/ApiError';
 
 export default function ScanPage({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = use(params);
@@ -64,34 +66,32 @@ export default function ScanPage({ params }: { params: Promise<{ id: string }> }
         }
 
         try {
-            const res = await fetch('/api/bookings/scan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ qrData: decodedText })
-            });
-            const data = await res.json();
+            const data = await api.bookings.checkIn({ qrData: decodedText });
 
-            const isSuccess = res.ok;
-            const isDuplicate = res.status === 409;
+            const isDuplicate = data.code === 'ALREADY_USED';
 
             setScanResult({
-                success: isSuccess,
+                ...data,
                 duplicate: isDuplicate,
-                ...data
             });
 
             // Optional: Haptic feedback if on mobile
-            if (window.navigator.vibrate) window.navigator.vibrate(isSuccess ? 50 : 200);
+            if (window.navigator.vibrate) window.navigator.vibrate(data.success ? 50 : 200);
 
             // Auto-dismiss successful scans after 2 seconds
-            if (isSuccess && !isDuplicate) {
+            if (data.success && !isDuplicate) {
                 setTimeout(() => {
                     nextScan();
                 }, 2000);
             }
 
-        } catch (e) {
-            setScanResult({ success: false, error: 'Network Error' });
+        } catch (err) {
+            console.error(err);
+            if (err instanceof ApiError) {
+                setScanResult({ success: false, error: err.getUserMessage() });
+            } else {
+                setScanResult({ success: false, error: 'Network Error' });
+            }
         }
     };
 

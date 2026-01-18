@@ -20,6 +20,7 @@ import type {
     CreateBookingRequest,
     SendEmailRequest,
     CheckInRequest,
+    CheckInResponse,
     RefundRequest,
     RefundResponse,
     Venue,
@@ -281,8 +282,8 @@ class ApiClient {
         /**
          * Check in guest (QR scan)
          */
-        checkIn: async (data: CheckInRequest): Promise<{ booking: Booking; message: string }> => {
-            return this.post<{ booking: Booking; message: string }>(API_ROUTES.BOOKINGS.SCAN, data);
+        checkIn: async (data: CheckInRequest): Promise<CheckInResponse> => {
+            return this.post<CheckInResponse>(API_ROUTES.BOOKINGS.SCAN, data);
         },
 
         /**
