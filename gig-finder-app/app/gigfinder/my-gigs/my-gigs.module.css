@@ -1,0 +1,158 @@
+/* My Gigs Page - CSS Module */
+
+/* === Page Layout === */
+.pageWrapper {
+    padding-bottom: 100px;
+    /* Space for footer */
+}
+
+.pageHeader {
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+}
+
+.pageTitle {
+    position: relative;
+    margin: 0 0 2rem 0;
+    font-size: 3rem;
+    top: auto;
+    left: auto;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.buttonLink {
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+/* === Main Content === */
+.mainContainer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* === Loading State === */
+.loadingContainer {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+/* === Error Message === */
+.errorMessage {
+    color: red;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* === Empty State === */
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    background: var(--color-surface);
+    border: 3px solid var(--color-border);
+}
+
+.emptyStateTitle {
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.emptyStateText {
+    margin-bottom: 2rem;
+}
+
+.emptyStateLink {
+    text-decoration: none;
+}
+
+/* === Gig List === */
+.gigList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* === Gig Card === */
+.gigCard {
+    background: var(--color-surface);
+    border: 3px solid var(--color-border);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 5px 5px 0 var(--color-primary);
+}
+
+.gigCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.gigCardTitle {
+    font-family: var(--font-primary);
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.gigCardMeta {
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-secondary);
+}
+
+.gigCardBadge {
+    background: var(--color-accent);
+    color: #000;
+    padding: 0.2rem 0.5rem;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border: 2px solid #fff;
+}
+
+/* === Gig Actions === */
+.gigActions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.editButton {
+    border: 2px solid var(--color-text);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+}
+
+.guestListButton {
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+}
+
+.deleteButton {
+    background: transparent;
+    border: 2px solid red;
+    color: red;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-family: var(--font-secondary);
+}
