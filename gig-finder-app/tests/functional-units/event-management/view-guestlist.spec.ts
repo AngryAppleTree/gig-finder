@@ -50,9 +50,9 @@ test.describe('View Guest List Journey', () => {
         // STEP 1: Verify My Gigs page loads
         await myGigs.expectLoaded();
 
-        // STEP 2: Find the test gig "sdwfgh" (ID: 1223)
+        // STEP 2: Find the test gig "BOB THE BUILDER"
         // Note: This test uses the actual gig that exists in local database
-        const gigName = 'sdwfgh';
+        const gigName = 'BOB THE BUILDER';
 
         // Check if gig exists, skip if not
         if (!await checkTestGigExists(page, gigName)) {
@@ -78,7 +78,7 @@ test.describe('View Guest List Journey', () => {
         const guestList = new GuestListPage(page);
 
         // Navigate to Guest List via My Gigs
-        const gigName = 'sdwfgh';
+        const gigName = 'BOB THE BUILDER';
 
         // Check if gig exists, skip if not
         if (!await checkTestGigExists(page, gigName)) {
@@ -105,7 +105,7 @@ test.describe('View Guest List Journey', () => {
         const guestList = new GuestListPage(page);
 
         // Navigate to Guest List
-        const gigName = 'sdwfgh';
+        const gigName = 'BOB THE BUILDER';
 
         // Check if gig exists, skip if not
         if (!await checkTestGigExists(page, gigName)) {
@@ -158,7 +158,7 @@ test.describe('View Guest List Journey', () => {
         const guestList = new GuestListPage(page);
 
         // Navigate to Guest List
-        const gigName = 'sdwfgh';
+        const gigName = 'BOB THE BUILDER';
         await myGigs.clickGuestList(gigName);
         await guestList.expectLoaded();
 
@@ -181,7 +181,7 @@ test.describe('View Guest List Journey', () => {
         const guestList = new GuestListPage(page);
 
         // Navigate to Guest List
-        const gigName = 'sdwfgh';
+        const gigName = 'BOB THE BUILDER';
         await myGigs.clickGuestList(gigName);
         await guestList.expectLoaded();
 
@@ -215,7 +215,7 @@ test.describe('View Guest List Journey', () => {
         const guestList = new GuestListPage(page);
 
         // Navigate to Guest List
-        const gigName = 'sdwfgh';
+        const gigName = 'BOB THE BUILDER';
         await myGigs.clickGuestList(gigName);
         await guestList.expectLoaded();
 
@@ -232,7 +232,7 @@ test.describe('View Guest List Journey', () => {
         const guestList = new GuestListPage(page);
 
         // Navigate to Guest List
-        const gigName = 'sdwfgh';
+        const gigName = 'BOB THE BUILDER';
         await myGigs.clickGuestList(gigName);
         await guestList.expectLoaded();
 
@@ -264,8 +264,8 @@ test.describe('View Guest List Journey', () => {
         await myGigs.expectLoaded();
         console.log('✓ My Gigs page loaded');
 
-        // STEP 2: Find and click Guest List for sdwfgh
-        const gigName = 'sdwfgh';
+        // STEP 2: Find and click Guest List for BOB THE BUILDER
+        const gigName = 'BOB THE BUILDER';
         await myGigs.expectGigVisible(gigName);
         console.log(`✓ Found gig: ${gigName}`);
 
