@@ -34,7 +34,7 @@ test.describe('View Guest List Journey', () => {
         await page.waitForTimeout(1000);
 
         const gigCard = page.locator('div').filter({
-            has: page.locator('h3', { hasText: gigName })
+            has: page.locator('h3', { hasText: new RegExp(gigName, 'i') })
         }).first();
         const exists = await gigCard.isVisible().catch(() => false);
         if (!exists) {
