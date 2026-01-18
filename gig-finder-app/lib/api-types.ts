@@ -34,6 +34,7 @@ export interface Event {
     date: string;
     time: string;
     price: string;
+    priceVal?: number; // Numeric price for calculations
     genre?: string;
     imageUrl?: string;
     ticketUrl?: string;
