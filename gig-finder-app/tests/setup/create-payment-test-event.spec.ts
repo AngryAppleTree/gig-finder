@@ -129,38 +129,26 @@ test.describe('Setup: Payment Test Event', () => {
         await page.goto('/gigfinder/results?search=E2E+Payment+Test+Event');
         await page.waitForLoadState('networkidle');
 
-        // Wait for results
+        // Wait for results to load
         await page.waitForSelector('.gig-card, h2:has-text("No gigs found")', { timeout: 10000 });
 
-        // Check if event exists
+        // Assert event exists in search results
         const eventCard = page.locator('.gig-card').filter({ hasText: 'E2E Payment Test Event' });
-        const cardCount = await eventCard.count();
+        await expect(eventCard).toHaveCount(1);
 
-        if (cardCount > 0) {
-            console.log('   ✅ Event found in search results!');
+        console.log('   ✅ Event found in search results!');
 
-            // Click to view details
-            const viewButton = eventCard.first().locator('a:has-text("View Event"), button:has-text("View Event")');
-            await viewButton.click();
-            await page.waitForLoadState('networkidle');
+        // Click to view event details
+        const viewButton = eventCard.first().locator('a:has-text("View Event"), button:has-text("View Event")');
+        await viewButton.click();
+        await page.waitForLoadState('networkidle');
 
-            // Verify Buy Tickets button exists
-            const buyTicketsButton = page.locator('button.btn-buy:has-text("Buy Tickets")');
-            const hasBuyTickets = await buyTicketsButton.count() > 0;
+        // Assert Buy Tickets button is present
+        const buyTicketsButton = page.locator('button.btn-buy:has-text("Buy Tickets")');
+        await expect(buyTicketsButton).toBeVisible();
 
-            if (hasBuyTickets) {
-                console.log('   ✅ "Buy Tickets" button present');
-                console.log('');
-                console.log('🎉 Payment test event is ready for testing!');
-            } else {
-                console.log('   ❌ "Buy Tickets" button NOT found');
-                console.log('   Event may not have paid ticketing enabled');
-                test.fail();
-            }
-        } else {
-            console.log('   ❌ Event NOT found in search results');
-            console.log('   You may need to run the creation test first');
-            test.fail();
-        }
+        console.log('   ✅ "Buy Tickets" button present');
+        console.log('');
+        console.log('🎉 Payment test event is ready for testing!');
     });
 });
