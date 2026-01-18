@@ -109,7 +109,7 @@ export default function GuestListPage({ params }: { params: Promise<{ id: string
         }
     };
 
-    if (loading) return <div className="p-10 text-center text-white" style={{ paddingTop: '100px' }}>Loading guest list...</div>;
+    if (loading) return <div className={styles.loadingContainer}>Loading guest list...</div>;
 
     return (
         <div className={styles.container}>

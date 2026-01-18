@@ -7,6 +7,12 @@
     color: #fff;
 }
 
+.loadingContainer {
+    padding: 10rem 2.5rem 2.5rem;
+    text-align: center;
+    color: white;
+}
+
 .header {
     padding: 2rem;
     text-align: center;
