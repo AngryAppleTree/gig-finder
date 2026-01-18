@@ -90,15 +90,7 @@ test.describe('Footer Component', () => {
             await expect(page).toHaveURL('/contact');
         });
 
-        test('Admin link navigates to admin or redirects to homepage', async ({ page }) => {
-            const footer = new FooterComponent(page);
-
-            await footer.expectLinkHref('admin', '/admin');
-            await footer.clickAdminLink();
-
-            // Admin redirects unauthenticated users to homepage
-            await expect(page).toHaveURL(/\/(admin|gigfinder|sign-in)/);
-        });
+        // Note: Admin link is only visible to admin users, not tested for public users
     });
 
     test.describe('Accessibility', () => {
@@ -127,7 +119,7 @@ test.describe('Footer Component', () => {
             await expect(footer.termsLink).toHaveAccessibleName('Terms of Service');
             await expect(footer.pledgeLink).toHaveAccessibleName('Our Pledge');
             await expect(footer.contactLink).toHaveAccessibleName('Contact');
-            await expect(footer.adminLink).toHaveAccessibleName('Admin');
+            // Note: Admin link only visible to admin users, not tested here
         });
     });
 
