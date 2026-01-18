@@ -19,6 +19,7 @@ import type {
     SendEmailRequest,
     CheckInRequest,
     RefundRequest,
+    RefundResponse,
     Venue,
 } from './api-types';
 
@@ -285,8 +286,8 @@ class ApiClient {
         /**
          * Request refund
          */
-        requestRefund: async (bookingId: number): Promise<{ message: string }> => {
-            return this.post<{ message: string }>(API_ROUTES.BOOKINGS.REFUND, { bookingId });
+        requestRefund: async (bookingId: number): Promise<RefundResponse> => {
+            return this.post<RefundResponse>(API_ROUTES.BOOKINGS.REFUND, { bookingId });
         },
     };
 

@@ -5,18 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import styles from './MyBookings.module.css';
-
-interface Booking {
-    id: number;
-    event_id: number;
-    event_name: string;
-    venue: string;
-    date: string;
-    quantity: number;
-    status: string;
-    price_paid: number | null;
-    created_at: string;
-}
+import { api } from '@/lib/api-client';
+import { ApiError } from '@/lib/errors/ApiError';
+import type { Booking } from '@/lib/api-types';
 
 export default function MyBookingsPage() {
     const { isLoaded, isSignedIn, user } = useUser();
@@ -35,13 +26,15 @@ export default function MyBookingsPage() {
 
     const fetchBookings = async () => {
         try {
-            const res = await fetch('/api/bookings/my-bookings');
-            if (!res.ok) throw new Error('Failed to fetch bookings');
-            const data = await res.json();
+            const data = await api.bookings.getMyBookings();
             setBookings(data.bookings || []);
         } catch (err) {
             console.error(err);
-            setError('Could not load your bookings.');
+            if (err instanceof ApiError) {
+                setError(err.getUserMessage());
+            } else {
+                setError('Could not load your bookings.');
+            }
         } finally {
             setLoading(false);
         }
@@ -93,7 +86,7 @@ export default function MyBookingsPage() {
                                             {booking.event_name}
                                         </h3>
                                         <div className={styles.eventDetails}>
-                                            {new Date(booking.date).toLocaleDateString()} @ {booking.venue}
+                                            {booking.date && new Date(booking.date).toLocaleDateString()} @ {booking.venue}
                                         </div>
                                         <div className={styles.ticketInfo}>
                                             {booking.quantity} ticket{booking.quantity > 1 ? 's' : ''}

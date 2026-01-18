@@ -5,16 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import styles from './CancelBooking.module.css';
-
-interface Booking {
-    id: number;
-    event_name: string;
-    venue: string;
-    date: string;
-    quantity: number;
-    price_paid: number;
-    status: string;
-}
+import { api } from '@/lib/api-client';
+import { ApiError } from '@/lib/errors/ApiError';
+import type { Booking } from '@/lib/api-types';
 
 export default function CancelBookingPage() {
     const { isLoaded, isSignedIn } = useUser();
@@ -37,10 +30,7 @@ export default function CancelBookingPage() {
 
     const fetchBooking = async () => {
         try {
-            const res = await fetch(`/api/bookings/my-bookings`);
-            if (!res.ok) throw new Error('Failed to fetch booking');
-
-            const data = await res.json();
+            const data = await api.bookings.getMyBookings();
             const foundBooking = data.bookings?.find((b: Booking) => b.id === parseInt(bookingId));
 
             if (!foundBooking) {
@@ -52,7 +42,11 @@ export default function CancelBookingPage() {
             }
         } catch (err) {
             console.error(err);
-            setError('Could not load booking');
+            if (err instanceof ApiError) {
+                setError(err.getUserMessage());
+            } else {
+                setError('Could not load booking');
+            }
         } finally {
             setLoading(false);
         }
@@ -66,22 +60,21 @@ export default function CancelBookingPage() {
         setCancelling(true);
 
         try {
-            const res = await fetch('/api/bookings/refund', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bookingId: parseInt(bookingId) })
-            });
-
-            const data = await res.json();
+            const data = await api.bookings.requestRefund(parseInt(bookingId));
 
             if (data.success) {
                 alert(`Refund successful! £${data.amount.toFixed(2)} will be returned to your account within 5-10 business days.`);
                 router.push('/gigfinder/my-bookings');
             } else {
-                setError(data.error || 'Refund failed');
+                setError('Refund failed');
             }
-        } catch (err: any) {
-            setError(err.message || 'Refund failed');
+        } catch (err) {
+            console.error(err);
+            if (err instanceof ApiError) {
+                setError(err.getUserMessage());
+            } else {
+                setError('Refund failed');
+            }
         } finally {
             setCancelling(false);
         }
@@ -122,15 +115,15 @@ export default function CancelBookingPage() {
 
                     <div className={styles.bookingDetails}>
                         <p><strong>Venue:</strong> {booking.venue}</p>
-                        <p><strong>Date:</strong> {new Date(booking.date).toLocaleDateString()}</p>
+                        <p><strong>Date:</strong> {booking.date && new Date(booking.date).toLocaleDateString()}</p>
                         <p><strong>Tickets:</strong> {booking.quantity}</p>
-                        <p><strong>Amount Paid:</strong> £{booking.price_paid.toFixed(2)}</p>
+                        <p><strong>Amount Paid:</strong> £{booking.price_paid?.toFixed(2) || '0.00'}</p>
                     </div>
 
                     <div className={styles.warningBox}>
                         <p className={styles.warningText}>
                             ⚠️ <strong>Cancellation Policy:</strong><br />
-                            You will receive a full refund of £{booking.price_paid.toFixed(2)}.<br />
+                            You will receive a full refund of £{booking.price_paid?.toFixed(2) || '0.00'}.<br />
                             The refund will appear in your account within 5-10 business days.
                         </p>
                     </div>

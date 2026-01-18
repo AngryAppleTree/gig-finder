@@ -9,6 +9,8 @@ import { Gig } from '@/components/gigfinder/types';
 import { postcodeCoordinates, venueLocations } from '@/components/gigfinder/constants';
 import { calculateDistance } from '@/components/gigfinder/utils';
 import styles from './results.module.css';
+import { api } from '@/lib/api-client';
+import { ApiError } from '@/lib/errors/ApiError';
 
 function ResultsPageContent() {
     const searchParams = useSearchParams();
@@ -36,15 +38,12 @@ function ResultsPageContent() {
             const postcode = searchParams.get('postcode') || '';
             const distance = searchParams.get('distance') || '';
 
-            // Build API query
-            const params = new URLSearchParams();
-            if (keyword) params.append('keyword', keyword);
-            params.append('location', location);
-            if (minDate) params.append('minDate', minDate);
-
-            // Fetch events from API
-            const response = await fetch(`/api/events?${params.toString()}`);
-            const data = await response.json();
+            // Fetch events from API using API client
+            const data = await api.events.search({
+                keyword: keyword || undefined,
+                location,
+                minDate: minDate || undefined,
+            });
 
             let rawEvents = data.events || [];
 
@@ -151,7 +150,11 @@ function ResultsPageContent() {
             setGigs(transformedGigs);
         } catch (err) {
             console.error('Search failed:', err);
-            setError('Failed to load gigs. Please try again.');
+            if (err instanceof ApiError) {
+                setError(err.getUserMessage());
+            } else {
+                setError('Failed to load gigs. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }

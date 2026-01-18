@@ -100,6 +100,11 @@ export interface Booking {
     status: 'confirmed' | 'cancelled' | 'refunded';
     created_at: string;
     checked_in_at?: string | null;
+    // Additional fields from JOIN queries (my-bookings API)
+    event_name?: string;
+    venue?: string;
+    date?: string;
+    price_paid?: number | null;
 }
 
 export interface CreateBookingRequest {
@@ -122,6 +127,13 @@ export interface CheckInRequest {
 
 export interface RefundRequest {
     bookingId: number;
+}
+
+export interface RefundResponse {
+    success: boolean;
+    refundId: string;
+    amount: number;
+    message: string;
 }
 
 // ============================================================================
