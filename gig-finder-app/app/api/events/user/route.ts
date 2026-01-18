@@ -55,7 +55,14 @@ export async function GET(request: NextRequest) {
         );
         client.release();
 
-        return NextResponse.json({ events: result.rows });
+        // Transform snake_case to camelCase for consistency
+        const events = result.rows.map(e => ({
+            ...e,
+            isInternalTicketing: e.is_internal_ticketing || false,
+            sellTickets: e.sell_tickets || false,
+        }));
+
+        return NextResponse.json({ events });
 
     } catch (error: any) {
         console.error('Database Error:', error);
