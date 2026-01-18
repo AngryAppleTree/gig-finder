@@ -37,12 +37,13 @@ export class MyGigsPage {
     /**
      * Get a specific gig card container by name
      * The gig name is in an H3, and we need the outer container div
+     * Uses case-insensitive matching to handle CSS text-transform
      */
     getGigCard(gigName: string) {
-        // Find the H3 with the gig name, then traverse up to the parent container
+        // Find the H3 with the gig name (case-insensitive), then traverse up to the parent container
         // Structure: div (container) > div > div > h3
         return this.page.locator('div').filter({
-            has: this.page.locator('h3', { hasText: gigName })
+            has: this.page.locator('h3', { hasText: new RegExp(gigName, 'i') })
         }).first();
     }
 
