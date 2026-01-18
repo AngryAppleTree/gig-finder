@@ -2,6 +2,7 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, Suspense, useState, use } from 'react';
+import styles from './edit-event.module.css';
 
 interface Venue {
     id: number;
@@ -269,7 +270,7 @@ function EditEventForm({ eventId }: { eventId: string }) {
     };
 
     if (!isLoaded || isLoading) {
-        return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
+        return <div className={styles.loadingContainer}>Loading...</div>;
     }
 
     // Check if ticketing can be disabled (any bookings exist)
@@ -277,39 +278,34 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={handleSubmit} className={styles.formContainer}>
 
             {/* Status Message */}
             {statusMessage && (
-                <div style={{
-                    padding: '1rem',
-                    background: statusMessage.startsWith('✅') ? 'var(--color-secondary)' : '#511',
-                    color: 'white',
-                    fontFamily: 'var(--font-primary)',
-                    textAlign: 'center',
-                    borderRadius: '4px'
-                }}>
+                <div className={`${styles.statusMessageContainer} ${statusMessage.startsWith('✅') ? styles.statusMessageSuccess :
+                    statusMessage.startsWith('❌') ? styles.statusMessageError :
+                        styles.statusMessageInfo
+                    }`}>
                     {statusMessage}
                 </div>
             )}
 
             {/* Event Name */}
             <div>
-                <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Event / Artist Name</label>
+                <label htmlFor="name" className={styles.label}>Event / Artist Name</label>
                 <input
                     type="text"
                     id="name"
                     name="name"
                     required
-                    className="text-input"
-                    style={{ width: '100%' }}
+                    className={`text-input ${styles.input}`}
                     defaultValue={formData.name}
                 />
             </div>
 
             {/* Venue with Autocomplete */}
-            <div style={{ position: 'relative' }}>
-                <label htmlFor="venue" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Venue</label>
+            <div className={styles.venueInputContainer}>
+                <label htmlFor="venue" className={styles.label}>Venue</label>
                 <input
                     type="text"
                     id="venue"
@@ -318,42 +314,22 @@ function EditEventForm({ eventId }: { eventId: string }) {
                     onFocus={() => setShowVenueSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowVenueSuggestions(false), 200)}
                     required
-                    className="text-input"
-                    style={{ width: '100%' }}
+                    className={`text-input ${styles.input}`}
                     placeholder="Start typing venue name..."
                     autoComplete="off"
                 />
 
                 {/* Autocomplete Dropdown */}
                 {showVenueSuggestions && venueInput && filteredVenues.length > 0 && (
-                    <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        background: '#222',
-                        border: '1px solid var(--color-primary)',
-                        borderRadius: '4px',
-                        marginTop: '4px',
-                        maxHeight: '200px',
-                        overflowY: 'auto',
-                        zIndex: 1000
-                    }}>
+                    <div className={styles.venueDropdown}>
                         {filteredVenues.map(venue => (
                             <div
                                 key={venue.id}
                                 onClick={() => handleVenueSelect(venue)}
-                                style={{
-                                    padding: '0.75rem',
-                                    cursor: 'pointer',
-                                    borderBottom: '1px solid #333',
-                                    transition: 'background 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-primary)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                className={styles.venueOption}
                             >
-                                <div style={{ fontWeight: 'bold' }}>{venue.name}</div>
-                                <div style={{ fontSize: '0.85rem', color: '#888' }}>
+                                <div className={styles.venueOptionName}>{venue.name}</div>
+                                <div className={styles.venueOptionDetails}>
                                     {venue.city || 'Unknown city'} • Capacity: {venue.capacity || 'Unknown'}
                                 </div>
                             </div>
@@ -363,7 +339,7 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
                 {/* New Venue Indicator */}
                 {isNewVenue && venueInput && (
-                    <p style={{ fontSize: '0.85rem', color: 'var(--color-secondary)', marginTop: '0.5rem' }}>
+                    <p className={styles.newVenueIndicator}>
                         ✨ New venue - we'll add "{venueInput}" to our database
                     </p>
                 )}
@@ -371,24 +347,14 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
             {/* Conditional: New Venue Fields */}
             {isNewVenue && venueInput && (
-                <div style={{
-                    padding: '1rem',
-                    background: 'rgba(255, 215, 0, 0.1)',
-                    border: '2px solid var(--color-secondary)',
-                    borderRadius: '8px'
-                }}>
-                    <h3 style={{
-                        fontFamily: 'var(--font-primary)',
-                        fontSize: '1.2rem',
-                        marginBottom: '1rem',
-                        color: 'var(--color-secondary)'
-                    }}>
+                <div className={styles.newVenueSection}>
+                    <h3 className={styles.newVenueTitle}>
                         New Venue Details
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className={styles.newVenueGrid}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                            <label className={styles.label}>
                                 Town/City *
                             </label>
                             <input
@@ -396,22 +362,20 @@ function EditEventForm({ eventId }: { eventId: string }) {
                                 value={newVenueCity}
                                 onChange={(e) => setNewVenueCity(e.target.value)}
                                 required={isNewVenue}
-                                className="text-input"
-                                style={{ width: '100%' }}
+                                className={`text-input ${styles.input}`}
                                 placeholder="e.g. Edinburgh"
                             />
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                            <label className={styles.label}>
                                 Venue Capacity (Optional)
                             </label>
                             <input
                                 type="number"
                                 value={newVenueCapacity}
                                 onChange={(e) => setNewVenueCapacity(e.target.value)}
-                                className="text-input"
-                                style={{ width: '100%' }}
+                                className={`text-input ${styles.input}`}
                                 placeholder="e.g. 200 (leave blank if unknown)"
                                 min="1"
                                 max="10000"
@@ -419,35 +383,33 @@ function EditEventForm({ eventId }: { eventId: string }) {
                         </div>
                     </div>
 
-                    <p style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '0.5rem' }}>
+                    <p className={styles.newVenueHint}>
                         💡 If you don't know the capacity, leave it blank - admin will update it
                     </p>
                 </div>
             )}
 
             {/* Date & Time */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className={styles.formGrid}>
                 <div>
-                    <label htmlFor="date" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Date</label>
+                    <label htmlFor="date" className={styles.label}>Date</label>
                     <input
                         type="date"
                         id="date"
                         name="date"
                         required
-                        className="date-input"
-                        style={{ width: '100%' }}
+                        className={`date-input ${styles.input}`}
                         defaultValue={formData.date}
                     />
                 </div>
                 <div>
-                    <label htmlFor="time" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Time</label>
+                    <label htmlFor="time" className={styles.label}>Time</label>
                     <input
                         type="text"
                         id="time"
                         name="time"
                         placeholder="20:00"
-                        className="text-input"
-                        style={{ width: '100%' }}
+                        className={`text-input ${styles.input}`}
                         defaultValue={formData.time}
                     />
                 </div>
@@ -455,12 +417,11 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
             {/* Genre */}
             <div>
-                <label htmlFor="genre" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Genre</label>
+                <label htmlFor="genre" className={styles.label}>Genre</label>
                 <select
                     id="genre"
                     name="genre"
-                    className="text-input"
-                    style={{ width: '100%' }}
+                    className={`text-input ${styles.input}`}
                     defaultValue={formData.genre}
                 >
                     <option value="rock_blues_punk">Rock / Punk / Blues</option>
@@ -476,12 +437,11 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
             {/* Description */}
             <div>
-                <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Description</label>
+                <label htmlFor="description" className={styles.label}>Description</label>
                 <textarea
                     id="description"
                     name="description"
-                    className="text-input"
-                    style={{ width: '100%', minHeight: '100px', textTransform: 'none' }}
+                    className={`text-input ${styles.textareaLarge}`}
                     placeholder="Tell us about the gig..."
                     defaultValue={formData.description}
                 ></textarea>
@@ -489,91 +449,70 @@ function EditEventForm({ eventId }: { eventId: string }) {
 
             {/* Price */}
             <div>
-                <label htmlFor="price" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>Price</label>
-                <div style={{ position: 'relative' }}>
-                    <span style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--color-primary)',
-                        fontFamily: 'var(--font-primary)',
-                        fontSize: '1.2rem',
-                        pointerEvents: 'none'
-                    }}>£</span>
+                <label htmlFor="price" className={styles.label}>Price</label>
+                <div className={styles.priceInputContainer}>
+                    <span className={styles.priceSymbol}>£</span>
                     <input
                         type="text"
                         id="price"
                         name="price"
-                        className="text-input"
-                        style={{ width: '100%', paddingLeft: '32px' }}
+                        className={`text-input ${styles.priceInput}`}
                         placeholder="10.00 or 0 for Free"
                         pattern="^\d+(\.\d{0,2})?$"
                         title="Enter a valid price (e.g., 10 or 10.50). Use 0 for free entry."
                         defaultValue={formData.price}
                     />
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                <p className={styles.helpText}>
                     Enter amount in £ (e.g., 10 or 10.50). Use 0 for free entry.
                 </p>
             </div>
 
             {/* Presale Price (Optional) */}
             <div>
-                <label htmlFor="presale_price" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                <label htmlFor="presale_price" className={styles.label}>
                     Record Presale Price (Optional)
                 </label>
-                <div style={{ position: 'relative' }}>
-                    <span style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--color-primary)',
-                        fontFamily: 'var(--font-primary)',
-                        fontSize: '1.2rem',
-                        pointerEvents: 'none'
-                    }}>£</span>
+                <div className={styles.priceInputContainer}>
+                    <span className={styles.priceSymbol}>£</span>
                     <input
                         type="text"
                         id="presale_price"
                         name="presale_price"
-                        className="text-input"
-                        style={{ width: '100%', paddingLeft: '32px' }}
+                        className={`text-input ${styles.priceInput}`}
                         placeholder="8.00"
                         pattern="^\d+(\.\d{0,2})?$"
                         title="Enter a valid price (e.g., 8 or 8.50)"
                         defaultValue={formData.presale_price}
                     />
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                <p className={styles.helpText}>
                     Discounted price for customers who pre-buy records
                 </p>
             </div>
 
             {/* Presale Caption (Optional) */}
             <div>
-                <label htmlFor="presale_caption" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                <label htmlFor="presale_caption" className={styles.label}>
                     Presale Explanation (Optional)
                 </label>
                 <input
                     type="text"
                     id="presale_caption"
                     name="presale_caption"
-                    className="text-input"
-                    style={{ width: '100%' }}
+                    className={`text-input ${styles.input}`}
                     placeholder="e.g., Buy our new album and get £2 off entry!"
                     maxLength={200}
                     defaultValue={formData.presale_caption}
                 />
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                <p className={styles.helpText}>
                     Explain the presale offer (max 200 characters)
                 </p>
             </div>
 
             {/* Image Upload */}
             <div>
-                <label htmlFor="poster" style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+                <label htmlFor="poster" className={styles.label}>
                     Gig Poster / Image (Optional)
                 </label>
                 <input
@@ -581,38 +520,37 @@ function EditEventForm({ eventId }: { eventId: string }) {
                     id="poster"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="text-input"
-                    style={{ width: '100%', padding: '0.5rem' }}
+                    className={`text-input ${styles.imageInput}`}
                 />
                 {posterPreview && (
-                    <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                        <img src={posterPreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px', border: '2px solid #555' }} />
+                    <div className={styles.imagePreviewWrapper}>
+                        <img src={posterPreview} alt="Preview" className={styles.imagePreviewImg} />
                     </div>
                 )}
             </div>
 
             {/* Ticketing Options */}
-            <div style={{ marginTop: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontFamily: 'var(--font-primary)', textTransform: 'uppercase' }}>
+            <div className={styles.ticketingWrapper}>
+                <label className={styles.label}>
                     Ticketing Options
                 </label>
 
                 {/* Free Guest List */}
-                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', marginBottom: '0.5rem', borderRadius: '4px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: canDisableTicketing ? 'pointer' : 'not-allowed', opacity: canDisableTicketing ? 1 : 0.6 }}>
+                <div className={styles.ticketingOption}>
+                    <label className={canDisableTicketing ? styles.ticketingLabelEnabled : styles.ticketingLabelDisabled}>
                         <input
                             type="checkbox"
                             name="is_internal_ticketing"
                             value="true"
-                            style={{ width: '24px', height: '24px', accentColor: 'var(--color-primary)' }}
+                            className={styles.ticketingCheckboxPrimary}
                             defaultChecked={formData.is_internal_ticketing}
                             disabled={!canDisableTicketing && formData.is_internal_ticketing}
                         />
-                        <div style={{ textAlign: 'left' }}>
-                            <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-primary)' }}>Enable Guest List (Free)</span>
-                            <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Let people book free tickets directly on GigFinder.</span>
+                        <div className={styles.ticketingTextWrapper}>
+                            <span className={styles.ticketingTitlePrimary}>Enable Guest List (Free)</span>
+                            <span className={styles.ticketingDescription}>Let people book free tickets directly on GigFinder.</span>
                             {!canDisableTicketing && formData.is_internal_ticketing && (
-                                <span style={{ fontSize: '0.8rem', color: '#f88', display: 'block', marginTop: '0.25rem' }}>
+                                <span className={styles.warningText}>
                                     ⚠️ Cannot disable - {bookingsCount} booking{bookingsCount !== 1 ? 's' : ''} exist
                                 </span>
                             )}
@@ -621,21 +559,21 @@ function EditEventForm({ eventId }: { eventId: string }) {
                 </div>
 
                 {/* Paid Ticket Sales */}
-                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px dashed #444', borderRadius: '4px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: canDisableTicketing ? 'pointer' : 'not-allowed', opacity: canDisableTicketing ? 1 : 0.6 }}>
+                <div className={styles.ticketingOptionLast}>
+                    <label className={canDisableTicketing ? styles.ticketingLabelEnabled : styles.ticketingLabelDisabled}>
                         <input
                             type="checkbox"
                             name="sell_tickets"
                             value="true"
-                            style={{ width: '24px', height: '24px', accentColor: 'var(--color-secondary)' }}
+                            className={styles.ticketingCheckboxSecondary}
                             defaultChecked={formData.sell_tickets}
                             disabled={!canDisableTicketing && formData.sell_tickets}
                         />
-                        <div style={{ textAlign: 'left' }}>
-                            <span style={{ fontFamily: 'var(--font-primary)', textTransform: 'uppercase', display: 'block', fontSize: '1.1rem', color: 'var(--color-secondary)' }}>Sell Tickets (Paid)</span>
-                            <span style={{ fontSize: '0.9rem', color: '#ccc' }}>Sell paid tickets via Stripe. Set a ticket price above.</span>
+                        <div className={styles.ticketingTextWrapper}>
+                            <span className={styles.ticketingTitleSecondary}>Sell Tickets (Paid)</span>
+                            <span className={styles.ticketingDescription}>Sell paid tickets via Stripe. Set a ticket price above.</span>
                             {!canDisableTicketing && formData.sell_tickets && (
-                                <span style={{ fontSize: '0.8rem', color: '#f88', display: 'block', marginTop: '0.25rem' }}>
+                                <span className={styles.warningText}>
                                     ⚠️ Cannot disable - {bookingsCount} booking{bookingsCount !== 1 ? 's' : ''} exist
                                 </span>
                             )}
@@ -645,7 +583,7 @@ function EditEventForm({ eventId }: { eventId: string }) {
             </div>
 
             {/* Submit Button */}
-            <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ marginTop: '1rem', fontSize: '1.2rem' }}>
+            <button type="submit" disabled={isSubmitting} className={`btn-primary ${styles.submitButtonLarge}`}>
                 {isSubmitting ? 'Updating...' : 'UPDATE EVENT'}
             </button>
 
@@ -653,8 +591,7 @@ function EditEventForm({ eventId }: { eventId: string }) {
             <button
                 type="button"
                 onClick={() => router.push('/gigfinder/my-gigs')}
-                className="btn-back"
-                style={{ marginTop: '0.5rem', fontSize: '1rem' }}
+                className={`btn-back ${styles.cancelButton}`}
             >
                 Cancel
             </button>
@@ -667,14 +604,14 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     const eventId = unwrappedParams.id;
 
     return (
-        <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff' }}>
-            <header style={{ padding: '1rem', textAlign: 'left' }}>
-                <h1 className="main-title" style={{ position: 'relative', margin: '0', fontSize: '3rem' }}>GIG<br />FINDER</h1>
+        <div className={styles.pageWrapper}>
+            <header className={styles.pageHeader}>
+                <h1 className={`main-title ${styles.pageTitle}`}>GIG<br />FINDER</h1>
             </header>
 
-            <main className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
-                <div style={{ background: 'var(--color-surface)', padding: '2rem', border: '3px solid var(--color-border)', boxShadow: '8px 8px 0 var(--color-primary)' }}>
-                    <h2 style={{ fontFamily: 'var(--font-primary)', fontSize: '2rem', marginBottom: '1.5rem', textAlign: 'center', textTransform: 'uppercase' }}>Edit Event</h2>
+            <main className={`container ${styles.pageMain}`}>
+                <div className={styles.pageCard}>
+                    <h2 className={styles.pageCardTitle}>Edit Event</h2>
 
                     <Suspense fallback={<div>Loading form...</div>}>
                         <EditEventForm eventId={eventId} />
