@@ -29,7 +29,11 @@ test.describe('Homepage Elements', () => {
 
     test.describe('Navigation & Auth', () => {
 
-        test('Sign In button is visible and clickable', async ({ page }) => {
+        test('Sign In button is visible and clickable', async ({ page, context }) => {
+            // Clear auth state to ensure we're signed out
+            await context.clearCookies();
+            await page.goto('/gigfinder');
+
             const home = new Homepage(page);
             await home.expectSignedOut();
 
