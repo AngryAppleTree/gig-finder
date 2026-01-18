@@ -6,6 +6,7 @@ import { Gig } from '@/components/gigfinder/types';
 import { BookingModal } from '@/components/gigfinder/BookingModal';
 import { Footer } from '@/components/gigfinder/Footer';
 import '../../gigfinder.css';
+import styles from './event-detail.module.css';
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -78,7 +79,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         return (
             <>
                 <h1 className="main-title">GIG<br />FINDER</h1>
-                <main className="container" style={{ paddingTop: '120px' }}>
+                <main className={`container ${styles.mainLoading}`}>
                     <div className="step active">
                         <h2 className="step-title">🔍 Loading...</h2>
                     </div>
@@ -91,10 +92,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         return (
             <>
                 <h1 className="main-title">GIG<br />FINDER</h1>
-                <main className="container" style={{ paddingTop: '120px' }}>
+                <main className={`container ${styles.mainLoading}`}>
                     <div className="step active">
                         <h2 className="step-title">❌ Event Not Found</h2>
-                        <p style={{ textAlign: 'center', fontSize: '1.2rem', color: 'var(--color-text-dim)', marginBottom: '2rem' }}>
+                        <p className={styles.errorMessage}>
                             {error || 'This event could not be found.'}
                         </p>
                         <div className="nav-buttons">
@@ -115,22 +116,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             <h1 className="main-title">GIG<br />FINDER</h1>
 
             {/* Sticky Navigation Header */}
-            <div style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 100,
-                background: 'var(--color-bg)',
-                borderBottom: '2px solid var(--color-border)',
-                padding: '1rem',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
-            }}>
-                <div className="nav-buttons" style={{ margin: 0, maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
+            <div className={styles.stickyHeader}>
+                <div className={`nav-buttons ${styles.navButtonsContainer}`}>
                     <button className="btn-back" onClick={() => router.back()}>← Back</button>
                     <button className="btn-primary" onClick={handleShare}>Share Event</button>
                 </div>
             </div>
 
-            <main className="container" style={{ paddingTop: '2rem' }}>
+            <main className={`container ${styles.mainDetail}`}>
                 {/* Reuse exact GigCard layout */}
                 <div className="gig-card">
                     <div className="gig-image">
@@ -138,7 +131,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             src={event.imageUrl || '/no-photo.png'}
                             alt={`${event.name} at ${event.venue} on ${event.date}`}
                             onError={(e) => e.currentTarget.src = '/no-photo.png'}
-                            style={{ height: '200px', width: '100%', objectFit: 'cover' }}
+                            className={styles.eventImage}
                         />
                     </div>
                     <div className="gig-details">
@@ -156,16 +149,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
                             {/* Description - NEW field for detail page */}
                             {event.description && (
-                                <div style={{
-                                    marginTop: '1rem',
-                                    paddingTop: '1rem',
-                                    borderTop: '1px solid var(--color-border)'
-                                }}>
-                                    <p style={{
-                                        fontSize: '0.9rem',
-                                        lineHeight: '1.5',
-                                        color: 'var(--color-text)'
-                                    }}>
+                                <div className={styles.descriptionSection}>
+                                    <p className={styles.descriptionText}>
                                         {event.description}
                                     </p>
                                 </div>
@@ -173,28 +158,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
                             {/* Presale info */}
                             {event.presale_price && (
-                                <div style={{
-                                    marginTop: '0.5rem',
-                                    padding: '0.5rem',
-                                    background: 'rgba(255, 51, 102, 0.1)',
-                                    border: '1px solid var(--color-primary)',
-                                    borderRadius: '4px'
-                                }}>
-                                    <p style={{
-                                        color: 'var(--color-secondary)',
-                                        fontWeight: 'bold',
-                                        fontSize: '0.9rem',
-                                        margin: '0 0 0.25rem 0'
-                                    }}>
+                                <div className={styles.presaleSection}>
+                                    <p className={styles.presalePrice}>
                                         💿 Presale: £{typeof event.presale_price === 'number' ? event.presale_price.toFixed(2) : parseFloat(event.presale_price).toFixed(2)}
                                     </p>
                                     {event.presale_caption && (
-                                        <p style={{
-                                            color: '#ccc',
-                                            fontSize: '0.75rem',
-                                            margin: 0,
-                                            fontStyle: 'italic'
-                                        }}>
+                                        <p className={styles.presaleCaption}>
                                             {event.presale_caption}
                                         </p>
                                     )}
@@ -203,11 +172,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         </div>
 
                         {/* Action button - shows actual action instead of "View Event" */}
-                        <div style={{ marginTop: '1rem' }}>
+                        <div className={styles.actionButtonContainer}>
                             {(event.isInternalTicketing || event.sellTickets) && event.source === 'manual' ? (
                                 <button
-                                    className="btn-buy"
-                                    style={{ background: 'var(--color-secondary)', borderColor: 'var(--color-secondary)', cursor: 'pointer', width: '100%' }}
+                                    className={`btn-buy ${styles.buyButton}`}
                                     onClick={handleBooking}
                                 >
                                     {event.sellTickets ? 'Buy Tickets' : 'Get on Guest List'}
@@ -217,15 +185,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                     href={event.ticketUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="btn-buy"
-                                    style={{ width: '100%', display: 'block', textAlign: 'center' }}
+                                    className={`btn-buy ${styles.externalLink}`}
                                 >
                                     Get Tickets
                                 </a>
                             ) : (
                                 <button
-                                    className="btn-buy"
-                                    style={{ backgroundColor: '#888', color: 'white', border: 'none', cursor: 'default', width: '100%' }}
+                                    className={`btn-buy ${styles.disabledButton}`}
                                     disabled
                                 >
                                     No Tickets Available
