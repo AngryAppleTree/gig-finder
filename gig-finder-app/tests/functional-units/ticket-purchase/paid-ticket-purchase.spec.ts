@@ -23,9 +23,25 @@ import { ResultsPage } from '../../page-objects/ResultsPage';
  * 8. Verify redirect to Stripe
  * 
  * NOTE: This test runs UNAUTHENTICATED to test the buyer experience.
+ * 
+ * ENVIRONMENT REQUIREMENTS:
+ * These tests require Stripe API keys to be configured:
+ * - STRIPE_SECRET_KEY
+ * - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ * 
+ * Tests will be skipped in local environment if Stripe is not configured.
+ * Tests will run in preview/production where Stripe keys are set.
  */
 
 test.describe('Paid Ticket Purchase', () => {
+
+    // Skip all Stripe tests if Stripe is not configured
+    test.beforeEach(async () => {
+        const hasStripe = process.env.STRIPE_SECRET_KEY &&
+            process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
+        test.skip(!hasStripe, 'Stripe payment tests require Stripe API keys. Skipped in local environment - will run in preview/production.');
+    });
     test('purchase tickets only - screamin\' kick album launch', async ({ page }) => {
         console.log('🎫 Testing ticket purchase (tickets only)...');
         console.log('');
