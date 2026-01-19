@@ -122,6 +122,16 @@ test.describe('Setup: Payment Test Event', () => {
     });
 
     test('verify payment test event exists', async ({ page }) => {
+        // Skip on preview - test fixture must be created manually due to auth limitations
+        const isPreview = process.env.BASE_URL?.includes('vercel.app');
+        if (isPreview) {
+            console.log('⏭️  Skipping verification on preview environment');
+            console.log('   Test fixture must be created manually via UI');
+            console.log('   See test comments for details');
+            test.skip();
+            return;
+        }
+
         console.log('🔍 Verifying payment test event exists...');
         console.log('');
 
