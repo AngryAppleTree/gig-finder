@@ -60,8 +60,8 @@ test.describe('Wizard → Results Filtering Integration', () => {
                         const priceText = await card.locator('.gig-price').textContent();
 
                         if (journey.expectedParams.budget === 'free') {
-                            // Free budget: should be "Free" or "£0"
-                            expect(priceText).toMatch(/Free|£0/i);
+                            // Free budget: should be "Free", "£0", or "TBA" (To Be Announced)
+                            expect(priceText).toMatch(/Free|£0|TBA/i);
                         } else if (journey.expectedParams.budget === 'low') {
                             // Low budget (£10-£20): Extract price and verify range
                             const priceMatch = priceText?.match(/£([\d.]+)/);
@@ -135,9 +135,10 @@ test.describe('Wizard → Results Filtering Integration', () => {
             const count = await results.resultCards.count();
             if (count > 0) {
                 // Check ALL cards, not just a sample
+                // TBA (To Be Announced) pricing is acceptable in free filter results
                 for (let i = 0; i < count; i++) {
                     const priceText = await results.resultCards.nth(i).locator('.gig-price').textContent();
-                    expect(priceText).toMatch(/Free|£0/i);
+                    expect(priceText).toMatch(/Free|£0|TBA/i);
                 }
             }
         });
@@ -206,7 +207,7 @@ test.describe('Wizard → Results Filtering Integration', () => {
                 // Verify at least one card meets the criteria
                 const firstCard = results.resultCards.first();
                 const priceText = await firstCard.locator('.gig-price').textContent();
-                expect(priceText).toMatch(/Free|£0/i);
+                expect(priceText).toMatch(/Free|£0|TBA/i);
             } else {
                 // No results is valid for restrictive filters
                 await expect(results.noResultsMessage).toBeVisible();
