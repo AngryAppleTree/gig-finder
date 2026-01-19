@@ -48,7 +48,14 @@ Examples:
    - DO NOT suggest fixes
    - DO NOT modify any code
 
-5. If you encounter issues running tests (e.g., setup problems, manual workarounds needed):
+5. **If tests were skipped**, generate a manual test checklist:
+   - List each skipped test
+   - Provide manual test steps for each
+   - Include prerequisites (test data, auth, etc.)
+   - Estimate time required
+   - Format as a checklist with [ ] checkboxes
+
+6. If you encounter issues running tests (e.g., setup problems, manual workarounds needed):
    - Stop and ask the user for guidance
    - Explain what you're stuck on
    - Wait for user input before proceeding
@@ -74,6 +81,30 @@ Failed Tests:
 2. [Test Name]
    Location: [file:line]
    Error: [error message]
+---
+
+[If tests were skipped:]
+---
+📋 Manual Test Checklist Required
+
+The following tests were skipped and require manual verification:
+
+## [Category Name]
+
+### Test: [Test Name]
+**Prerequisites:** [Any setup needed]
+**Steps:**
+- [ ] Step 1
+- [ ] Step 2
+- [ ] Step 3
+
+**Expected Result:** [What should happen]
+
+---
+
+📊 Summary:
+- Total Manual Tests: X
+- Estimated Time: Y minutes
 ---
 ```
 
